@@ -43,9 +43,10 @@ export const AdminLoginForm: React.FC = () => {
 
       // Check if login was successful
       if (result.success) {
-        // Verify user is admin
+        // Block regular users from using admin login page
         if (result.user.role !== 'admin') {
-          toast.error('Access denied. Admin credentials required.');
+          toast.error('Regular users must use the user login page');
+          navigate('/login');
           return;
         }
 

@@ -43,13 +43,15 @@ export const LoginForm: React.FC = () => {
 
       // Check if login was successful
       if (result.success) {
-        toast.success(t('login.success'));
-        // Role-based redirect
+        // Block admin users from using user login page
         if (result.user.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
+          toast.error('Admins must use the admin login page');
+          navigate('/admin/login');
+          return;
         }
+
+        toast.success(t('login.success'));
+        navigate('/dashboard');
       }
     } catch (err) {
       // Extract error message - handle Error instances, error objects, and strings from Redux rejectWithValue
