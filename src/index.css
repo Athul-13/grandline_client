@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* Theme Colors - Light Mode (Default) */
+:root {
+  /* Background Colors */
+  --color-bg-primary: #F4F1DE;
+  --color-bg-secondary: #E8E5D0;
+  --color-bg-card: #FFFFFF;
+  --color-bg-footer: #E0DDC8;
+  --color-bg-hover: #F0EDD6;
+  
+  /* Text Colors */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  
+  /* Primary Accent */
+  --color-primary: #C5630C;
+  --color-primary-hover: #b5590b;
+  --color-primary-light: #e8a04d;
+  
+  /* Border Colors */
+  --color-border: #d1d5db;
+  --color-border-light: #e5e7eb;
+  --color-border-accent: #ff6b35;
+  --color-border-footer: #9ca3af;
+  
+  /* Gradient Colors */
+  --color-gradient-purple-start: #667eea;
+  --color-gradient-purple-end: #764ba2;
+  --color-gradient-red-start: #dc2626;
+  --color-gradient-red-end: #991b1b;
+  
+  /* Font */
+  font-family: 'Work Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme Colors - Dark Mode */
+.dark {
+  /* Background Colors */
+  --color-bg-primary: #2a2d3a;
+  --color-bg-secondary: #363947;
+  --color-bg-card: #3a3d4a;
+  --color-bg-footer: #23262f;
+  --color-bg-hover: #424551;
+  
+  /* Text Colors */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b8bac4;
+  --color-text-muted: #9ca3af;
+  
+  /* Primary Accent (same for both themes) */
+  --color-primary: #C5630C;
+  --color-primary-hover: #d6701a;
+  --color-primary-light: #e8a04d;
+  
+  /* Border Colors */
+  --color-border: #4a4d5a;
+  --color-border-light: #3a3d4a;
+  --color-border-accent: #ff6b35;
+  --color-border-footer: #6b7280;
+  
+  /* Gradient Colors (same for both themes) */
+  --color-gradient-purple-start: #667eea;
+  --color-gradient-purple-end: #764ba2;
+  --color-gradient-red-start: #dc2626;
+  --color-gradient-red-end: #991b1b;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow {
+    animation: none;
+  }
+}
