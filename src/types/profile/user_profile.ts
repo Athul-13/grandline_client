@@ -31,3 +31,25 @@ export interface UpdateProfileResponse {
   user: UserProfile;
 }
 
+/**
+ * Cloudinary Upload URL Response Types
+ */
+export interface CloudinaryUploadParams {
+  timestamp: number;
+  signature: string;
+  api_key: string;
+  folder: string;
+}
+
+export interface GetUploadUrlResponse {
+  success: true;
+  uploadUrl: string;
+  params: CloudinaryUploadParams;
+  expiresIn: number;
+}
+
+export interface GetUploadUrlErrorResponse {
+  success: false;
+  message: string;
+}
+

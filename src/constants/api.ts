@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
     profile: '/user/profile',
     updateProfile: '/user/profile',
     changePassword: '/user/change-password',
+    uploadProfileUrl: '/user/profile/upload-url',
   },
   // Admin endpoints
   admin: {
