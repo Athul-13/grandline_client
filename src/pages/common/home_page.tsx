@@ -1,5 +1,5 @@
-import { HomeNavbar } from '../../components/common/home_navbar';
-import { HomeFooter } from '../../components/common/home_footer';
+import { HomeNavbar } from '../../components/home/home_navbar';
+import { HomeFooter } from '../../components/home/home_footer';
 
 export const HomePage: React.FC = () => {
   return (

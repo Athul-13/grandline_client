@@ -205,3 +205,4 @@ export const HomeFooter: React.FC = () => {
     </footer>
   );
 };
+

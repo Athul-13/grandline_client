@@ -10,7 +10,7 @@ import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import { AuthFormCard } from '../common/auth_form_card';
+import { AuthFormCard } from './auth_form_card';
 import { Button } from '../common/button';
 
 const resetPasswordSchema = z

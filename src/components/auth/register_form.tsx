@@ -12,7 +12,7 @@ import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
 import { FormInput } from '../common/form_input';
-import { AuthFormCard } from '../common/auth_form_card';
+import { AuthFormCard } from './auth_form_card';
 import { ErrorMessage } from '../common/error_message';
 import { Button } from '../common/button';
 
