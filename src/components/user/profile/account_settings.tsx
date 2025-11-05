@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
  * Handles language, theme, and other account preferences
  */
 export const AccountSettings: React.FC = () => {
-  const { language: contextLanguage, setLanguage: setContextLanguage } = useLanguage();
+  const { language: contextLanguage, setLanguage: setContextLanguage, t } = useLanguage();
   const { theme: contextTheme, setTheme: setContextTheme } = useTheme();
   
   const getValidTheme = (themeValue: string | undefined): 'light' | 'dark' | 'system' => {
@@ -52,9 +52,9 @@ export const AccountSettings: React.FC = () => {
       setContextLanguage(language);
       setContextTheme(theme);
       
-      toast.success('Settings saved successfully');
+      toast.success(t('profile.accountSettings.saveSuccess'));
     } catch {
-      toast.error('Failed to save settings');
+      toast.error(t('profile.accountSettings.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -63,11 +63,13 @@ export const AccountSettings: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Language Selection */}
-      <div className="border-b border-gray-200 pb-4 sm:pb-6">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Language</h2>
+      <div className="border-b border-[var(--color-border)] pb-4 sm:pb-6">
+        <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] mb-3 sm:mb-4">
+          {t('profile.accountSettings.language')}
+        </h2>
         <div className="max-w-md">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Language
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+            {t('profile.accountSettings.selectLanguage')}
           </label>
           <select
             value={language}
@@ -77,28 +79,30 @@ export const AccountSettings: React.FC = () => {
                 setLanguage(value as Language);
               }
             }}
-            className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
+            className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             disabled={isSaving}
           >
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="hi">Hindi</option>
-            <option value="ar">Arabic</option>
+            <option value="en">{t('profile.accountSettings.languages.english')}</option>
+            <option value="es">{t('profile.accountSettings.languages.spanish')}</option>
+            <option value="fr">{t('profile.accountSettings.languages.french')}</option>
+            <option value="de">{t('profile.accountSettings.languages.german')}</option>
+            <option value="hi">{t('profile.accountSettings.languages.hindi')}</option>
+            <option value="ar">{t('profile.accountSettings.languages.arabic')}</option>
           </select>
         </div>
       </div>
 
       {/* Theme Selection */}
       <div>
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Theme</h2>
+        <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] mb-3 sm:mb-4">
+          {t('profile.accountSettings.theme')}
+        </h2>
         <div className="max-w-md">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Theme
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+            {t('profile.accountSettings.selectTheme')}
           </label>
           <div className="space-y-2 sm:space-y-3">
-            <label className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex items-center space-x-3 p-3 border border-[var(--color-border)] rounded-lg cursor-pointer hover:bg-[var(--color-bg-hover)] bg-[var(--color-bg-card)]">
               <input
                 type="radio"
                 name="theme"
@@ -109,12 +113,14 @@ export const AccountSettings: React.FC = () => {
                     setTheme(e.target.value as 'light' | 'dark' | 'system');
                   }
                 }}
-                className="text-(--color-primary) focus:ring-(--color-primary)"
+                className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 disabled={isSaving}
               />
-              <span className="text-sm text-gray-700">Light</span>
+              <span className="text-sm text-[var(--color-text-primary)]">
+                {t('profile.accountSettings.light')}
+              </span>
             </label>
-            <label className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex items-center space-x-3 p-3 border border-[var(--color-border)] rounded-lg cursor-pointer hover:bg-[var(--color-bg-hover)] bg-[var(--color-bg-card)]">
               <input
                 type="radio"
                 name="theme"
@@ -125,12 +131,14 @@ export const AccountSettings: React.FC = () => {
                     setTheme(e.target.value as 'light' | 'dark' | 'system');
                   }
                 }}
-                className="text-(--color-primary) focus:ring-(--color-primary)"
+                className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 disabled={isSaving}
               />
-              <span className="text-sm text-gray-700">Dark</span>
+              <span className="text-sm text-[var(--color-text-primary)]">
+                {t('profile.accountSettings.dark')}
+              </span>
             </label>
-            <label className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+            <label className="flex items-center space-x-3 p-3 border border-[var(--color-border)] rounded-lg cursor-pointer hover:bg-[var(--color-bg-hover)] bg-[var(--color-bg-card)]">
               <input
                 type="radio"
                 name="theme"
@@ -141,10 +149,12 @@ export const AccountSettings: React.FC = () => {
                     setTheme(e.target.value as 'light' | 'dark' | 'system');
                   }
                 }}
-                className="text-(--color-primary) focus:ring-(--color-primary)"
+                className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 disabled={isSaving}
               />
-              <span className="text-sm text-gray-700">System Default</span>
+              <span className="text-sm text-[var(--color-text-primary)]">
+                {t('profile.accountSettings.systemDefault')}
+              </span>
             </label>
           </div>
         </div>
@@ -156,7 +166,7 @@ export const AccountSettings: React.FC = () => {
           className="w-full sm:w-auto"
           disabled={isSaving}
         >
-          {isSaving ? 'Saving...' : 'Save Settings'}
+          {isSaving ? t('profile.accountSettings.saving') : t('profile.accountSettings.saveSettings')}
         </Button>
       </div>
     </div>

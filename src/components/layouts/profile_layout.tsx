@@ -17,7 +17,7 @@ export const ProfileLayout: React.FC = () => {
 
         {/* Floating Content Area - Scrollable */}
         <div className="flex-1 min-w-0 w-full h-full lg:h-auto">
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 w-full max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div className="bg-[var(--color-bg-card)] rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 w-full max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] overflow-y-auto">
             <Outlet />
           </div>
         </div>

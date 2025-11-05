@@ -80,8 +80,8 @@ export const AdminLoginForm: React.FC = () => {
 
   return (
     <AuthFormCard
-      title="Admin Login"
-      subtitle="Sign in to access the admin dashboard"
+      title={t('admin.login.title')}
+      subtitle={t('admin.login.subtitle')}
       logoLink={ROUTES.home}
     >
       {/* Form */}

@@ -1,20 +1,26 @@
+import { useLanguage } from '../../hooks/use_language';
+
 /**
  * Reservations Page
  * Displays user reservations (dummy page for now)
  */
 export const ReservationsPage: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-(--color-text-primary)">Reservations</h1>
-        <p className="mt-2 text-(--color-text-secondary)">
-          View and manage your reservations
+        <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">
+          {t('dashboard.reservations.title')}
+        </h1>
+        <p className="mt-2 text-[var(--color-text-secondary)]">
+          {t('dashboard.reservations.subtitle')}
         </p>
       </div>
 
-      <div className="bg-(--color-bg-card) rounded-lg shadow p-6">
-        <p className="text-(--color-text-secondary)">
-          Reservations page content will be implemented here.
+      <div className="bg-[var(--color-bg-card)] rounded-lg shadow p-6">
+        <p className="text-[var(--color-text-secondary)]">
+          {t('dashboard.reservations.comingSoon')}
         </p>
       </div>
     </div>

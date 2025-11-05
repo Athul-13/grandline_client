@@ -8,12 +8,14 @@ import toast from 'react-hot-toast';
 import { ChevronDown, LogOut, User, Menu, X } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import logoNavbar from '../../assets/logo_navbar.png';
+import { useLanguage } from '../../hooks/use_language';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { t } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -100,14 +102,14 @@ export const Navbar: React.FC = () => {
     | { path: string; label: string; isButton?: false }
     | { path: string; label: string; isButton: true; onClick: (e: React.MouseEvent) => void }
   > = [
-    { path: ROUTES.quotes, label: 'Quotes' },
-    { path: ROUTES.reservations, label: 'Reservations' },
-    { path: '#', label: 'Support', isButton: true, onClick: handleSupportClick },
-    { path: ROUTES.buildQuote, label: 'Build A Quote' },
+    { path: ROUTES.quotes, label: t('nav.quotes') },
+    { path: ROUTES.reservations, label: t('nav.reservations') },
+    { path: '#', label: t('nav.support'), isButton: true, onClick: handleSupportClick },
+    { path: ROUTES.buildQuote, label: t('nav.buildQuote') },
   ];
 
   return (
-    <nav className="bg-(--color-bg-primary) border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-[var(--color-bg-primary)] border-b border-[var(--color-border)] sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side: Logo */}
@@ -126,7 +128,7 @@ export const Navbar: React.FC = () => {
                 <button
                   key={link.path}
                   onClick={link.onClick}
-                  className="text-sm font-medium text-gray-700 hover:text-(--color-primary) transition-all duration-300 hover:scale-105 active:scale-95"
+                  className="text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-all duration-300 hover:scale-105 active:scale-95"
                 >
                   {link.label}
                 </button>
@@ -137,8 +139,8 @@ export const Navbar: React.FC = () => {
                   className={cn(
                     'text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95',
                     isActive(link.path)
-                      ? 'text-(--color-primary)'
-                      : 'text-gray-700 hover:text-(--color-primary)'
+                      ? 'text-[var(--color-primary)]'
+                      : 'text-[var(--color-text-primary)] hover:text-[var(--color-primary)]'
                   )}
                 >
                   {link.label}
@@ -151,9 +153,9 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:block relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-(--color-primary) transition-colors"
+              className="flex items-center space-x-2 text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors"
             >
-              <span>{user?.fullName || 'User'}</span>
+              <span>{user?.fullName || t('nav.user')}</span>
               <ChevronDown
                 className={cn(
                   'h-4 w-4 transition-transform duration-300 ease-in-out',
@@ -164,20 +166,20 @@ export const Navbar: React.FC = () => {
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50 animate-slide-in-top">
+              <div className="absolute right-0 mt-2 w-48 bg-[var(--color-bg-card)] rounded-md shadow-lg py-1 border border-[var(--color-border)] z-50 animate-slide-in-top">
                 <button
                   onClick={handleProfile}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2 transition-colors duration-200 hover:translate-x-1"
+                  className="w-full text-left px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] flex items-center space-x-2 transition-colors duration-200 hover:translate-x-1"
                 >
                   <User className="h-4 w-4 transition-transform duration-200" />
-                  <span>Profile</span>
+                  <span>{t('nav.profile')}</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition-colors duration-200 hover:translate-x-1"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2 transition-colors duration-200 hover:translate-x-1"
                 >
                   <LogOut className="h-4 w-4 transition-transform duration-200" />
-                  <span>Logout</span>
+                  <span>{t('nav.logout')}</span>
                 </button>
               </div>
             )}
@@ -192,7 +194,7 @@ export const Navbar: React.FC = () => {
                 handleOpenDrawer();
               }
             }}
-            className="md:hidden p-2 text-gray-700 hover:text-(--color-primary) transition-all duration-300 hover:scale-110 active:scale-95"
+            className="md:hidden p-2 text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-all duration-300 hover:scale-110 active:scale-95"
             aria-label="Toggle menu"
           >
             <div className="relative w-6 h-6">
@@ -226,7 +228,7 @@ export const Navbar: React.FC = () => {
             
             {/* Drawer */}
             <div
-              className="fixed inset-y-0 right-0 w-80 bg-white shadow-xl z-50 md:hidden transition-transform duration-300 ease-out"
+              className="fixed inset-y-0 right-0 w-80 bg-[var(--color-bg-card)] shadow-xl z-50 md:hidden transition-transform duration-300 ease-out"
               style={{
                 transform: isClosing || isOpening 
                   ? 'translateX(100%)' 
@@ -235,19 +237,19 @@ export const Navbar: React.FC = () => {
             >
               <div className="flex flex-col h-full">
                 {/* User Name at Top */}
-                <div className="px-6 py-6 border-b border-gray-200">
+                <div className="px-6 py-6 border-b border-[var(--color-border)]">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-(--color-text-primary)">
-                      {user?.fullName || 'User'}
+                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                      {user?.fullName || t('nav.user')}
                     </h3>
                     <button
                       onClick={handleCloseDrawer}
-                      className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                      className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
-                  <p className="text-sm text-(--color-text-secondary)">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
                     {user?.email}
                   </p>
                 </div>
@@ -263,7 +265,7 @@ export const Navbar: React.FC = () => {
                             link.onClick(e);
                             handleCloseDrawer();
                           }}
-                          className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-(--color-primary) hover:bg-gray-50 transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] animate-fade-in"
+                          className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-hover)] transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] animate-fade-in"
                           style={{
                             animationDelay: `${index * 50}ms`,
                             animationFillMode: 'both',
@@ -279,8 +281,8 @@ export const Navbar: React.FC = () => {
                           className={cn(
                             'block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] animate-fade-in',
                             isActive(link.path)
-                              ? 'text-(--color-primary) bg-(--color-primary)/10'
-                              : 'text-gray-700 hover:text-(--color-primary) hover:bg-gray-50'
+                              ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                              : 'text-[var(--color-text-primary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-hover)]'
                           )}
                           style={{
                             animationDelay: `${index * 50}ms`,
@@ -295,26 +297,26 @@ export const Navbar: React.FC = () => {
                 </div>
 
                 {/* Profile and Logout at Bottom */}
-                <div className="border-t border-gray-200 px-4 py-4 space-y-2 animate-slide-in-bottom" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+                <div className="border-t border-[var(--color-border)] px-4 py-4 space-y-2 animate-slide-in-bottom" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
                   <button
                     onClick={() => {
                       handleProfile();
                       handleCloseDrawer();
                     }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] active:scale-95"
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] active:scale-95"
                   >
                     <User className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                    <span>Profile</span>
+                    <span>{t('nav.profile')}</span>
                   </button>
                   <button
                     onClick={() => {
                       handleLogout();
                       handleCloseDrawer();
                     }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] active:scale-95"
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 hover:translate-x-2 hover:scale-[1.02] active:scale-95"
                   >
                     <LogOut className="h-5 w-5 transition-transform duration-200" />
-                    <span>Logout</span>
+                    <span>{t('nav.logout')}</span>
                   </button>
                 </div>
               </div>

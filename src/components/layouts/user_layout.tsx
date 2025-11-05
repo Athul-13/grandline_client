@@ -11,7 +11,7 @@ interface UserLayoutProps {
  */
 export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {
   return (
-    <div className="h-screen bg-(--color-bg-primary) overflow-hidden flex flex-col">
+    <div className="h-screen bg-[var(--color-bg-primary)] overflow-hidden flex flex-col">
       <Navbar />
       <main className="flex-1 overflow-hidden">
         {children}

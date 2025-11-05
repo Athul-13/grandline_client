@@ -12,6 +12,7 @@ import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitize
 import { ROUTES } from '../../constants/routes';
 import { AuthFormCard } from './auth_form_card';
 import { Button } from '../common/button';
+import { useLanguage } from '../../hooks/use_language';
 
 const resetPasswordSchema = z
   .object({
@@ -35,6 +36,7 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export const ResetPasswordForm: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -107,8 +109,8 @@ export const ResetPasswordForm: React.FC = () => {
 
   return (
     <AuthFormCard
-      title="Reset Password"
-      subtitle="Enter your new password below."
+      title={t('resetPassword.title')}
+      subtitle={t('resetPassword.subtitle')}
       showLogo={true}
       logoLink={false}
     >
@@ -116,20 +118,20 @@ export const ResetPasswordForm: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* New Password Field */}
           <PasswordInput
-            label="New Password"
+            label={t('resetPassword.newPassword')}
             {...register('newPassword')}
             error={errors.newPassword?.message}
-            placeholder="Enter your new password"
+            placeholder={t('resetPassword.newPasswordPlaceholder')}
             disabled={isSubmitting}
-            hint="Password must contain at least one lowercase letter, one uppercase letter, and one number"
+            hint={t('resetPassword.passwordHint')}
           />
 
           {/* Confirm Password Field */}
           <PasswordInput
-            label="Confirm New Password"
+            label={t('resetPassword.confirmPassword')}
             {...register('confirmPassword')}
             error={errors.confirmPassword?.message}
-            placeholder="Confirm your new password"
+            placeholder={t('resetPassword.confirmPasswordPlaceholder')}
             disabled={isSubmitting}
           />
 

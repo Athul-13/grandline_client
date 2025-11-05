@@ -52,7 +52,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       <div>
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-(--color-text-primary) mb-2"
+          className="block text-sm font-medium text-[var(--color-text-primary)] mb-2"
         >
           {label}
         </label>
@@ -64,14 +64,15 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             className={cn(
               'w-full px-4 py-3 rounded-lg',
               'border',
-              'text-(--color-text-primary) placeholder-(--color-text-muted)',
-              'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
+              'bg-[var(--color-bg-card)]',
+              'text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]',
+              'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]',
               'transition-colors',
               error
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-(--color-border) focus:border-(--color-primary)',
+                : 'border-[var(--color-border)] focus:border-[var(--color-primary)]',
               showPasswordToggle ? 'pr-12' : '',
-              disabled && 'opacity-50 cursor-not-allowed',
+              disabled && 'opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]',
               className
             )}
             disabled={disabled}
@@ -81,7 +82,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-(--color-text-primary) transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
               aria-label={showPassword ? showPasswordLabel.hide : showPasswordLabel.show}
               disabled={disabled}
             >
@@ -97,7 +98,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           <p className="mt-1 text-sm text-red-500">{error}</p>
         )}
         {hint && !error && (
-          <p className="mt-1 text-xs text-(--color-text-muted)">{hint}</p>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">{hint}</p>
         )}
       </div>
     );
