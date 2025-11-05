@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import logo from '../../assets/logo.png';
+import { AuthFormCard } from '../common/auth_form_card';
 
 interface LocationState {
   email?: string;
@@ -172,27 +172,21 @@ export const OtpVerificationForm: React.FC = () => {
   }, [email, navigate]);
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain" />
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-(--color-text-primary) mb-2">
-            {t('otp.title')}
-          </h1>
-          <p className="text-sm md:text-base text-(--color-text-secondary) mb-4">
-            {t('otp.subtitle')}
-          </p>
+    <AuthFormCard
+      title={t('otp.title')}
+      subtitle={
+        <>
+          <p className="mb-4">{t('otp.subtitle')}</p>
           {timeRemaining > 0 && (
             <p className="text-sm font-medium text-(--color-text-primary)">
               {t('otp.timeRemaining')}: {formatTime(timeRemaining)}
             </p>
           )}
-        </div>
+        </>
+      }
+      showLogo={true}
+      logoLink={false}
+    >
 
         {/* OTP Input Fields */}
         <div className="flex justify-center gap-3 mb-8">
@@ -258,8 +252,7 @@ export const OtpVerificationForm: React.FC = () => {
             </button>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthFormCard>
   );
 };
 

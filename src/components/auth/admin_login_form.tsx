@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { useLanguage } from '../../hooks/use_language';
 import { loginAsync } from '../../store/slices/auth_slice';
@@ -12,8 +12,8 @@ import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import logo from '../../assets/logo.png';
 import { FormInput } from '../common/form_input';
+import { AuthFormCard } from '../common/auth_form_card';
 
 export const AdminLoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -77,26 +77,12 @@ export const AdminLoginForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <Link to={ROUTES.home}>
-            <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-          </Link>
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-(--color-text-primary) mb-2">
-            Admin Login
-          </h1>
-          <p className="text-sm md:text-base text-(--color-text-secondary)">
-            Sign in to access the admin dashboard
-          </p>
-        </div>
-
-        {/* Form */}
+    <AuthFormCard
+      title="Admin Login"
+      subtitle="Sign in to access the admin dashboard"
+      logoLink={ROUTES.home}
+    >
+      {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email Field */}
           <FormInput
@@ -157,8 +143,7 @@ export const AdminLoginForm: React.FC = () => {
             </div>
           )}
         </form>
-      </div>
-    </div>
+    </AuthFormCard>
   );
 };
 

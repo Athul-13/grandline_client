@@ -10,7 +10,7 @@ import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import logo from '../../assets/logo.png';
+import { AuthFormCard } from '../common/auth_form_card';
 
 const resetPasswordSchema = z
   .object({
@@ -105,24 +105,13 @@ export const ResetPasswordForm: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain" />
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-(--color-text-primary) mb-2">
-            Reset Password
-          </h1>
-          <p className="text-sm md:text-base text-(--color-text-secondary)">
-            Enter your new password below.
-          </p>
-        </div>
-
-        {/* Form */}
+    <AuthFormCard
+      title="Reset Password"
+      subtitle="Enter your new password below."
+      showLogo={true}
+      logoLink={false}
+    >
+      {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* New Password Field */}
           <PasswordInput
@@ -170,8 +159,7 @@ export const ResetPasswordForm: React.FC = () => {
             Back to Login
           </button>
         </div>
-      </div>
-    </div>
+    </AuthFormCard>
   );
 };
 

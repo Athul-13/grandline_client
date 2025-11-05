@@ -11,8 +11,8 @@ import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import logo from '../../assets/logo.png';
 import { FormInput } from '../common/form_input';
+import { AuthFormCard } from '../common/auth_form_card';
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
@@ -73,29 +73,19 @@ export const RegisterForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <Link to={ROUTES.home}>
-            <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity" />
-          </Link>
-        </div>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-(--color-text-primary) mb-2">
-            {t('register.title')}
-          </h1>
-          <p className="text-sm md:text-base text-(--color-text-secondary)">
-            {t('register.subtitle')}{' '}
-            <span className="font-bold text-[#1e3a8a] dark:text-[#3b82f6]">
-              GRANDLINE
-            </span>
-          </p>
-        </div>
-
-        {/* Form */}
+    <AuthFormCard
+      title={t('register.title')}
+      subtitle={
+        <>
+          {t('register.subtitle')}{' '}
+          <span className="font-bold text-[#1e3a8a] dark:text-[#3b82f6]">
+            GRANDLINE
+          </span>
+        </>
+      }
+      logoLink={ROUTES.home}
+    >
+      {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Full Name Field */}
           <FormInput
@@ -239,8 +229,7 @@ export const RegisterForm: React.FC = () => {
             </Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthFormCard>
   );
 };
 
