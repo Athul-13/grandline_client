@@ -8,6 +8,7 @@ import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
 import { AuthFormCard } from '../common/auth_form_card';
+import { Button } from '../common/button';
 
 interface LocationState {
   email?: string;
@@ -219,21 +220,17 @@ export const OtpVerificationForm: React.FC = () => {
         </div>
 
         {/* Verify Button */}
-        <button
+        <Button
           type="button"
+          size="lg"
+          fullWidth
+          loading={isVerifying}
+          loadingText={t('otp.verifying')}
+          disabled={otp.join('').length !== 6}
           onClick={handleVerify}
-          disabled={isVerifying || otp.join('').length !== 6}
-          className={cn(
-            'w-full py-3 rounded-lg font-bold text-white',
-            'bg-(--color-primary) hover:bg-(--color-primary-hover)',
-            'shadow-md hover:shadow-lg',
-            'transition-all duration-200',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            isVerifying && 'animate-pulse'
-          )}
         >
-          {isVerifying ? t('otp.verifying') : t('otp.verifyButton')}
-        </button>
+          {t('otp.verifyButton')}
+        </Button>
 
         {/* Resend Code */}
         <div className="mt-6 text-center">

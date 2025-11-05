@@ -13,6 +13,8 @@ import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitize
 import { ROUTES } from '../../constants/routes';
 import { FormInput } from '../common/form_input';
 import { AuthFormCard } from '../common/auth_form_card';
+import { ErrorMessage } from '../common/error_message';
+import { Button } from '../common/button';
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
@@ -146,27 +148,18 @@ export const RegisterForm: React.FC = () => {
           />
 
           {/* Register Button */}
-          <button
+          <Button
             type="submit"
-            disabled={isLoading}
-            className={cn(
-              'w-full py-3 rounded-lg font-bold text-white',
-              'bg-(--color-primary) hover:bg-(--color-primary-hover)',
-              'shadow-md hover:shadow-lg',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              isLoading && 'animate-pulse'
-            )}
+            size="lg"
+            fullWidth
+            loading={isLoading}
+            loadingText={t('register.registering')}
           >
-            {isLoading ? t('register.registering') : t('register.button')}
-          </button>
+            {t('register.button')}
+          </Button>
 
           {/* Error Message */}
-          {error && (
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
+          <ErrorMessage message={error || ''} />
         </form>
 
         {/* Divider */}

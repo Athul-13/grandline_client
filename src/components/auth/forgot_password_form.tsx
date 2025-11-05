@@ -11,6 +11,7 @@ import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitize
 import { ROUTES } from '../../constants/routes';
 import { FormInput } from '../common/form_input';
 import { AuthFormCard } from '../common/auth_form_card';
+import { Button } from '../common/button';
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -89,20 +90,15 @@ export const ForgotPasswordForm: React.FC = () => {
           />
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
-            disabled={isSubmitting}
-            className={cn(
-              'w-full py-3 rounded-lg font-bold text-white',
-              'bg-(--color-primary) hover:bg-(--color-primary-hover)',
-              'shadow-md hover:shadow-lg',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              isSubmitting && 'animate-pulse'
-            )}
+            size="lg"
+            fullWidth
+            loading={isSubmitting}
+            loadingText="Sending..."
           >
-            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
-          </button>
+            Send Reset Link
+          </Button>
         </form>
 
         {/* Back to Login Link */}

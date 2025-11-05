@@ -7,13 +7,14 @@ import { loginAsync } from '../../store/slices/auth_slice';
 import { loginSchema, type LoginFormData } from '../../types/auth/login';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
 import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
 import { FormInput } from '../common/form_input';
 import { AuthFormCard } from '../common/auth_form_card';
+import { ErrorMessage } from '../common/error_message';
+import { Button } from '../common/button';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -151,27 +152,18 @@ export const LoginForm: React.FC = () => {
           </div>
 
           {/* Login Button */}
-          <button
+          <Button
             type="submit"
-            disabled={isLoading}
-            className={cn(
-              'w-full py-3 rounded-lg font-bold text-white',
-              'bg-(--color-primary) hover:bg-(--color-primary-hover)',
-              'shadow-md hover:shadow-lg',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              isLoading && 'animate-pulse'
-            )}
+            size="lg"
+            fullWidth
+            loading={isLoading}
+            loadingText={t('login.loggingIn')}
           >
-            {isLoading ? t('login.loggingIn') : t('login.button')}
-          </button>
+            {t('login.button')}
+          </Button>
 
           {/* Error Message */}
-          {error && (
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
+          <ErrorMessage message={error || ''} />
         </form>
 
         {/* Divider */}
