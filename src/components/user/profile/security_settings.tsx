@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/common/button';
+import { PasswordInput } from '../../../components/common/password_input';
 
 /**
  * Security Settings Component
@@ -16,44 +17,29 @@ export const SecuritySettings: React.FC = () => {
       <div className="pb-4 sm:pb-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Change Password</h2>
         <div className="space-y-3 sm:space-y-4 max-w-md">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Password
-            </label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-              placeholder="Enter current password"
-            />
-          </div>
+          <PasswordInput
+            label="Current Password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="Enter current password"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
-            </label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-              placeholder="Enter new password"
-            />
-          </div>
+          <PasswordInput
+            label="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm New Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-              placeholder="Confirm new password"
-            />
-          </div>
+          <PasswordInput
+            label="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+          />
 
           <div className="flex justify-end">
             <Button className="w-full sm:w-auto">Update Password</Button>

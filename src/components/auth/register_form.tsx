@@ -7,8 +7,7 @@ import { registerAsync } from '../../store/slices/auth_slice';
 import { registerSchema, type RegisterFormData } from '../../types/auth/register';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
@@ -20,8 +19,6 @@ export const RegisterForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useLanguage();
   const { isLoading, error } = useAppSelector((state) => state.auth);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -132,95 +129,31 @@ export const RegisterForm: React.FC = () => {
           />
 
           {/* Password Field */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              {t('register.passwordLabel')}
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                {...register('password')}
-                className={cn(
-                  'w-full px-4 py-3 pr-12 rounded-lg',
-                  'border',
-                  'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                  'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                  'transition-colors',
-                  errors.password
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-(--color-border) focus:border-(--color-primary)'
-                )}
-                placeholder={t('register.passwordPlaceholder')}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-(--color-text-primary) transition-colors"
-                aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
-            )}
-            <p className="mt-1 text-xs text-(--color-text-muted)">
-              {t('register.passwordHint')}
-            </p>
-          </div>
+          <PasswordInput
+            label={t('register.passwordLabel')}
+            {...register('password')}
+            error={errors.password?.message}
+            placeholder={t('register.passwordPlaceholder')}
+            disabled={isLoading}
+            hint={t('register.passwordHint')}
+            showPasswordLabel={{
+              show: t('login.showPassword'),
+              hide: t('login.hidePassword'),
+            }}
+          />
 
           {/* Confirm Password Field */}
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              {t('register.confirmPasswordLabel')}
-            </label>
-            <div className="relative">
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                {...register('confirmPassword')}
-                className={cn(
-                  'w-full px-4 py-3 pr-12 rounded-lg',
-                  'border',
-                  'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                  'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                  'transition-colors',
-                  errors.confirmPassword
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-(--color-border) focus:border-(--color-primary)'
-                )}
-                placeholder={t('register.confirmPasswordPlaceholder')}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-(--color-text-primary) transition-colors"
-                aria-label={showConfirmPassword ? t('login.hidePassword') : t('login.showPassword')}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>
-            )}
-          </div>
+          <PasswordInput
+            label={t('register.confirmPasswordLabel')}
+            {...register('confirmPassword')}
+            error={errors.confirmPassword?.message}
+            placeholder={t('register.confirmPasswordPlaceholder')}
+            disabled={isLoading}
+            showPasswordLabel={{
+              show: t('login.showPassword'),
+              hide: t('login.hidePassword'),
+            }}
+          />
 
           {/* Register Button */}
           <button
