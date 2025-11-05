@@ -30,6 +30,13 @@ export const ROUTES = {
   admin: {
     login: '/admin/login',
     dashboard: '/admin/dashboard',
+    tripManagement: '/admin/trip-management',
+    quotesReservations: '/admin/quotes-reservations',
+    fleetManagement: '/admin/fleet-management',
+    userManagement: '/admin/user-management',
+    driverManagement: '/admin/driver-management',
+    supportConcerns: '/admin/support-concerns',
+    settings: '/admin/settings',
   },
 } as const;
 

@@ -1,8 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
 import { PublicRoute } from '../components/routes/public_route';
-import { AdminProtectedRoute } from '../components/routes/admin_protected_route';
+import { ProtectedAdminLayoutRoute } from '../components/routes/protected_admin_layout_route';
 import { AdminLoginPage } from '../pages/auth/admin_login_page';
 import { AdminDashboardPage } from '../pages/admin/admin_dashboard_page';
+import { AdminTripManagementPage } from '../pages/admin/admin_trip_management_page';
+import { AdminQuotesReservationsPage } from '../pages/admin/admin_quotes_reservations_page';
+import { AdminFleetManagementPage } from '../pages/admin/admin_fleet_management_page';
+import { AdminUserManagementPage } from '../pages/admin/admin_user_management_page';
+import { AdminDriverManagementPage } from '../pages/admin/admin_driver_management_page';
+import { AdminSupportConcernsPage } from '../pages/admin/admin_support_concerns_page';
+import { AdminSettingsPage } from '../pages/admin/admin_settings_page';
 import { ROUTES } from '../constants/routes';
 
 /**
@@ -26,9 +33,79 @@ export const AdminRoutes: React.FC = () => {
       <Route
         path="dashboard"
         element={
-          <AdminProtectedRoute>
+          <ProtectedAdminLayoutRoute>
             <AdminDashboardPage />
-          </AdminProtectedRoute>
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Trip Management */}
+      <Route
+        path="trip-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminTripManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Quotes & Reservations */}
+      <Route
+        path="quotes-reservations"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminQuotesReservationsPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Fleet Management */}
+      <Route
+        path="fleet-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminFleetManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* User Management */}
+      <Route
+        path="user-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminUserManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Driver Management */}
+      <Route
+        path="driver-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminDriverManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Support & Concerns */}
+      <Route
+        path="support-concerns"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminSupportConcernsPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Settings */}
+      <Route
+        path="settings"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminSettingsPage />
+          </ProtectedAdminLayoutRoute>
         }
       />
 
@@ -36,9 +113,9 @@ export const AdminRoutes: React.FC = () => {
       <Route
         index
         element={
-          <AdminProtectedRoute>
+          <ProtectedAdminLayoutRoute>
             <AdminDashboardPage />
-          </AdminProtectedRoute>
+          </ProtectedAdminLayoutRoute>
         }
       />
 
@@ -46,9 +123,9 @@ export const AdminRoutes: React.FC = () => {
       <Route
         path="*"
         element={
-          <AdminProtectedRoute>
+          <ProtectedAdminLayoutRoute>
             <AdminDashboardPage />
-          </AdminProtectedRoute>
+          </ProtectedAdminLayoutRoute>
         }
       />
     </Routes>
