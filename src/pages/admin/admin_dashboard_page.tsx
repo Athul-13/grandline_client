@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { logoutAsync } from '../../store/slices/auth_slice';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import { ROUTES } from '../../constants/routes';
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export const AdminDashboardPage: React.FC = () => {
     try {
       await dispatch(logoutAsync()).unwrap();
       toast.success('Logged out successfully');
-      navigate('/admin/login');
+      navigate(ROUTES.admin.login);
     } catch {
       toast.error('Logout failed. Please try again.');
     }

@@ -4,6 +4,9 @@ import { useLanguage } from '../../hooks/use_language';
 import { authService } from '../../services/api/auth_service';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 interface LocationState {
@@ -91,6 +94,15 @@ export const OtpVerificationForm: React.FC = () => {
       return;
     }
 
+    // Check rate limit
+    const rateLimit = rateLimiter('verify-otp');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many verification attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     setIsVerifying(true);
     try {
       const result = await authService.verifyOtp({
@@ -99,15 +111,18 @@ export const OtpVerificationForm: React.FC = () => {
       });
 
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('verify-otp');
         toast.success(t('otp.verifySuccess'));
-        navigate('/login');
+        navigate(ROUTES.login);
       } else {
         toast.error(result.message || t('otp.verifyError'));
       }
     } catch (error) {
-      const message =
-        (error as { message?: string })?.message || t('otp.verifyError');
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(error);
+      logErrorForDev(error, sanitizedMessage);
+      toast.error(sanitizedMessage);
     } finally {
       setIsVerifying(false);
     }
@@ -120,9 +135,20 @@ export const OtpVerificationForm: React.FC = () => {
       return;
     }
 
+    // Check rate limit for resend
+    const rateLimit = rateLimiter('resend-otp');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many resend attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     try {
       const result = await authService.resendOtp({ email });
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('resend-otp');
         toast.success(t('otp.resendSuccess'));
         setTimeRemaining(150); // Reset timer to 2:30
         setOtp(['', '', '', '', '', '']); // Clear OTP inputs
@@ -131,16 +157,17 @@ export const OtpVerificationForm: React.FC = () => {
         toast.error(result.message || t('otp.resendError'));
       }
     } catch (error) {
-      const message =
-        (error as { message?: string })?.message || t('otp.resendError');
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(error);
+      logErrorForDev(error, sanitizedMessage);
+      toast.error(sanitizedMessage);
     }
   };
 
   // Redirect to login if no email
   useEffect(() => {
     if (!email) {
-      navigate('/login');
+      navigate(ROUTES.login);
     }
   }, [email, navigate]);
 

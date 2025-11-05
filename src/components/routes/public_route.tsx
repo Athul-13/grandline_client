@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
+import { ROUTES } from '../../constants/routes';
 
 interface PublicRouteProps {
   children: React.ReactElement;
@@ -34,9 +35,9 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     
     // Otherwise, use role-based redirect
     if (user?.role === 'admin') {
-      return <Navigate to="/admin/dashboard" replace />;
+      return <Navigate to={ROUTES.admin.dashboard} replace />;
     }
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={ROUTES.dashboard} replace />;
   }
 
   return children;

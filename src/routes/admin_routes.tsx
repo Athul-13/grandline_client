@@ -3,6 +3,7 @@ import { PublicRoute } from '../components/routes/public_route';
 import { AdminProtectedRoute } from '../components/routes/admin_protected_route';
 import { AdminLoginPage } from '../pages/auth/admin_login_page';
 import { AdminDashboardPage } from '../pages/admin/admin_dashboard_page';
+import { ROUTES } from '../constants/routes';
 
 /**
  * Admin Routes Component
@@ -15,7 +16,7 @@ export const AdminRoutes: React.FC = () => {
       <Route
         path="login"
         element={
-          <PublicRoute redirectTo="/admin/dashboard">
+          <PublicRoute redirectTo={ROUTES.admin.dashboard}>
             <AdminLoginPage />
           </PublicRoute>
         }

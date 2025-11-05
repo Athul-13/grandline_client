@@ -1,13 +1,20 @@
 import { Routes, Route } from 'react-router-dom';
-import { ProtectedRoute } from '../components/routes/protected_route';
 import { PublicRoute } from '../components/routes/public_route';
-import { HomePage } from '../pages/user/home_page';
+import { ProtectedUserLayoutRoute } from '../components/routes/protected_user_layout_route';
+import { HomePage } from '../pages/common/home_page';
 import { LoginPage } from '../pages/auth/login_page';
 import { RegisterPage } from '../pages/auth/register_page';
 import { OtpVerificationPage } from '../pages/auth/otp_verification_page';
 import { ForgotPasswordPage } from '../pages/auth/forgot_password_page';
 import { ResetPasswordPage } from '../pages/auth/reset_password_page';
-import { DashboardPage } from '../pages/user/dashboard_page';
+import { QuotesPage } from '../pages/user/quotes_page';
+import { ReservationsPage } from '../pages/user/reservations_page';
+import { BuildQuotePage } from '../pages/user/build_quote_page';
+import { ProfilePage } from '../pages/user/profile/profile_page';
+import { MyProfilePage } from '../pages/user/profile/my_profile_page';
+import { SecurityPage } from '../pages/user/profile/security_page';
+import { NotificationsPage } from '../pages/user/profile/notifications_page';
+import { AccountSettingsPage } from '../pages/user/profile/account_settings_page';
 
 /**
  * User Routes Component
@@ -73,14 +80,56 @@ export const UserRoutes: React.FC = () => {
         }
       />
 
+      {/* Protected User Routes with Layout - Using wrapper to reduce redundancy */}
+      {/* Dashboard shows Quotes page - they are the same */}
       <Route
         path="dashboard"
         element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
+          <ProtectedUserLayoutRoute>
+            <QuotesPage />
+          </ProtectedUserLayoutRoute>
         }
       />
+      <Route
+        path="quotes"
+        element={
+          <ProtectedUserLayoutRoute>
+            <QuotesPage />
+          </ProtectedUserLayoutRoute>
+        }
+      />
+      <Route
+        path="reservations"
+        element={
+          <ProtectedUserLayoutRoute>
+            <ReservationsPage />
+          </ProtectedUserLayoutRoute>
+        }
+      />
+      <Route
+        path="build-quote"
+        element={
+          <ProtectedUserLayoutRoute>
+            <BuildQuotePage />
+          </ProtectedUserLayoutRoute>
+        }
+      />
+
+      {/* Profile Routes with nested layout */}
+      <Route
+        path="profile"
+        element={
+          <ProtectedUserLayoutRoute>
+            <ProfilePage />
+          </ProtectedUserLayoutRoute>
+        }
+      >
+        <Route index element={<MyProfilePage />} />
+        <Route path="my-profile" element={<MyProfilePage />} />
+        <Route path="security" element={<SecurityPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<AccountSettingsPage />} />
+      </Route>
     </Routes>
   );
 };

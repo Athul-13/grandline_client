@@ -6,6 +6,9 @@ import { z } from 'zod';
 import { authService } from '../../services/api/auth_service';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 const forgotPasswordSchema = z.object({
@@ -34,21 +37,32 @@ export const ForgotPasswordForm: React.FC = () => {
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
+    // Check rate limit
+    const rateLimit = rateLimiter('forgot-password');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await authService.forgotPassword(data.email);
 
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('forgot-password');
         toast.success(result.message || 'Password reset link has been sent to your email');
-        navigate('/login');
+        navigate(ROUTES.login);
       } else {
         toast.error(result.message || 'Failed to send reset link');
       }
     } catch (error) {
-      const message =
-        (error as { message?: string })?.message ||
-        'Failed to send reset link. Please try again.';
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(error);
+      logErrorForDev(error, sanitizedMessage);
+      toast.error(sanitizedMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +139,7 @@ export const ForgotPasswordForm: React.FC = () => {
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(ROUTES.login)}
             className="text-sm font-medium text-(--color-primary) hover:text-(--color-primary-hover) transition-colors"
           >
             Back to Login

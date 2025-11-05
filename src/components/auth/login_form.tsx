@@ -9,6 +9,9 @@ import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 export const LoginForm: React.FC = () => {
@@ -33,6 +36,15 @@ export const LoginForm: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    // Check rate limit
+    const rateLimit = rateLimiter('login');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     try {
       const result = await dispatch(
         loginAsync({
@@ -43,39 +55,35 @@ export const LoginForm: React.FC = () => {
 
       // Check if login was successful
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('login');
+
         // Block admin users from using user login page
         if (result.user.role === 'admin') {
           toast.error('Admins must use the admin login page');
-          navigate('/admin/login');
+          navigate(ROUTES.admin.login);
           return;
         }
 
         toast.success(t('login.success'));
-        navigate('/dashboard');
+        navigate(ROUTES.dashboard);
       }
     } catch (err) {
-      // Extract error message - handle Error instances, error objects, and strings from Redux rejectWithValue
-      let message = t('login.error');
-      if (typeof err === 'string') {
-        // Redux rejectWithValue throws the value directly as a string
-        message = err;
-      } else if (err instanceof Error) {
-        message = err.message;
-      } else if (typeof err === 'object' && err !== null) {
-        message = (err as { message?: string })?.message || t('login.error');
-      }
-      
-      // Check if user needs to verify account (for cases where server returns non-2xx status)
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(err);
+      logErrorForDev(err, sanitizedMessage);
+
+      // Check if user needs to verify account
       if (
-        message.includes('Please verify your account to continue') ||
-        message.includes('verify your account') ||
-        message.toLowerCase().includes('verify')
+        sanitizedMessage.includes('Please verify your account to continue') ||
+        sanitizedMessage.includes('verify your account') ||
+        sanitizedMessage.toLowerCase().includes('verify')
       ) {
         // Redirect to OTP verification page with email
-        navigate('/verify-otp', { state: { email: data.email } });
-        toast.error(message);
+        navigate(ROUTES.verifyOtp, { state: { email: data.email } });
+        toast.error(sanitizedMessage);
       } else {
-        toast.error(message);
+        toast.error(sanitizedMessage);
       }
     }
   };
@@ -90,7 +98,9 @@ export const LoginForm: React.FC = () => {
       <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain" />
+          <Link to={ROUTES.home}>
+            <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+          </Link>
         </div>
 
         {/* Header */}
@@ -194,7 +204,7 @@ export const LoginForm: React.FC = () => {
               <span className="text-sm text-(--color-text-primary)">{t('login.rememberMe')}</span>
             </label>
             <Link
-              to="/forgot-password"
+              to={ROUTES.forgotPassword}
               className="text-sm font-medium text-(--color-primary) hover:text-(--color-primary-hover) transition-colors"
             >
               {t('login.forgotPassword')}
@@ -278,7 +288,7 @@ export const LoginForm: React.FC = () => {
           <p className="text-sm text-(--color-text-secondary)">
             {t('login.noAccount')}{' '}
             <Link
-              to="/register"
+              to={ROUTES.register}
               className="font-bold text-(--color-primary) hover:text-(--color-primary-hover) transition-colors"
             >
               {t('login.signUp')}

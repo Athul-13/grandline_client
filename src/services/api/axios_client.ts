@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL, REQUEST_TIMEOUT, API_ENDPOINTS } from '../../constants/api';
+import { ROUTES } from '../../constants/routes';
 import { store } from '../../store/store';
 import { clearAuth, refreshTokenAsync } from '../../store/slices/auth_slice';
 
@@ -21,21 +22,43 @@ grandlineAxiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Get auth state from Redux store
     const state = store.getState();
-    const { isAuthenticated } = state.auth;
+    const { isAuthenticated, user } = state.auth;
 
-    // Only add X-Requested-With header if authenticated AND not an auth endpoint
-    // (auth endpoints may not allow this header in CORS)
-    if (isAuthenticated && config.headers && config.url) {
-      const isAuthEndpoint = 
-        config.url.includes(API_ENDPOINTS.auth.login) ||
-        config.url.includes(API_ENDPOINTS.auth.logout) ||
-        config.url.includes(API_ENDPOINTS.auth.register) ||
-        config.url.includes(API_ENDPOINTS.auth.refreshToken);
+    if (!config.url) {
+      return config;
+    }
+
+    // Role-based API endpoint validation
+    if (isAuthenticated && user) {
+      const url = config.url;
       
-      if (!isAuthEndpoint) {
-        config.headers['X-Requested-With'] = 'XMLHttpRequest';
+      // Check if URL matches admin endpoints
+      const isAdminEndpoint = Object.values(API_ENDPOINTS.admin).some(endpoint =>
+        url.includes(endpoint)
+      );
+      
+      // Check if URL matches user endpoints
+      const isUserEndpoint = Object.values(API_ENDPOINTS.users).some(endpoint =>
+        url.includes(endpoint)
+      );
+
+      // Block admin users from accessing user-specific endpoints
+      if (user.role === 'admin' && isUserEndpoint) {
+        return Promise.reject({
+          message: 'Admins cannot access user endpoints',
+          code: 'FORBIDDEN',
+        });
+      }
+
+      // Block regular users from accessing admin endpoints
+      if (user.role === 'user' && isAdminEndpoint) {
+        return Promise.reject({
+          message: 'Access denied. Admin privileges required.',
+          code: 'FORBIDDEN',
+        });
       }
     }
+
 
     return config;
   },
@@ -105,11 +128,19 @@ grandlineAxiosClient.interceptors.response.use(
           });
         }
 
-        // For other 401 errors on login/refresh, clear auth and redirect
+        // For other 401 errors on login/refresh, clear auth and redirect based on role
+        const currentState = store.getState();
+        const userRole = currentState.auth.user?.role;
         store.dispatch(clearAuth());
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+        
+        if (typeof window !== 'undefined') {
+          // Role-based redirect
+          const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = redirectPath;
+          }
         }
+        
         return Promise.reject({
           message: errorMessage,
           code: 'UNAUTHORIZED',
@@ -136,11 +167,19 @@ grandlineAxiosClient.interceptors.response.use(
           return grandlineAxiosClient(originalRequest);
         }
       } catch {
-        // Refresh failed - clear auth and redirect to login
+        // Refresh failed - clear auth and redirect based on role
+        const currentState = store.getState();
+        const userRole = currentState.auth.user?.role;
         store.dispatch(clearAuth());
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+        
+        if (typeof window !== 'undefined') {
+          // Role-based redirect
+          const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = redirectPath;
+          }
         }
+        
         return Promise.reject({
           message: 'Your session has expired. Please login again.',
           code: 'UNAUTHORIZED',

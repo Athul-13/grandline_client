@@ -7,6 +7,9 @@ import { authService } from '../../services/api/auth_service';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 const resetPasswordSchema = z
@@ -42,7 +45,7 @@ export const ResetPasswordForm: React.FC = () => {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
       toast.error('Invalid or missing reset token');
-      navigate('/login');
+      navigate(ROUTES.login);
       return;
     }
     setToken(tokenParam);
@@ -67,21 +70,32 @@ export const ResetPasswordForm: React.FC = () => {
       return;
     }
 
+    // Check rate limit
+    const rateLimit = rateLimiter('reset-password');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await authService.resetPassword(token, data.newPassword);
 
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('reset-password');
         toast.success(result.message || 'Password has been reset successfully');
-        navigate('/login');
+        navigate(ROUTES.login);
       } else {
         toast.error(result.message || 'Failed to reset password');
       }
     } catch (error) {
-      const message =
-        (error as { message?: string })?.message ||
-        'Failed to reset password. Please try again.';
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(error);
+      logErrorForDev(error, sanitizedMessage);
+      toast.error(sanitizedMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +238,7 @@ export const ResetPasswordForm: React.FC = () => {
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(ROUTES.login)}
             className="text-sm font-medium text-(--color-primary) hover:text-(--color-primary-hover) transition-colors"
           >
             Back to Login

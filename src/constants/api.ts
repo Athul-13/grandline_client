@@ -27,9 +27,9 @@ export const API_ENDPOINTS = {
   },
   // User endpoints
   users: {
-    profile: '/users/profile',
-    updateProfile: '/users/profile',
-    changePassword: '/users/change-password',
+    profile: '/user/profile',
+    updateProfile: '/user/profile',
+    changePassword: '/user/change-password',
   },
   // Admin endpoints
   admin: {

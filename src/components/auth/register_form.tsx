@@ -9,6 +9,9 @@ import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 export const RegisterForm: React.FC = () => {
@@ -36,6 +39,15 @@ export const RegisterForm: React.FC = () => {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    // Check rate limit
+    const rateLimit = rateLimiter('register');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many registration attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     try {
       // Extract only the fields needed for API (exclude confirmPassword)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,13 +55,17 @@ export const RegisterForm: React.FC = () => {
       const result = await dispatch(registerAsync(registerData)).unwrap();
 
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('register');
         toast.success(t('register.success'));
         // Redirect to OTP verification page with email
-        navigate('/verify-otp', { state: { email: data.email } });
+        navigate(ROUTES.verifyOtp, { state: { email: data.email } });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('register.error');
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(err);
+      logErrorForDev(err, sanitizedMessage);
+      toast.error(sanitizedMessage);
     }
   };
 
@@ -63,7 +79,9 @@ export const RegisterForm: React.FC = () => {
       <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain" />
+          <Link to={ROUTES.home}>
+            <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+          </Link>
         </div>
 
         {/* Header */}
@@ -340,7 +358,7 @@ export const RegisterForm: React.FC = () => {
           <p className="text-sm text-(--color-text-secondary)">
             {t('register.haveAccount')}{' '}
             <Link
-              to="/login"
+              to={ROUTES.login}
               className="font-bold text-(--color-primary) hover:text-(--color-primary-hover) transition-colors"
             >
               {t('register.login')}

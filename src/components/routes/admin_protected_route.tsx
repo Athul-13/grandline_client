@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
+import { ROUTES } from '../../constants/routes';
 
 interface AdminProtectedRouteProps {
   children: React.ReactElement;
@@ -22,12 +23,12 @@ export const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ childr
 
   // Redirect to admin login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ROUTES.admin.login} replace />;
   }
 
   // Redirect to admin login if user is not an admin
   if (user?.role !== 'admin') {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ROUTES.admin.login} replace />;
   }
 
   return children;

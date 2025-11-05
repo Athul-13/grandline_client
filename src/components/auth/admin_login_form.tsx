@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { useLanguage } from '../../hooks/use_language';
 import { loginAsync } from '../../store/slices/auth_slice';
@@ -9,6 +9,9 @@ import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
+import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
 
 export const AdminLoginForm: React.FC = () => {
@@ -33,6 +36,15 @@ export const AdminLoginForm: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    // Check rate limit
+    const rateLimit = rateLimiter('login');
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+      );
+      return;
+    }
+
     try {
       const result = await dispatch(
         loginAsync({
@@ -43,29 +55,24 @@ export const AdminLoginForm: React.FC = () => {
 
       // Check if login was successful
       if (result.success) {
+        // Reset rate limit on success
+        resetRateLimit('login');
+
         // Block regular users from using admin login page
         if (result.user.role !== 'admin') {
           toast.error('Regular users must use the user login page');
-          navigate('/login');
+          navigate(ROUTES.login);
           return;
         }
 
         toast.success('Admin login successful');
-        navigate('/admin/dashboard');
+        navigate(ROUTES.admin.dashboard);
       }
     } catch (err) {
-      // Extract error message - handle Error instances, error objects, and strings from Redux rejectWithValue
-      let message = t('login.error');
-      if (typeof err === 'string') {
-        // Redux rejectWithValue throws the value directly as a string
-        message = err;
-      } else if (err instanceof Error) {
-        message = err.message;
-      } else if (typeof err === 'object' && err !== null) {
-        message = (err as { message?: string })?.message || t('login.error');
-      }
-      
-      toast.error(message);
+      // Sanitize error message
+      const sanitizedMessage = sanitizeErrorMessage(err);
+      logErrorForDev(err, sanitizedMessage);
+      toast.error(sanitizedMessage);
     }
   };
 
@@ -74,7 +81,9 @@ export const AdminLoginForm: React.FC = () => {
       <div className="bg-(--color-bg-card) rounded-2xl shadow-xl p-6 md:p-8">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain" />
+          <Link to={ROUTES.home}>
+            <img src={logo} alt="GrandLine Logo" className="h-16 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+          </Link>
         </div>
 
         {/* Header */}
