@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { Button } from '../../../components/common/button';
+import { FormInput } from '../../../components/common/form_input';
 import { fetchUserProfileAsync, updateUserProfileAsync } from '../../../store/slices/profile_slice';
 import toast from 'react-hot-toast';
 
@@ -67,21 +68,17 @@ export const MyProfileForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Full Name
-          </label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            minLength={3}
-            className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-            placeholder="Enter your full name"
-            disabled={isLoading || isSubmitting}
-          />
-        </div>
+        <FormInput
+          label="Full Name"
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          minLength={3}
+          placeholder="Enter your full name"
+          disabled={isLoading || isSubmitting}
+          className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+        />
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -96,21 +93,17 @@ export const MyProfileForm: React.FC = () => {
           <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-            pattern="[0-9]{10}"
-            maxLength={10}
-            className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:border-transparent"
-            placeholder="Enter your phone number (10 digits)"
-            disabled={isLoading || isSubmitting}
-          />
-        </div>
+        <FormInput
+          label="Phone Number"
+          type="tel"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+          pattern="[0-9]{10}"
+          maxLength={10}
+          placeholder="Enter your phone number (10 digits)"
+          disabled={isLoading || isSubmitting}
+          className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+        />
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 sm:space-x-0">

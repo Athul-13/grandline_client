@@ -10,6 +10,7 @@ import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
+import { FormInput } from '../common/form_input';
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -89,34 +90,14 @@ export const ForgotPasswordForm: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email Field */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register('email')}
-              className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border',
-                'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                'transition-colors',
-                errors.email
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-(--color-border) focus:border-(--color-primary)'
-              )}
-              placeholder="Enter your email address"
-              disabled={isSubmitting}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
+          <FormInput
+            label="Email Address"
+            type="email"
+            {...register('email')}
+            error={errors.email?.message}
+            placeholder="Enter your email address"
+            disabled={isSubmitting}
+          />
 
           {/* Submit Button */}
           <button

@@ -13,6 +13,7 @@ import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
 import logo from '../../assets/logo.png';
+import { FormInput } from '../common/form_input';
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
@@ -100,95 +101,35 @@ export const RegisterForm: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Full Name Field */}
-          <div>
-            <label
-              htmlFor="fullName"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              {t('register.fullNameLabel')}
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              {...register('fullName')}
-              className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border',
-                'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                'transition-colors',
-                errors.fullName
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-(--color-border) focus:border-(--color-primary)'
-              )}
-              placeholder={t('register.fullNamePlaceholder')}
-              disabled={isLoading}
-            />
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-500">{errors.fullName.message}</p>
-            )}
-          </div>
+          <FormInput
+            label={t('register.fullNameLabel')}
+            type="text"
+            {...register('fullName')}
+            error={errors.fullName?.message}
+            placeholder={t('register.fullNamePlaceholder')}
+            disabled={isLoading}
+          />
 
           {/* Email Field */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              {t('register.emailLabel')}
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register('email')}
-              className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border',
-                'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                'transition-colors',
-                errors.email
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-(--color-border) focus:border-(--color-primary)'
-              )}
-              placeholder={t('register.emailPlaceholder')}
-              disabled={isLoading}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
+          <FormInput
+            label={t('register.emailLabel')}
+            type="email"
+            {...register('email')}
+            error={errors.email?.message}
+            placeholder={t('register.emailPlaceholder')}
+            disabled={isLoading}
+          />
 
           {/* Phone Number Field */}
-          <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-(--color-text-primary) mb-2"
-            >
-              {t('register.phoneLabel')}
-            </label>
-            <input
-              id="phoneNumber"
-              type="tel"
-              {...register('phoneNumber')}
-              className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border',
-                'text-(--color-text-primary) placeholder-(--color-text-muted)',
-                'focus:outline-none focus:ring-2 focus:ring-(--color-primary)',
-                'transition-colors',
-                errors.phoneNumber
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-(--color-border) focus:border-(--color-primary)'
-              )}
-              placeholder={t('register.phonePlaceholder')}
-              maxLength={10}
-              disabled={isLoading}
-            />
-            {errors.phoneNumber && (
-              <p className="mt-1 text-sm text-red-500">{errors.phoneNumber.message}</p>
-            )}
-          </div>
+          <FormInput
+            label={t('register.phoneLabel')}
+            type="tel"
+            {...register('phoneNumber')}
+            error={errors.phoneNumber?.message}
+            placeholder={t('register.phonePlaceholder')}
+            maxLength={10}
+            disabled={isLoading}
+          />
 
           {/* Password Field */}
           <div>
