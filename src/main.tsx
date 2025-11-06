@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './contexts/theme_provider';
 import { LanguageProvider } from './contexts/language_provider';
 import { store } from './store/store';
@@ -14,16 +15,20 @@ const settings = getSettings();
 const defaultTheme = settings?.theme || 'system';
 const defaultLanguage = (settings?.language as 'en' | 'es' | 'fr' | 'de' | 'hi' | 'ar') || 'en';
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <ThemeProvider defaultTheme={defaultTheme} enableSystem>
-          <LanguageProvider defaultLanguage={defaultLanguage}>
-            <App />
-          </LanguageProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </Provider>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <Provider store={store}>
+        <BrowserRouter>
+          <ThemeProvider defaultTheme={defaultTheme} enableSystem>
+            <LanguageProvider defaultLanguage={defaultLanguage}>
+              <App />
+            </LanguageProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </Provider>
+    </GoogleOAuthProvider>
   </StrictMode>
 );

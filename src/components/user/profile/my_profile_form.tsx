@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { Button } from '../../../components/common/button';
 import { FormInput } from '../../../components/common/form_input';
 import { ImageCropModal } from '../../../components/common/image_crop_modal';
 import { fetchUserProfileAsync, updateUserProfileAsync } from '../../../store/slices/profile_slice';
+import { linkGoogleAsync } from '../../../store/slices/auth_slice';
 import { useProfilePictureUpload } from '../../../hooks/profile/use_profile_picture_upload';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../../hooks/use_language';
 import { Upload } from 'lucide-react';
+import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
 
 /**
  * My Profile Form Component
@@ -181,6 +184,38 @@ export const MyProfileForm: React.FC = () => {
     }
   };
 
+  const googleLoginRef = useRef<HTMLDivElement>(null);
+
+  const handleLinkGoogleSuccess = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) {
+      toast.error(t('profile.myProfile.linkGoogleError'));
+      return;
+    }
+
+    try {
+      const result = await dispatch(linkGoogleAsync(credentialResponse.credential)).unwrap();
+      toast.success(result.message || t('profile.myProfile.linkGoogleSuccess'));
+      // Refetch profile to get updated hasGoogleAuth value
+      await dispatch(fetchUserProfileAsync());
+    } catch (err) {
+      const sanitizedMessage = sanitizeErrorMessage(err);
+      logErrorForDev(err, sanitizedMessage);
+      toast.error(sanitizedMessage);
+    }
+  };
+
+  const handleLinkGoogleError = () => {
+    toast.error(t('profile.myProfile.linkGoogleError'));
+  };
+
+  const triggerGoogleLogin = () => {
+    // Programmatically click the hidden GoogleLogin button
+    const googleButton = googleLoginRef.current?.querySelector('div[role="button"]') as HTMLElement;
+    if (googleButton) {
+      googleButton.click();
+    }
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -292,6 +327,56 @@ export const MyProfileForm: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Link Google Account Section - Outside Form */}
+      <>
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[var(--color-border)]"></div>
+          </div>
+        </div>
+
+        <div className="pb-4 sm:pb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+            {t('profile.myProfile.linkGoogle')}
+          </h3>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            {profile?.hasGoogleAuth
+              ? t('profile.myProfile.linkGoogleDescriptionLinked')
+              : t('profile.myProfile.linkGoogleDescription')}
+          </p>
+          <div className="max-w-md">
+            {/* Hidden GoogleLogin component */}
+            <div ref={googleLoginRef} className="hidden">
+              {!(isLoading || isSubmitting) && !profile?.hasGoogleAuth && (
+                <GoogleLogin
+                  onSuccess={handleLinkGoogleSuccess}
+                  onError={handleLinkGoogleError}
+                  useOneTap={false}
+                  theme="outline"
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                  locale="en"
+                />
+              )}
+            </div>
+            {/* Visible button that triggers GoogleLogin */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={triggerGoogleLogin}
+              disabled={isLoading || isSubmitting || profile?.hasGoogleAuth === true}
+              className="w-full sm:w-auto"
+            >
+              {profile?.hasGoogleAuth
+                ? t('profile.myProfile.linkGoogleButtonLinked')
+                : t('profile.myProfile.linkGoogleButton')}
+            </Button>
+          </div>
+        </div>
+      </>
 
       {/* Crop Modal */}
       {selectedImageSrc && (

@@ -103,6 +103,56 @@ export const checkAuthAsync = createAsyncThunk(
   }
 );
 
+export const googleAuthAsync = createAsyncThunk(
+  'auth/googleAuth',
+  async (idToken: string, { rejectWithValue }) => {
+    try {
+      const response = await authService.googleAuth(idToken);
+      // Convert GoogleAuthResponse to AuthResponse-like structure for consistency
+      return {
+        success: true,
+        user: response.user,
+        message: 'Google authentication successful',
+      } as AuthResponse;
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { message?: string })?.message ||
+        (error instanceof Error ? error.message : 'Google authentication failed');
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const setupPasswordAsync = createAsyncThunk(
+  'auth/setupPassword',
+  async (password: string, { rejectWithValue }) => {
+    try {
+      const response = await authService.setupPassword(password);
+      return response;
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { message?: string })?.message ||
+        (error instanceof Error ? error.message : 'Failed to setup password');
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const linkGoogleAsync = createAsyncThunk(
+  'auth/linkGoogle',
+  async (idToken: string, { rejectWithValue }) => {
+    try {
+      const response = await authService.linkGoogle(idToken);
+      return response;
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { message?: string })?.message ||
+        (error instanceof Error ? error.message : 'Failed to link Google account');
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -231,6 +281,56 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         removeEncryptedItem('user');
+      });
+
+    // Google Auth
+    builder
+      .addCase(googleAuthAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(googleAuthAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        state.error = null;
+        // Store encrypted user data in localStorage after successful Google auth
+        setEncryptedItem('user', action.payload.user);
+      })
+      .addCase(googleAuthAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
+      });
+
+    // Setup Password
+    builder
+      .addCase(setupPasswordAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(setupPasswordAsync.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(setupPasswordAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Link Google
+    builder
+      .addCase(linkGoogleAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(linkGoogleAsync.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(linkGoogleAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -12,6 +12,8 @@ export interface UserProfile {
   role: 'user' | 'admin';
   createdAt: string;
   updatedAt: string;
+  hasPassword?: boolean;
+  hasGoogleAuth?: boolean;
 }
 
 export interface GetProfileResponse {

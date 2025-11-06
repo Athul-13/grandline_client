@@ -46,5 +46,17 @@ export const userService = {
     );
     return response.data;
   },
+
+  /**
+   * Change user password
+   * POST /api/v1/user/change-password
+   */
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await grandlineAxiosClient.post<{ message: string }>(
+      API_ENDPOINTS.users.changePassword,
+      { currentPassword, newPassword }
+    );
+    return response.data;
+  },
 };
 

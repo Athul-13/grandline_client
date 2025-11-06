@@ -186,6 +186,22 @@
   "resetPassword.newPasswordPlaceholder": "Geben Sie Ihr neues Passwort ein",
   "resetPassword.confirmPassword": "Neues Passwort Bestätigen",
   "resetPassword.confirmPasswordPlaceholder": "Bestätigen Sie Ihr neues Passwort",
-  "resetPassword.passwordHint": "Das Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und eine Zahl enthalten"
+  "resetPassword.passwordHint": "Das Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und eine Zahl enthalten",
+  "login.googleAuthError": "Google-Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "login.googleAuthSuccess": "Sie können ein Passwort in Ihren Profileinstellungen für zusätzliche Sicherheit einrichten.",
+  "register.googleAuthError": "Google-Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "register.googleAuthSuccess": "Sie können ein Passwort in Ihren Profileinstellungen für zusätzliche Sicherheit einrichten.",
+  "profile.myProfile.linkGoogle": "Google-Konto Verknüpfen",
+  "profile.myProfile.linkGoogleDescription": "Verknüpfen Sie Ihr Google-Konto, um die Google-Anmeldung für einen schnelleren Zugriff auf Ihr Konto zu aktivieren.",
+  "profile.myProfile.linkGoogleDescriptionLinked": "Ihr Google-Konto ist bereits verknüpft. Sie können die Google-Anmeldung verwenden, um auf Ihr Konto zuzugreifen.",
+  "profile.myProfile.linkGoogleButton": "Google Verknüpfen",
+  "profile.myProfile.linkGoogleButtonLinked": "Google Verknüpft",
+  "profile.myProfile.linkGoogleSuccess": "Google-Konto erfolgreich verknüpft",
+  "profile.myProfile.linkGoogleError": "Fehler beim Verknüpfen des Google-Kontos",
+  "profile.security.setupPassword": "Passwort Einrichten",
+  "profile.security.setupPasswordDescription": "Richten Sie ein Passwort für Ihr Konto ein, um die E-Mail/Passwort-Anmeldung zusätzlich zur Google-Authentifizierung zu aktivieren.",
+  "profile.security.settingUp": "Wird eingerichtet...",
+  "profile.security.updating": "Wird aktualisiert...",
+  "profile.security.passwordAlreadyExists": "Sie haben bereits ein Passwort. Bitte verwenden Sie das Formular zum Ändern des Passworts unten."
 }
 

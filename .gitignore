@@ -2,6 +2,9 @@
 .cursorrules
 REUSABLE_COMPONENTS_ANALYSIS.md
 
+# env files
+.env
+
 # Logs
 logs
 *.log

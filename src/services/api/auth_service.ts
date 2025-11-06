@@ -11,6 +11,14 @@ import type {
   ResetPasswordResponse,
 } from '../../types/auth/user';
 import type { VerifyOtpData, ResendOtpData, OtpResponse } from '../../types/auth/otp';
+import type {
+  GoogleAuthRequest,
+  GoogleAuthResponse,
+  SetupPasswordRequest,
+  SetupPasswordResponse,
+  LinkGoogleRequest,
+  LinkGoogleResponse,
+} from '../../types/auth/google';
 
 /**
  * Authentication Service
@@ -80,6 +88,30 @@ export const authService = {
     const response = await grandlineAxiosClient.post<OtpResponse>(
       API_ENDPOINTS.otp.resend,
       data
+    );
+    return response.data;
+  },
+
+  googleAuth: async (idToken: string): Promise<GoogleAuthResponse> => {
+    const response = await grandlineAxiosClient.post<GoogleAuthResponse>(
+      API_ENDPOINTS.auth.google,
+      { idToken } as GoogleAuthRequest
+    );
+    return response.data;
+  },
+
+  setupPassword: async (password: string): Promise<SetupPasswordResponse> => {
+    const response = await grandlineAxiosClient.post<SetupPasswordResponse>(
+      API_ENDPOINTS.auth.setupPassword,
+      { password } as SetupPasswordRequest
+    );
+    return response.data;
+  },
+
+  linkGoogle: async (idToken: string): Promise<LinkGoogleResponse> => {
+    const response = await grandlineAxiosClient.post<LinkGoogleResponse>(
+      API_ENDPOINTS.auth.linkGoogle,
+      { idToken } as LinkGoogleRequest
     );
     return response.data;
   },

@@ -186,6 +186,22 @@
   "resetPassword.newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
   "resetPassword.confirmPassword": "تأكيد كلمة المرور الجديدة",
   "resetPassword.confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
-  "resetPassword.passwordHint": "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل وحرف كبير واحد ورقم واحد"
+  "resetPassword.passwordHint": "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل وحرف كبير واحد ورقم واحد",
+  "login.googleAuthError": "فشل التحقق من Google. يرجى المحاولة مرة أخرى.",
+  "login.googleAuthSuccess": "يمكنك إعداد كلمة مرور في إعدادات ملفك الشخصي لأمان إضافي.",
+  "register.googleAuthError": "فشل التحقق من Google. يرجى المحاولة مرة أخرى.",
+  "register.googleAuthSuccess": "يمكنك إعداد كلمة مرور في إعدادات ملفك الشخصي لأمان إضافي.",
+  "profile.myProfile.linkGoogle": "ربط حساب Google",
+  "profile.myProfile.linkGoogleDescription": "اربط حساب Google الخاص بك لتمكين تسجيل الدخول عبر Google للوصول السريع إلى حسابك.",
+  "profile.myProfile.linkGoogleDescriptionLinked": "حساب Google الخاص بك مربوط بالفعل. يمكنك استخدام تسجيل الدخول عبر Google للوصول إلى حسابك.",
+  "profile.myProfile.linkGoogleButton": "ربط Google",
+  "profile.myProfile.linkGoogleButtonLinked": "Google مربوط",
+  "profile.myProfile.linkGoogleSuccess": "تم ربط حساب Google بنجاح",
+  "profile.myProfile.linkGoogleError": "فشل ربط حساب Google",
+  "profile.security.setupPassword": "إعداد كلمة المرور",
+  "profile.security.setupPasswordDescription": "قم بإعداد كلمة مرور لحسابك لتمكين تسجيل الدخول بالبريد الإلكتروني/كلمة المرور بالإضافة إلى التحقق من Google.",
+  "profile.security.settingUp": "جاري الإعداد...",
+  "profile.security.updating": "جاري التحديث...",
+  "profile.security.passwordAlreadyExists": "لديك كلمة مرور بالفعل. يرجى استخدام نموذج تغيير كلمة المرور أدناه."
 }
 

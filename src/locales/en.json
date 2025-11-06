@@ -186,6 +186,22 @@
   "resetPassword.newPasswordPlaceholder": "Enter your new password",
   "resetPassword.confirmPassword": "Confirm New Password",
   "resetPassword.confirmPasswordPlaceholder": "Confirm your new password",
-  "resetPassword.passwordHint": "Password must contain at least one lowercase letter, one uppercase letter, and one number"
+  "resetPassword.passwordHint": "Password must contain at least one lowercase letter, one uppercase letter, and one number",
+  "login.googleAuthError": "Google authentication failed. Please try again.",
+  "login.googleAuthSuccess": "You can set up a password in your profile settings for additional security.",
+  "register.googleAuthError": "Google authentication failed. Please try again.",
+  "register.googleAuthSuccess": "You can set up a password in your profile settings for additional security.",
+  "profile.myProfile.linkGoogle": "Link Google Account",
+  "profile.myProfile.linkGoogleDescription": "Link your Google account to enable Google sign-in for faster access to your account.",
+  "profile.myProfile.linkGoogleDescriptionLinked": "Your Google account is already linked. You can use Google sign-in to access your account.",
+  "profile.myProfile.linkGoogleButton": "Link Google",
+  "profile.myProfile.linkGoogleButtonLinked": "Google Linked",
+  "profile.myProfile.linkGoogleSuccess": "Google account linked successfully",
+  "profile.myProfile.linkGoogleError": "Failed to link Google account",
+  "profile.security.setupPassword": "Setup Password",
+  "profile.security.setupPasswordDescription": "Set up a password for your account to enable email/password login in addition to Google authentication.",
+  "profile.security.settingUp": "Setting up...",
+  "profile.security.updating": "Updating...",
+  "profile.security.passwordAlreadyExists": "You already have a password. Please use the change password form below."
 }
 

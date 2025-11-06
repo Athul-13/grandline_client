@@ -19,6 +19,9 @@ export const API_ENDPOINTS = {
     refreshToken: '/auth/token/refresh',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    google: '/auth/google',
+    setupPassword: '/auth/setup-password',
+    linkGoogle: '/auth/link-google',
   },
   // OTP endpoints
   otp: {

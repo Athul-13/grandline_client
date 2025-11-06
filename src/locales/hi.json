@@ -186,6 +186,22 @@
   "resetPassword.newPasswordPlaceholder": "अपना नया पासवर्ड दर्ज करें",
   "resetPassword.confirmPassword": "नया पासवर्ड की पुष्टि करें",
   "resetPassword.confirmPasswordPlaceholder": "अपने नए पासवर्ड की पुष्टि करें",
-  "resetPassword.passwordHint": "पासवर्ड में कम से कम एक छोटा अक्षर, एक बड़ा अक्षर और एक संख्या होनी चाहिए"
+  "resetPassword.passwordHint": "पासवर्ड में कम से कम एक छोटा अक्षर, एक बड़ा अक्षर और एक संख्या होनी चाहिए",
+  "login.googleAuthError": "Google प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।",
+  "login.googleAuthSuccess": "अतिरिक्त सुरक्षा के लिए आप अपनी प्रोफ़ाइल सेटिंग्स में एक पासवर्ड सेट अप कर सकते हैं।",
+  "register.googleAuthError": "Google प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।",
+  "register.googleAuthSuccess": "अतिरिक्त सुरक्षा के लिए आप अपनी प्रोफ़ाइल सेटिंग्स में एक पासवर्ड सेट अप कर सकते हैं।",
+  "profile.myProfile.linkGoogle": "Google खाता लिंक करें",
+  "profile.myProfile.linkGoogleDescription": "अपने खाते तक तेज़ी से पहुंच के लिए Google साइन-इन सक्षम करने के लिए अपना Google खाता लिंक करें।",
+  "profile.myProfile.linkGoogleDescriptionLinked": "आपका Google खाता पहले से ही लिंक है। आप अपने खाते तक पहुंचने के लिए Google साइन-इन का उपयोग कर सकते हैं।",
+  "profile.myProfile.linkGoogleButton": "Google लिंक करें",
+  "profile.myProfile.linkGoogleButtonLinked": "Google लिंक किया गया",
+  "profile.myProfile.linkGoogleSuccess": "Google खाता सफलतापूर्वक लिंक किया गया",
+  "profile.myProfile.linkGoogleError": "Google खाता लिंक करने में विफल",
+  "profile.security.setupPassword": "पासवर्ड सेट अप करें",
+  "profile.security.setupPasswordDescription": "Google प्रमाणीकरण के अलावा ईमेल/पासवर्ड लॉगिन सक्षम करने के लिए अपने खाते के लिए एक पासवर्ड सेट अप करें।",
+  "profile.security.settingUp": "सेट अप किया जा रहा है...",
+  "profile.security.updating": "अपडेट हो रहा है...",
+  "profile.security.passwordAlreadyExists": "आपके पास पहले से ही एक पासवर्ड है। कृपया नीचे दिए गए पासवर्ड बदलने के फॉर्म का उपयोग करें।"
 }
 

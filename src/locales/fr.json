@@ -186,6 +186,22 @@
   "resetPassword.newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
   "resetPassword.confirmPassword": "Confirmer le Nouveau Mot de Passe",
   "resetPassword.confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
-  "resetPassword.passwordHint": "Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un chiffre"
+  "resetPassword.passwordHint": "Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un chiffre",
+  "login.googleAuthError": "Échec de l'authentification Google. Veuillez réessayer.",
+  "login.googleAuthSuccess": "Vous pouvez configurer un mot de passe dans les paramètres de votre profil pour une sécurité supplémentaire.",
+  "register.googleAuthError": "Échec de l'authentification Google. Veuillez réessayer.",
+  "register.googleAuthSuccess": "Vous pouvez configurer un mot de passe dans les paramètres de votre profil pour une sécurité supplémentaire.",
+  "profile.myProfile.linkGoogle": "Lier le Compte Google",
+  "profile.myProfile.linkGoogleDescription": "Lie votre compte Google pour activer la connexion Google pour un accès plus rapide à votre compte.",
+  "profile.myProfile.linkGoogleDescriptionLinked": "Votre compte Google est déjà lié. Vous pouvez utiliser la connexion Google pour accéder à votre compte.",
+  "profile.myProfile.linkGoogleButton": "Lier Google",
+  "profile.myProfile.linkGoogleButtonLinked": "Google Lié",
+  "profile.myProfile.linkGoogleSuccess": "Compte Google lié avec succès",
+  "profile.myProfile.linkGoogleError": "Échec de la liaison du compte Google",
+  "profile.security.setupPassword": "Configurer le Mot de Passe",
+  "profile.security.setupPasswordDescription": "Configurez un mot de passe pour votre compte pour activer la connexion par e-mail/mot de passe en plus de l'authentification Google.",
+  "profile.security.settingUp": "Configuration...",
+  "profile.security.updating": "Mise à jour...",
+  "profile.security.passwordAlreadyExists": "Vous avez déjà un mot de passe. Veuillez utiliser le formulaire de changement de mot de passe ci-dessous."
 }
 
