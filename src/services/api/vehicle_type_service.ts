@@ -6,6 +6,8 @@ import type {
   CreateVehicleTypeResponse,
   UpdateVehicleTypeRequest,
   DeleteVehicleTypeResponse,
+  PaginationParams,
+  PaginatedVehicleTypesResponse,
 } from '../../types/fleet/vehicle_type';
 
 /**
@@ -13,12 +15,16 @@ import type {
  */
 export const vehicleTypeService = {
   /**
-   * Get all vehicle types
-   * GET /api/v1/vehicle-types
+   * Get all vehicle types (with optional pagination)
+   * GET /api/v1/vehicle-types?page=1&limit=20
    */
-  getVehicleTypes: async (): Promise<VehicleType[]> => {
-    const response = await grandlineAxiosClient.get<VehicleType[]>(
-      API_ENDPOINTS.fleet.vehicleTypes
+  getVehicleTypes: async (params?: PaginationParams): Promise<PaginatedVehicleTypesResponse> => {
+    const queryParams = params
+      ? `?page=${params.page}&limit=${params.limit}`
+      : '';
+    
+    const response = await grandlineAxiosClient.get<PaginatedVehicleTypesResponse>(
+      `${API_ENDPOINTS.fleet.vehicleTypes}${queryParams}`
     );
     return response.data;
   },

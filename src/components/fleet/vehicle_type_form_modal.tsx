@@ -1,0 +1,264 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '../common/button';
+import { FormInput } from '../common/form_input';
+import { ConfirmationModal } from '../common/confirmation_modal';
+import { X } from 'lucide-react';
+import { useVehicleTypeMutations } from '../../hooks/fleet/use_vehicle_type_mutations';
+import type { VehicleType } from '../../types/fleet/vehicle_type';
+import { cn } from '../../utils/cn';
+import toast from 'react-hot-toast';
+
+interface VehicleTypeFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  mode: 'add' | 'edit';
+  vehicleType?: VehicleType;
+}
+
+/**
+ * Vehicle Type Form Modal
+ * Handles both adding and editing vehicle types
+ */
+export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
+  isOpen,
+  onClose,
+  mode,
+  vehicleType,
+}) => {
+  const { createVehicleType, updateVehicleType } = useVehicleTypeMutations();
+  
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showCloseWarning, setShowCloseWarning] = useState(false);
+
+  // Initialize form when modal opens or vehicleType changes
+  useEffect(() => {
+    if (isOpen) {
+      if (mode === 'edit' && vehicleType) {
+        setName(vehicleType.name);
+        setDescription(vehicleType.description || '');
+      } else {
+        setName('');
+        setDescription('');
+      }
+      setNameError('');
+      setDescriptionError('');
+      setHasUnsavedChanges(false);
+    }
+  }, [isOpen, mode, vehicleType]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (isOpen) {
+      if (mode === 'edit' && vehicleType) {
+        const nameChanged = name.trim() !== vehicleType.name.trim();
+        const descChanged = (description.trim() || '') !== (vehicleType.description?.trim() || '');
+        setHasUnsavedChanges(nameChanged || descChanged);
+      } else {
+        setHasUnsavedChanges(name.trim() !== '' || description.trim() !== '');
+      }
+    }
+  }, [name, description, mode, vehicleType, isOpen]);
+
+  const validateName = (value: string): string => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return 'Name is required';
+    }
+    if (trimmed.length < 2) {
+      return 'Name must be at least 2 characters';
+    }
+    if (trimmed.length > 100) {
+      return 'Name must be at most 100 characters';
+    }
+    if (!trimmed.replace(/\s/g, '').length) {
+      return 'Name must contain non-whitespace characters';
+    }
+    return '';
+  };
+
+  const validateDescription = (): string => {
+    // Description is optional, no validation needed
+    return '';
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setName(value);
+    setNameError(validateName(value));
+  };
+
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      if (hasUnsavedChanges) {
+        setShowCloseWarning(true);
+      } else {
+        onClose();
+      }
+    }
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      setShowCloseWarning(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowCloseWarning(false);
+    onClose();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate
+    const nameErr = validateName(name);
+    const descErr = validateDescription();
+    
+    setNameError(nameErr);
+    setDescriptionError(descErr);
+
+    if (nameErr || descErr) {
+      return;
+    }
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description.trim();
+
+    try {
+      if (mode === 'add') {
+        await createVehicleType.mutateAsync({
+          name: trimmedName,
+          description: trimmedDescription,
+        });
+        toast.success('Category created successfully');
+      } else {
+        await updateVehicleType.mutateAsync({
+          id: vehicleType!.vehicleTypeId,
+          data: {
+            name: trimmedName,
+            description: trimmedDescription,
+          },
+        });
+        toast.success('Category updated successfully');
+      }
+      
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save category');
+    }
+  };
+
+  const isPending = createVehicleType.isPending || updateVehicleType.isPending;
+  const isDisabled = isPending;
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+        onClick={handleBackdropClick}
+      >
+        <div className="bg-[var(--color-bg-card)] rounded-lg shadow-xl w-full max-w-md mx-4 p-6 border border-[var(--color-border)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+              {mode === 'add' ? 'Add Category' : 'Edit Category'}
+            </h2>
+            <button
+              onClick={handleClose}
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+              disabled={isDisabled}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4 mb-6">
+              <FormInput
+                label="Name"
+                value={name}
+                onChange={handleNameChange}
+                error={nameError}
+                disabled={isDisabled}
+                placeholder="Enter category name"
+                maxLength={100}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setDescription(value);
+                    setDescriptionError(validateDescription());
+                  }}
+                  disabled={isDisabled}
+                  placeholder="Enter category description (optional)"
+                  rows={4}
+                  className={cn(
+                    'w-full px-4 py-3 rounded-lg',
+                    'border',
+                    'bg-[var(--color-bg-card)]',
+                    'text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]',
+                    'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]',
+                    'transition-colors',
+                    descriptionError
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : 'border-[var(--color-border)] focus:border-[var(--color-primary)]',
+                    isDisabled && 'opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]'
+                  )}
+                />
+                {descriptionError && (
+                  <p className="mt-1 text-sm text-red-500">{descriptionError}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isDisabled}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                loading={isPending}
+                disabled={isDisabled}
+              >
+                {mode === 'add' ? 'Create Category' : 'Update Category'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* Close Warning Modal */}
+      <ConfirmationModal
+        isOpen={showCloseWarning}
+        onClose={() => setShowCloseWarning(false)}
+        onConfirm={handleConfirmClose}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to close?"
+        cancelText="Continue Editing"
+        confirmText="Discard Changes"
+        variant="warning"
+      />
+    </>
+  );
+};
+

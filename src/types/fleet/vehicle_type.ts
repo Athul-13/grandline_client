@@ -9,6 +9,7 @@ export interface VehicleType {
   vehicleTypeId: string;
   name: string;
   description: string;
+  vehicleCount: number;
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -46,5 +47,33 @@ export interface UpdateVehicleTypeRequest {
  */
 export interface DeleteVehicleTypeResponse {
   message: string; // "Vehicle type deleted successfully"
+}
+
+/**
+ * Pagination Query Parameters
+ */
+export interface PaginationParams {
+  page: number; // Page number (1-indexed)
+  limit: number; // Items per page
+}
+
+/**
+ * Pagination Metadata
+ */
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/**
+ * Paginated Vehicle Types Response
+ * GET /api/v1/vehicle-types?page=1&limit=20
+ */
+export interface PaginatedVehicleTypesResponse {
+  success: boolean;
+  data: VehicleType[];
+  pagination: PaginationMeta;
 }
 
