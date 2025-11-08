@@ -4,7 +4,8 @@ import { ProtectedAdminLayoutRoute } from '../components/routes/protected_admin_
 import { AdminLoginPage } from '../pages/auth/admin_login_page';
 import { AdminDashboardPage } from '../pages/admin/admin_dashboard_page';
 import { AdminTripManagementPage } from '../pages/admin/admin_trip_management_page';
-import { AdminQuotesReservationsPage } from '../pages/admin/admin_quotes_reservations_page';
+import { AdminQuotesPage } from '../pages/admin/admin_quotes_page';
+import { AdminReservationsPage } from '../pages/admin/admin_reservations_page';
 import { AdminFleetManagementPage } from '../pages/admin/admin_fleet_management_page';
 import { AdminUserManagementPage } from '../pages/admin/admin_user_management_page';
 import { AdminDriverManagementPage } from '../pages/admin/admin_driver_management_page';
@@ -49,12 +50,22 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* Quotes & Reservations */}
+      {/* Quotes */}
       <Route
-        path="quotes-reservations"
+        path="quotes"
         element={
           <ProtectedAdminLayoutRoute>
-            <AdminQuotesReservationsPage />
+            <AdminQuotesPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+
+      {/* Reservations */}
+      <Route
+        path="reservations"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminReservationsPage />
           </ProtectedAdminLayoutRoute>
         }
       />
