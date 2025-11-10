@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../components/common/button';
-import { Grid, List, Plus, LayoutGrid, X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Grid, List, Plus, LayoutGrid, Filter } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useVehicleTypes } from '../../hooks/fleet/use_vehicle_types';
 import { useVehicleTypeMutations } from '../../hooks/fleet/use_vehicle_type_mutations';
+import { useFilterOptions } from '../../hooks/fleet/use_filter_options';
 import { VehicleTypeFormModal } from '../../components/fleet/vehicle_type_form_modal';
 import { VehicleTypeCard } from '../../components/fleet/vehicle_type_card';
 import { VehicleTypeListCard } from '../../components/fleet/vehicle_type_list_card';
 import { ConfirmationModal } from '../../components/common/confirmation_modal';
 import { Pagination } from '../../components/common/pagination';
+import { FilterDrawer, type FilterChip } from '../../components/common/filter_drawer';
+import { FilterSection } from '../../components/common/filter_section';
+import { renderFilterByType, initializeFilterValues, isFilterActive, getFilterChipValue, clearFilterValue, type FilterValues } from '../../utils/filter_utils';
 import type { VehicleType } from '../../types/fleet/vehicle_type';
 
 // Dummy vehicle data
@@ -152,27 +156,34 @@ export const AdminFleetManagementPage: React.FC = () => {
   const [editingVehicleType, setEditingVehicleType] = useState<VehicleType | undefined>(undefined);
   const [deletingVehicleType, setDeletingVehicleType] = useState<VehicleType | undefined>(undefined);
   
-  // Filter states - multiple selections
-  const [statusFilters, setStatusFilters] = useState<string[]>([]);
-  const [typeFilters, setTypeFilters] = useState<string[]>([]);
-  const [yearMin, setYearMin] = useState<string>('');
-  const [yearMax, setYearMax] = useState<string>('');
-  const [capacityMin, setCapacityMin] = useState<string>('');
-  const [maintenanceMax, setMaintenanceMax] = useState<string>('');
-  const [fuelConsumptionMax, setFuelConsumptionMax] = useState<string>('');
+  // Filter Options from API
+  const { data: filterConfig, isLoading: isLoadingFilterOptions } = useFilterOptions();
+  const filters = useMemo(() => filterConfig?.filters || [], [filterConfig?.filters]);
 
-  // Collapsible sections
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    status: true,
-    type: true,
-    year: true,
-    capacity: true,
-    maintenance: true,
-    fuel: true,
-  });
+  // Dynamic filter values state
+  const [filterValues, setFilterValues] = useState<FilterValues>({});
 
-  const statusOptions = ['Available', 'In Use', 'Maintenance'];
-  const typeOptions = ['SUV', 'Sedan', 'Van'];
+  // Initialize filter values when config is loaded
+  useEffect(() => {
+    if (filters.length > 0 && Object.keys(filterValues).length === 0) {
+      const initialValues = initializeFilterValues(filters);
+      setFilterValues(initialValues);
+    }
+  }, [filters, filterValues]);
+
+  // Collapsible sections - initialize from filter config
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
+  // Initialize expanded sections when filters are loaded
+  useEffect(() => {
+    if (filters.length > 0 && Object.keys(expandedSections).length === 0) {
+      const initialExpanded: Record<string, boolean> = {};
+      filters.forEach((filter) => {
+        initialExpanded[filter.key] = false; // All collapsed by default
+      });
+      setExpandedSections(initialExpanded);
+    }
+  }, [filters, expandedSections]);
 
   // Vehicle Type Handlers
   const handleToggleCategoriesView = () => {
@@ -214,100 +225,72 @@ export const AdminFleetManagementPage: React.FC = () => {
     }
   };
 
-  // Toggle checkbox selection
-  const toggleStatusFilter = (status: string) => {
-    setStatusFilters(prev =>
-      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
-    );
-  };
-
-  const toggleTypeFilter = (type: string) => {
-    setTypeFilters(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
+  // Handle filter value changes
+  const handleFilterChange = (filterKey: string, value: string[] | { min: string; max: string } | string) => {
+    setFilterValues((prev: FilterValues) => ({
+      ...prev,
+      [filterKey]: value,
+    }));
   };
 
   // Get active filters count
   const getActiveFiltersCount = () => {
-    let count = 0;
-    if (statusFilters.length > 0) count++;
-    if (typeFilters.length > 0) count++;
-    if (yearMin || yearMax) count++;
-    if (capacityMin) count++;
-    if (maintenanceMax) count++;
-    if (fuelConsumptionMax) count++;
-    return count;
+    if (!filters.length) return 0;
+    return filters.filter(filter => isFilterActive(filter, filterValues[filter.key])).length;
   };
 
   // Get all active filters for display
-  const getAllActiveFilters = () => {
-    const filters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+  const getAllActiveFilters = (): FilterChip[] => {
+    if (!filters.length) return [];
     
-    statusFilters.forEach((status) => {
-      filters.push({
-        key: `status-${status}`,
-        label: 'Status',
-        value: status,
-        onRemove: () => toggleStatusFilter(status),
-      });
+    const activeFilters: FilterChip[] = [];
+    
+    filters.forEach((filter) => {
+      const value = filterValues[filter.key];
+      if (isFilterActive(filter, value)) {
+        // For checkbox filters, create a chip for each selected option
+        if (filter.type === 'checkbox' && Array.isArray(value) && value.length > 0) {
+          value.forEach((optionValue: string) => {
+            const option = filter.options.find((opt: string | { value: string; label: string }) => {
+              const optValue = typeof opt === 'string' ? opt : opt.value;
+              return optValue === optionValue;
+            });
+            const optionLabel = typeof option === 'string' ? option : (option as { value: string; label: string })?.label || optionValue;
+            
+            activeFilters.push({
+              key: `${filter.key}-${optionValue}`,
+              label: filter.label,
+              value: optionLabel,
+              onRemove: () => {
+                const newValue = (value as string[]).filter(v => v !== optionValue);
+                handleFilterChange(filter.key, newValue);
+              },
+            });
+          });
+        } else {
+          // For other filter types, create a single chip
+          activeFilters.push({
+            key: filter.key,
+            label: filter.label,
+            value: getFilterChipValue(filter, value),
+            onRemove: () => {
+              handleFilterChange(filter.key, clearFilterValue(filter));
+            },
+          });
+        }
+      }
     });
 
-    typeFilters.forEach((type) => {
-      filters.push({
-        key: `type-${type}`,
-        label: 'Type',
-        value: type,
-        onRemove: () => toggleTypeFilter(type),
-      });
-    });
-
-    if (yearMin || yearMax) {
-      filters.push({
-        key: 'year',
-        label: 'Year',
-        value: `${yearMin || 'Any'} - ${yearMax || 'Any'}`,
-        onRemove: () => { setYearMin(''); setYearMax(''); },
-      });
-    }
-
-    if (capacityMin) {
-      filters.push({
-        key: 'capacity',
-        label: 'Capacity',
-        value: `≥ ${capacityMin}`,
-        onRemove: () => setCapacityMin(''),
-      });
-    }
-
-    if (maintenanceMax) {
-      filters.push({
-        key: 'maintenance',
-        label: 'Maintenance',
-        value: `≤ $${maintenanceMax}`,
-        onRemove: () => setMaintenanceMax(''),
-      });
-    }
-
-    if (fuelConsumptionMax) {
-      filters.push({
-        key: 'fuel',
-        label: 'Fuel',
-        value: `≤ ${fuelConsumptionMax} L/100km`,
-        onRemove: () => setFuelConsumptionMax(''),
-      });
-    }
-
-    return filters;
+    return activeFilters;
   };
 
   const clearAllFilters = () => {
-    setStatusFilters([]);
-    setTypeFilters([]);
-    setYearMin('');
-    setYearMax('');
-    setCapacityMin('');
-    setMaintenanceMax('');
-    setFuelConsumptionMax('');
+    if (!filters.length) return;
+    const clearedValues: FilterValues = {};
+    filters.forEach((filter) => {
+      clearedValues[filter.key] = clearFilterValue(filter);
+    });
+    setFilterValues(clearedValues);
   };
 
   const toggleSection = (section: string) => {
@@ -531,237 +514,40 @@ export const AdminFleetManagementPage: React.FC = () => {
       </div>
 
       {/* Filter Drawer */}
-      {showFilterSidebar && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowFilterSidebar(false)}
-          />
-          
-          {/* Drawer - positioned relative to sidebar */}
-          <div className="absolute left-0 top-0 h-full w-80 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] overflow-y-auto z-50 shadow-xl">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-[var(--color-text-primary)]">Filters</h2>
-                <button
-                  onClick={() => setShowFilterSidebar(false)}
-                  className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Selected Filters inside Drawer */}
-              {getAllActiveFilters().length > 0 && (
-                <div className="mb-4 pb-4 border-b border-[var(--color-border)]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">Active filters:</span>
-                    <button
-                      onClick={clearAllFilters}
-                      className="text-xs text-[var(--color-primary)] hover:underline"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {getAllActiveFilters().map((filter) => (
-                      <div
-                        key={filter.key}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 text-[var(--color-text-primary)] text-xs"
-                      >
-                        <span className="font-medium">{filter.label}:</span>
-                        <span>{filter.value}</span>
-                        <button
-                          onClick={filter.onRemove}
-                          className="ml-0.5 hover:bg-[var(--color-primary)]/20 rounded-full p-0.5 transition-colors"
-                          title="Remove filter"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+      <FilterDrawer
+        isOpen={showFilterSidebar}
+        onClose={() => setShowFilterSidebar(false)}
+        title="Filters"
+        selectedFilters={getAllActiveFilters()}
+        onClearAll={clearAllFilters}
+        isLoading={isLoadingFilterOptions}
+      >
+        {filters.length > 0 ? (
+          filters.map((filter, index) => (
+            <FilterSection
+              key={filter.key}
+              title={filter.label}
+              isExpanded={expandedSections[filter.key] ?? true}
+              onToggle={() => toggleSection(filter.key)}
+              showBorder={index < filters.length - 1}
+              
+            >
+              {renderFilterByType(
+                filter,
+                filterValues[filter.key],
+                (value) => handleFilterChange(filter.key, value),
+                isCategoriesView
               )}
-
-              {/* Status Filter */}
-              <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                <button
-                  onClick={() => toggleSection('status')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Status</span>
-                  {expandedSections.status ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.status && (
-                  <div className="space-y-2">
-                    {statusOptions.map((status) => (
-                      <label key={status} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={statusFilters.includes(status)}
-                          onChange={() => toggleStatusFilter(status)}
-                          className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                        />
-                        <span className="text-sm text-[var(--color-text-secondary)]">{status}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Vehicle Type Filter */}
-              <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                <button
-                  onClick={() => toggleSection('type')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Vehicle Type</span>
-                  {expandedSections.type ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.type && (
-                  <div className="space-y-2">
-                    {typeOptions.map((type) => (
-                      <label key={type} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={typeFilters.includes(type)}
-                          onChange={() => toggleTypeFilter(type)}
-                          className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                        />
-                        <span className="text-sm text-[var(--color-text-secondary)]">{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Year Range Filter */}
-              <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                <button
-                  onClick={() => toggleSection('year')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Year</span>
-                  {expandedSections.year ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.year && (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={yearMin}
-                        onChange={(e) => setYearMin(e.target.value)}
-                        placeholder="Min"
-                        className="flex-1 px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                      />
-                      <input
-                        type="number"
-                        value={yearMax}
-                        onChange={(e) => setYearMax(e.target.value)}
-                        placeholder="Max"
-                        className="flex-1 px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Capacity Filter */}
-              <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                <button
-                  onClick={() => toggleSection('capacity')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Capacity</span>
-                  {expandedSections.capacity ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.capacity && (
-                  <div className="space-y-2">
-                    <input
-                      type="number"
-                      value={capacityMin}
-                      onChange={(e) => setCapacityMin(e.target.value)}
-                      placeholder="Minimum capacity"
-                      className="w-full px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Maintenance Filter */}
-              <div className="mb-4 border-b border-[var(--color-border)] pb-4">
-                <button
-                  onClick={() => toggleSection('maintenance')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Maintenance Cost</span>
-                  {expandedSections.maintenance ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.maintenance && (
-                  <div className="space-y-2">
-                    <input
-                      type="number"
-                      value={maintenanceMax}
-                      onChange={(e) => setMaintenanceMax(e.target.value)}
-                      placeholder="Maximum cost"
-                      className="w-full px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Fuel Consumption Filter */}
-              <div className="mb-4">
-                <button
-                  onClick={() => toggleSection('fuel')}
-                  className="flex items-center justify-between w-full mb-2 text-sm font-semibold text-[var(--color-text-primary)]"
-                >
-                  <span>Fuel Consumption</span>
-                  {expandedSections.fuel ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.fuel && (
-                  <div className="space-y-2">
-                    <input
-                      type="number"
-                      value={fuelConsumptionMax}
-                      onChange={(e) => setFuelConsumptionMax(e.target.value)}
-                      placeholder="Maximum L/100km"
-                      step="0.1"
-                      className="w-full px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                    />
-                  </div>
-                )}
-              </div>
+            </FilterSection>
+          ))
+        ) : (
+          !isLoadingFilterOptions && (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-[var(--color-text-secondary)]">No filters available</p>
             </div>
-          </div>
-        </>
-      )}
+          )
+        )}
+      </FilterDrawer>
 
       {/* Vehicle Type Form Modal */}
       <VehicleTypeFormModal

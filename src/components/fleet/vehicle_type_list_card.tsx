@@ -64,8 +64,8 @@ export const VehicleTypeListCard: React.FC<VehicleTypeListCardProps> = ({
           <h3 className="font-semibold text-base text-[var(--color-text-primary)]">
             {vehicleType.name}
           </h3>
-          <span className="text-xs text-[var(--color-text-muted)]">
-            Vehicles: <span className="font-medium text-[var(--color-text-primary)]">{vehicleType.vehicleCount}</span>
+          <span className="text-xs">
+            <span className="text-[var(--color-primary)] font-medium">Vehicles:</span> <span className="font-medium text-[var(--color-text-primary)]">{vehicleType.vehicleCount}</span>
           </span>
         </div>
         {vehicleType.description && (

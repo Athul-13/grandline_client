@@ -46,6 +46,9 @@ export const API_ENDPOINTS = {
   fleet: {
     vehicleTypes: '/vehicle-types',
     vehicleTypesById: (id: string) => `/vehicle-types/${id}`,
+    vehicles: '/vehicles',
+    vehiclesById: (id: string) => `/vehicles/${id}`,
+    filterOptions: '/vehicles/filter-options',
   },
 } as const;
 

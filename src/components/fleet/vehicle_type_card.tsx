@@ -101,8 +101,8 @@ export const VehicleTypeCard: React.FC<VehicleTypeCardProps> = ({
       )}
 
       <div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)]">
-        <span className="text-xs text-[var(--color-text-muted)]">
-          Vehicles: <span className="font-medium text-[var(--color-text-primary)]">{vehicleType.vehicleCount}</span>
+        <span className="text-xs">
+          <span className="text-[var(--color-primary)] font-medium">Vehicles:</span> <span className="font-medium text-[var(--color-text-primary)]">{vehicleType.vehicleCount}</span>
         </span>
       </div>
     </div>
