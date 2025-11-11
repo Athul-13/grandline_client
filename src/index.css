@@ -25,6 +25,16 @@
   --color-border-accent: #ff6b35;
   --color-border-footer: #9ca3af;
   
+  /* Status Colors */
+  --color-status-available-bg: #d1fae5;
+  --color-status-available-text: #065f46;
+  --color-status-in-service-bg: #dbeafe;
+  --color-status-in-service-text: #1e40af;
+  --color-status-maintenance-bg: #fef3c7;
+  --color-status-maintenance-text: #92400e;
+  --color-status-retired-bg: #f3f4f6;
+  --color-status-retired-text: #374151;
+  
   /* Gradient Colors */
   --color-gradient-purple-start: #667eea;
   --color-gradient-purple-end: #764ba2;
@@ -63,6 +73,16 @@
   --color-border-light: #3a3d4a;
   --color-border-accent: #ff6b35;
   --color-border-footer: #6b7280;
+  
+  /* Status Colors (Dark Mode) */
+  --color-status-available-bg: rgba(16, 185, 129, 0.2);
+  --color-status-available-text: #6ee7b7;
+  --color-status-in-service-bg: rgba(59, 130, 246, 0.2);
+  --color-status-in-service-text: #93c5fd;
+  --color-status-maintenance-bg: rgba(245, 158, 11, 0.2);
+  --color-status-maintenance-text: #fcd34d;
+  --color-status-retired-bg: rgba(156, 163, 175, 0.2);
+  --color-status-retired-text: #d1d5db;
   
   /* Gradient Colors (same for both themes) */
   --color-gradient-purple-start: #667eea;

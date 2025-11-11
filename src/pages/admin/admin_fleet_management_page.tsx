@@ -5,59 +5,25 @@ import { cn } from '../../utils/cn';
 import { useVehicleTypes } from '../../hooks/fleet/use_vehicle_types';
 import { useVehicleTypeMutations } from '../../hooks/fleet/use_vehicle_type_mutations';
 import { useFilterOptions } from '../../hooks/fleet/use_filter_options';
+import { useVehicles } from '../../hooks/fleet/use_vehicles';
+import { useAmenities } from '../../hooks/fleet/use_amenities';
+import { useAmenityMutations } from '../../hooks/fleet/use_amenity_mutations';
 import { VehicleTypeFormModal } from '../../components/fleet/vehicle_type_form_modal';
+import { AmenityFormModal } from '../../components/fleet/amenity_form_modal';
+import { VehicleFormModal } from '../../components/fleet/vehicle_form_modal';
 import { VehicleTypeCard } from '../../components/fleet/vehicle_type_card';
 import { VehicleTypeListCard } from '../../components/fleet/vehicle_type_list_card';
+import { AmenityCard } from '../../components/fleet/amenity_card';
+import { VehicleCard } from '../../components/fleet/vehicle_card';
+import { VehicleListCard } from '../../components/fleet/vehicle_list_card';
 import { ConfirmationModal } from '../../components/common/confirmation_modal';
 import { Pagination } from '../../components/common/pagination';
 import { FilterDrawer, type FilterChip } from '../../components/common/filter_drawer';
 import { FilterSection } from '../../components/common/filter_section';
 import { renderFilterByType, initializeFilterValues, isFilterActive, getFilterChipValue, clearFilterValue, type FilterValues } from '../../utils/filter_utils';
 import type { VehicleType } from '../../types/fleet/vehicle_type';
-
-// Dummy vehicle data
-const dummyVehicles = [
-  {
-    vehicleId: 'VH001',
-    vehicleTypeId: 'SUV',
-    capacity: 7,
-    maintenance: 500,
-    vehicleModel: 'Toyota Highlander',
-    year: 2023,
-    fuelConsumption: 8.5,
-    status: 'Available',
-  },
-  {
-    vehicleId: 'VH002',
-    vehicleTypeId: 'Sedan',
-    capacity: 5,
-    maintenance: 300,
-    vehicleModel: 'Honda Accord',
-    year: 2022,
-    fuelConsumption: 7.2,
-    status: 'In Use',
-  },
-  {
-    vehicleId: 'VH003',
-    vehicleTypeId: 'Van',
-    capacity: 12,
-    maintenance: 800,
-    vehicleModel: 'Ford Transit',
-    year: 2024,
-    fuelConsumption: 10.5,
-    status: 'Available',
-  },
-  {
-    vehicleId: 'VH004',
-    vehicleTypeId: 'SUV',
-    capacity: 8,
-    maintenance: 600,
-    vehicleModel: 'Chevrolet Tahoe',
-    year: 2021,
-    fuelConsumption: 9.8,
-    status: 'Maintenance',
-  },
-];
+import type { Vehicle } from '../../types/fleet/vehicle';
+import type { Amenity } from '../../types/fleet/amenity';
 
 type SortField = 'status' | 'vehicleTypeId' | 'year' | 'capacity' | 'vehicleModel' | 'maintenance' | 'fuelConsumption';
 type SortDirection = 'asc' | 'desc';
@@ -69,9 +35,12 @@ export const AdminFleetManagementPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [showFilterSidebar, setShowFilterSidebar] = useState(false);
   const [isCategoriesView, setIsCategoriesView] = useState(false);
+  const [isAmenitiesView, setIsAmenitiesView] = useState(false);
   
   // Pagination
   const [currentPageCategories, setCurrentPageCategories] = useState(1);
+  const [currentPageAmenities, setCurrentPageAmenities] = useState(1);
+  const [currentPageVehicles, setCurrentPageVehicles] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   
   // Calculate items per page based on screen size and breakpoints
@@ -124,6 +93,8 @@ export const AdminFleetManagementPage: React.FC = () => {
           setItemsPerPage(newItemsPerPage);
           // Reset to page 1 when items per page changes significantly
           setCurrentPageCategories(1);
+          setCurrentPageAmenities(1);
+          setCurrentPageVehicles(1);
         }
       }, 300); // 300ms debounce
     };
@@ -150,11 +121,32 @@ export const AdminFleetManagementPage: React.FC = () => {
   
   const { deleteVehicleType } = useVehicleTypeMutations();
   
+  // Amenities with pagination
+  const { 
+    data: amenitiesData, 
+    isLoading: isLoadingAmenities 
+  } = useAmenities({
+    page: currentPageAmenities,
+    limit: itemsPerPage,
+  });
+  
+  const amenities = amenitiesData?.data || [];
+  const amenitiesPagination = amenitiesData?.pagination;
+  const totalPagesAmenities = amenitiesPagination?.totalPages || 1;
+  
+  const { deleteAmenity } = useAmenityMutations();
+  
   // Modals
   const [showVehicleTypeModal, setShowVehicleTypeModal] = useState(false);
+  const [showAmenityModal, setShowAmenityModal] = useState(false);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteAmenityModal, setShowDeleteAmenityModal] = useState(false);
   const [editingVehicleType, setEditingVehicleType] = useState<VehicleType | undefined>(undefined);
+  const [editingAmenity, setEditingAmenity] = useState<Amenity | undefined>(undefined);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | undefined>(undefined);
   const [deletingVehicleType, setDeletingVehicleType] = useState<VehicleType | undefined>(undefined);
+  const [deletingAmenity, setDeletingAmenity] = useState<Amenity | undefined>(undefined);
   
   // Filter Options from API
   const { data: filterConfig, isLoading: isLoadingFilterOptions } = useFilterOptions();
@@ -162,6 +154,52 @@ export const AdminFleetManagementPage: React.FC = () => {
 
   // Dynamic filter values state
   const [filterValues, setFilterValues] = useState<FilterValues>({});
+  
+  // Build filter query params from filterValues
+  const filterQueryParams = useMemo(() => {
+    const params: Record<string, unknown> = {};
+    
+    if (filters.length > 0) {
+      filters.forEach((filter) => {
+        const value = filterValues[filter.key];
+        if (isFilterActive(filter, value)) {
+          if (filter.type === 'checkbox' && Array.isArray(value)) {
+            params[filter.key] = value;
+          } else if (filter.type === 'range' && typeof value === 'object' && value !== null) {
+            const rangeValue = value as { min: string; max: string };
+            if (rangeValue.min) params[`${filter.key}_min`] = rangeValue.min;
+            if (rangeValue.max) params[`${filter.key}_max`] = rangeValue.max;
+          } else if (filter.type === 'number' && typeof value === 'string' && value) {
+            params[filter.key] = value;
+          } else if (filter.type === 'select' && typeof value === 'string' && value) {
+            params[filter.key] = value;
+          }
+        }
+      });
+    }
+    
+    // Add sort parameters
+    if (sortField) {
+      params.sortBy = sortField;
+      params.sortOrder = sortDirection;
+    }
+    
+    return params;
+  }, [filters, filterValues, sortField, sortDirection]);
+  
+  // Vehicles with pagination and filters
+  const { 
+    data: vehiclesData, 
+    isLoading: isLoadingVehicles 
+  } = useVehicles({
+    page: currentPageVehicles,
+    limit: itemsPerPage,
+    ...filterQueryParams,
+  });
+  
+  const vehicles = vehiclesData?.data || [];
+  const vehiclesPagination = vehiclesData?.pagination;
+  const totalPagesVehicles = vehiclesPagination?.totalPages || 1;
 
   // Initialize filter values when config is loaded
   useEffect(() => {
@@ -185,15 +223,53 @@ export const AdminFleetManagementPage: React.FC = () => {
     }
   }, [filters, expandedSections]);
 
-  // Vehicle Type Handlers
+  // View Toggle Handlers
   const handleToggleCategoriesView = () => {
-    setIsCategoriesView(!isCategoriesView);
+    if (isCategoriesView) {
+      // If already selected, deselect it (show vehicles)
+      setIsCategoriesView(false);
+    } else {
+      // If not selected, select it and deselect amenities
+      setIsCategoriesView(true);
+      setIsAmenitiesView(false);
+    }
     // Reset pagination when switching views
     setCurrentPageCategories(1);
+    setCurrentPageAmenities(1);
+    setCurrentPageVehicles(1);
+  };
+  
+  const handleToggleAmenitiesView = () => {
+    if (isAmenitiesView) {
+      // If already selected, deselect it (show vehicles)
+      setIsAmenitiesView(false);
+    } else {
+      // If not selected, select it and deselect categories
+      setIsAmenitiesView(true);
+      setIsCategoriesView(false);
+      // Force grid view for amenities
+      setViewMode('grid');
+    }
+    // Reset pagination when switching views
+    setCurrentPageCategories(1);
+    setCurrentPageAmenities(1);
+    setCurrentPageVehicles(1);
   };
   
   const handlePageChangeCategories = (page: number) => {
     setCurrentPageCategories(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handlePageChangeAmenities = (page: number) => {
+    setCurrentPageAmenities(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handlePageChangeVehicles = (page: number) => {
+    setCurrentPageVehicles(page);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -202,15 +278,50 @@ export const AdminFleetManagementPage: React.FC = () => {
     setEditingVehicleType(undefined);
     setShowVehicleTypeModal(true);
   };
+  
+  const handleAddAmenity = () => {
+    setEditingAmenity(undefined);
+    setShowAmenityModal(true);
+  };
+  
+  const handleAddVehicle = () => {
+    setEditingVehicle(undefined);
+    setShowVehicleModal(true);
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setShowVehicleModal(true);
+  };
+
+  const handleDeleteVehicle = (vehicle: Vehicle) => {
+    // TODO: Implement delete functionality
+    console.log('Delete vehicle:', vehicle);
+  };
+
+  const handleVehicleSuccess = () => {
+    // Reset to page 1 and refresh vehicles list
+    setCurrentPageVehicles(1);
+  };
 
   const handleEditCategory = (vehicleType: VehicleType) => {
     setEditingVehicleType(vehicleType);
     setShowVehicleTypeModal(true);
   };
-
+  
   const handleDeleteCategory = (vehicleType: VehicleType) => {
     setDeletingVehicleType(vehicleType);
     setShowDeleteModal(true);
+  };
+  
+  const handleEditAmenity = (amenity: Amenity) => {
+    setEditingAmenity(amenity);
+    setShowAmenityModal(true);
+  };
+  
+  const handleDeleteAmenity = (amenity: Amenity) => {
+    setDeletingAmenity(amenity);
+    setShowDeleteAmenityModal(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -224,6 +335,18 @@ export const AdminFleetManagementPage: React.FC = () => {
       }
     }
   };
+  
+  const handleConfirmDeleteAmenity = async () => {
+    if (deletingAmenity) {
+      try {
+        await deleteAmenity.mutateAsync(deletingAmenity.amenityId);
+        setShowDeleteAmenityModal(false);
+        setDeletingAmenity(undefined);
+      } catch {
+        // Error handled by mutation hook
+      }
+    }
+  };
 
   // Handle filter value changes
   const handleFilterChange = (filterKey: string, value: string[] | { min: string; max: string } | string) => {
@@ -231,6 +354,8 @@ export const AdminFleetManagementPage: React.FC = () => {
       ...prev,
       [filterKey]: value,
     }));
+    // Reset to page 1 when filters change
+    setCurrentPageVehicles(1);
   };
 
   // Get active filters count
@@ -291,6 +416,8 @@ export const AdminFleetManagementPage: React.FC = () => {
       clearedValues[filter.key] = clearFilterValue(filter);
     });
     setFilterValues(clearedValues);
+    // Reset to page 1 when filters are cleared
+    setCurrentPageVehicles(1);
   };
 
   const toggleSection = (section: string) => {
@@ -302,6 +429,15 @@ export const AdminFleetManagementPage: React.FC = () => {
 
   const toggleSortDirection = () => {
     setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    // Reset to page 1 when sort direction changes
+    setCurrentPageVehicles(1);
+  };
+
+  // Handle sort field changes
+  const handleSortFieldChange = (field: SortField) => {
+    setSortField(field);
+    // Reset to page 1 when sort field changes
+    setCurrentPageVehicles(1);
   };
 
   const sortOptions: { value: SortField; label: string }[] = [
@@ -328,13 +464,13 @@ export const AdminFleetManagementPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilterSidebar(!showFilterSidebar)}
-                disabled={isCategoriesView}
+                disabled={isCategoriesView || isAmenitiesView}
                 className="flex items-center gap-2"
               >
                 <span className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
                   <span>Filter</span>
-                  {!isCategoriesView && getActiveFiltersCount() > 0 && (
+                  {!isCategoriesView && !isAmenitiesView && getActiveFiltersCount() > 0 && (
                     <span className="ml-2 px-1.5 py-0.5 rounded-full bg-[var(--color-primary)] text-white text-xs">
                       {getActiveFiltersCount()}
                     </span>
@@ -346,11 +482,11 @@ export const AdminFleetManagementPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <select
                   value={sortField}
-                  onChange={(e) => setSortField(e.target.value as SortField)}
-                  disabled={isCategoriesView}
+                  onChange={(e) => handleSortFieldChange(e.target.value as SortField)}
+                  disabled={isCategoriesView || isAmenitiesView}
                   className={cn(
                     "px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
-                    isCategoriesView && "opacity-50 cursor-not-allowed"
+                    (isCategoriesView || isAmenitiesView) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {sortOptions.map((option) => (
@@ -361,10 +497,10 @@ export const AdminFleetManagementPage: React.FC = () => {
                 </select>
                 <button
                   onClick={toggleSortDirection}
-                  disabled={isCategoriesView}
+                  disabled={isCategoriesView || isAmenitiesView}
                   className={cn(
                     "px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-colors",
-                    isCategoriesView && "opacity-50 cursor-not-allowed"
+                    (isCategoriesView || isAmenitiesView) && "opacity-50 cursor-not-allowed"
                   )}
                   title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
                 >
@@ -376,11 +512,13 @@ export const AdminFleetManagementPage: React.FC = () => {
               <div className="flex items-center gap-1 border border-[var(--color-border)] rounded-lg p-1 bg-[var(--color-bg-secondary)]">
                 <button
                   onClick={() => setViewMode('grid')}
+                  disabled={isAmenitiesView}
                   className={cn(
                     'p-2 rounded transition-colors',
-                    viewMode === 'grid'
+                    (viewMode === 'grid' || isAmenitiesView)
                       ? 'bg-[var(--color-primary)] text-white'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]'
+                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]',
+                    isAmenitiesView && 'cursor-default'
                   )}
                   title="Grid View"
                 >
@@ -388,11 +526,13 @@ export const AdminFleetManagementPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
+                  disabled={isAmenitiesView}
                   className={cn(
                     'p-2 rounded transition-colors',
-                    viewMode === 'list'
+                    viewMode === 'list' && !isAmenitiesView
                       ? 'bg-[var(--color-primary)] text-white'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]'
+                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)]',
+                    isAmenitiesView && 'opacity-50 cursor-not-allowed'
                   )}
                   title="List View"
                 >
@@ -400,15 +540,27 @@ export const AdminFleetManagementPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Add Vehicle/Category Button */}
+              {/* Add Button */}
               <Button
                 variant="primary"
                 size="sm"
-                onClick={isCategoriesView ? handleAddCategory : undefined}
+                onClick={
+                  isCategoriesView 
+                    ? handleAddCategory 
+                    : isAmenitiesView 
+                    ? handleAddAmenity 
+                    : handleAddVehicle
+                }
                 className="flex items-center h-10 px-4"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                <span>{isCategoriesView ? 'Add Category' : 'Add Vehicle'}</span>
+                <span>
+                  {isCategoriesView 
+                    ? 'Add Category' 
+                    : isAmenitiesView 
+                    ? 'Add Amenity' 
+                    : 'Add Vehicle'}
+                </span>
               </Button>
 
               {/* Categories Button */}
@@ -421,13 +573,24 @@ export const AdminFleetManagementPage: React.FC = () => {
                 <LayoutGrid className="w-4 h-4 mr-2" />
                 <span>Categories</span>
               </Button>
+
+              {/* Amenities Button */}
+              <Button
+                variant={isAmenitiesView ? "primary" : "outline"}
+                size="sm"
+                onClick={handleToggleAmenitiesView}
+                className="flex items-center h-10 px-4"
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                <span>Amenities</span>
+              </Button>
             </div>
         </div>
         
-          {/* Vehicles/Categories Display */}
+          {/* Vehicles/Categories/Amenities Display */}
           <div className={cn(
             'flex-1 overflow-y-auto',
-            viewMode === 'grid' 
+            (viewMode === 'grid' || isAmenitiesView) 
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 items-start' 
               : 'space-y-2'
           )}>
@@ -462,51 +625,87 @@ export const AdminFleetManagementPage: React.FC = () => {
                   )}
                 </>
               )
+            ) : isAmenitiesView ? (
+              // Amenities View (grid only)
+              isLoadingAmenities ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <p className="text-[var(--color-text-secondary)]">Loading amenities...</p>
+                </div>
+              ) : amenities.length === 0 ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <p className="text-[var(--color-text-secondary)]">No amenities yet.</p>
+                </div>
+              ) : (
+                amenities.map((amenity) => (
+                  <AmenityCard
+                    key={amenity.amenityId}
+                    amenity={amenity}
+                    onEdit={handleEditAmenity}
+                    onDelete={handleDeleteAmenity}
+                  />
+                ))
+              )
             ) : (
               // Vehicles View
-              dummyVehicles.map((vehicle) => (
-                <div
-                  key={vehicle.vehicleId}
-                  className={cn(
-                    'bg-[var(--color-bg-card)] rounded-lg shadow-sm p-3 border border-[var(--color-border)]',
-                    viewMode === 'list' && 'flex items-center justify-between'
-                  )}
-                >
-                  <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-base">{vehicle.vehicleModel}</h3>
-                      <span
-                        className={cn(
-                          'px-2 py-0.5 rounded text-xs font-medium',
-                          vehicle.status === 'Available' && 'bg-green-100 text-green-800',
-                          vehicle.status === 'In Use' && 'bg-blue-100 text-blue-800',
-                          vehicle.status === 'Maintenance' && 'bg-yellow-100 text-yellow-800'
-                        )}
-                      >
-                        {vehicle.status}
-                      </span>
-                    </div>
-                    <div className="space-y-0.5 text-sm text-[var(--color-text-secondary)]">
-                      <p>ID: {vehicle.vehicleId}</p>
-                      <p>Type: {vehicle.vehicleTypeId}</p>
-                      <p>Year: {vehicle.year}</p>
-                      <p>Capacity: {vehicle.capacity} seats</p>
-                      <p>Maintenance: ${vehicle.maintenance}</p>
-                      <p>Fuel: {vehicle.fuelConsumption} L/100km</p>
-                    </div>
-                  </div>
+              isLoadingVehicles ? (
+                <div className={cn(
+                  viewMode === 'grid' ? 'col-span-full' : '',
+                  'flex items-center justify-center py-12'
+                )}>
+                  <p className="text-[var(--color-text-secondary)]">Loading vehicles...</p>
                 </div>
-              ))
+              ) : vehicles.length === 0 ? (
+                <div className={cn(
+                  viewMode === 'grid' ? 'col-span-full' : '',
+                  'flex items-center justify-center py-12'
+                )}>
+                  <p className="text-[var(--color-text-secondary)]">No vehicles found.</p>
+                </div>
+              ) : (
+                vehicles.map((vehicle) =>
+                  viewMode === 'grid' ? (
+                    <VehicleCard
+                      key={vehicle.vehicleId}
+                      vehicle={vehicle}
+                      onEdit={handleEditVehicle}
+                      onDelete={handleDeleteVehicle}
+                    />
+                  ) : (
+                    <VehicleListCard
+                      key={vehicle.vehicleId}
+                      vehicle={vehicle}
+                      onEdit={handleEditVehicle}
+                      onDelete={handleDeleteVehicle}
+                    />
+                  )
+                )
+              )
             )}
           </div>
           
           {/* Pagination */}
-          {isCategoriesView && (
+          {isCategoriesView ? (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
               <Pagination
                 currentPage={currentPageCategories}
                 totalPages={totalPagesCategories}
                 onPageChange={handlePageChangeCategories}
+              />
+            </div>
+          ) : isAmenitiesView ? (
+            <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+              <Pagination
+                currentPage={currentPageAmenities}
+                totalPages={totalPagesAmenities}
+                onPageChange={handlePageChangeAmenities}
+              />
+            </div>
+          ) : (
+            <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+              <Pagination
+                currentPage={currentPageVehicles}
+                totalPages={totalPagesVehicles}
+                onPageChange={handlePageChangeVehicles}
               />
             </div>
           )}
@@ -560,7 +759,30 @@ export const AdminFleetManagementPage: React.FC = () => {
         vehicleType={editingVehicleType}
       />
 
-      {/* Delete Confirmation Modal */}
+      {/* Amenity Form Modal */}
+      <AmenityFormModal
+        isOpen={showAmenityModal}
+        onClose={() => {
+          setShowAmenityModal(false);
+          setEditingAmenity(undefined);
+        }}
+        mode={editingAmenity ? 'edit' : 'add'}
+        amenity={editingAmenity}
+      />
+
+      {/* Vehicle Form Modal */}
+      <VehicleFormModal
+        isOpen={showVehicleModal}
+        onClose={() => {
+          setShowVehicleModal(false);
+          setEditingVehicle(undefined);
+        }}
+        mode={editingVehicle ? 'edit' : 'add'}
+        vehicle={editingVehicle}
+        onSuccess={handleVehicleSuccess}
+      />
+
+      {/* Delete Category Confirmation Modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => {
@@ -578,6 +800,22 @@ export const AdminFleetManagementPage: React.FC = () => {
         confirmText="Delete"
         cancelText="Cancel"
         isLoading={deleteVehicleType.isPending}
+        variant="danger"
+      />
+
+      {/* Delete Amenity Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteAmenityModal}
+        onClose={() => {
+          setShowDeleteAmenityModal(false);
+          setDeletingAmenity(undefined);
+        }}
+        onConfirm={handleConfirmDeleteAmenity}
+        title="Delete Amenity"
+        message={`Are you sure you want to delete "${deletingAmenity?.name}"?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={deleteAmenity.isPending}
         variant="danger"
       />
     </div>

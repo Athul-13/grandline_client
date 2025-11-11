@@ -49,6 +49,11 @@ export const API_ENDPOINTS = {
     vehicles: '/vehicles',
     vehiclesById: (id: string) => `/vehicles/${id}`,
     filterOptions: '/vehicles/filter-options',
+    uploadSignature: '/vehicles/upload-signature',
+    deleteImages: '/vehicles/images',
+    amenities: '/amenities',
+    amenitiesById: (id: string) => `/amenities/${id}`,
+    amenitiesPaid: '/amenities/paid',
   },
 } as const;
 
