@@ -4,6 +4,8 @@ import type { Vehicle } from '../../types/fleet/vehicle';
 import { VehicleStatus } from '../../types/fleet/vehicle';
 import { ImageGalleryModal } from '../common/image_gallery_modal';
 import { cn } from '../../utils/cn';
+import { useSearchContext } from '../../hooks/use_search_context';
+import { highlightSearchTerm } from '../../utils/highlight_search';
 
 interface VehicleListCardProps {
   vehicle: Vehicle;
@@ -51,6 +53,7 @@ export const VehicleListCard: React.FC<VehicleListCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { searchQuery } = useSearchContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0);
@@ -104,7 +107,7 @@ export const VehicleListCard: React.FC<VehicleListCardProps> = ({
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <h3 className="font-semibold text-sm text-[var(--color-text-primary)] truncate">
-                  {vehicle.vehicleModel}
+                  {highlightSearchTerm(vehicle.vehicleModel, searchQuery)}
                 </h3>
                 <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">
                   {vehicle.year}
@@ -129,10 +132,15 @@ export const VehicleListCard: React.FC<VehicleListCardProps> = ({
                     </>
                   )}
                   <span className="mx-1">•</span>
-                  <span className="font-medium text-[var(--color-text-primary)]">{vehicle.plateNumber}</span>
+                  <span className="font-medium text-[var(--color-text-primary)]">
+                    {highlightSearchTerm(vehicle.plateNumber, searchQuery)}
+                  </span>
                   <span className="mx-1">•</span>
                   <span className="font-medium text-[var(--color-text-primary)]">
-                    {vehicle.vehicleType?.name || vehicle.vehicleTypeId}
+                    {highlightSearchTerm(
+                      vehicle.vehicleType?.name || vehicle.vehicleTypeId,
+                      searchQuery
+                    )}
                   </span>
                 </span>
               </div>

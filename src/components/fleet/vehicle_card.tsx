@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, ChevronDown, ChevronUp, Users, IndianRupee } from 'lucide-react';
 import type { Vehicle } from '../../types/fleet/vehicle';
 import { VehicleStatus } from '../../types/fleet/vehicle';
 import { ImageGalleryModal } from '../common/image_gallery_modal';
 import { cn } from '../../utils/cn';
+import { useSearchContext } from '../../hooks/use_search_context';
+import { highlightSearchTerm, matchesSearch } from '../../utils/highlight_search';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -51,9 +53,17 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { searchQuery } = useSearchContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0);
+
+  // Auto-expand if plate number matches search query
+  useEffect(() => {
+    if (searchQuery.trim() && matchesSearch(vehicle.plateNumber, searchQuery)) {
+      setIsExpanded(true);
+    }
+  }, [searchQuery, vehicle.plateNumber]);
 
   // Default placeholder image if no images provided
   const defaultImage = 'https://via.placeholder.com/400x250?text=No+Image';
@@ -157,7 +167,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           {/* Name and Year */}
           <div className="pt-3">
             <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate mb-0.5">
-              {vehicle.vehicleModel}
+              {highlightSearchTerm(vehicle.vehicleModel, searchQuery)}
             </h3>
             <p className="text-sm text-[var(--color-text-secondary)]">
               {vehicle.year}
@@ -170,12 +180,17 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <span className="text-[var(--color-text-secondary)]">Plate:</span>
-                  <span className="ml-1 font-medium text-[var(--color-text-primary)]">{vehicle.plateNumber}</span>
+                  <span className="ml-1 font-medium text-[var(--color-text-primary)]">
+                    {highlightSearchTerm(vehicle.plateNumber, searchQuery)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[var(--color-text-secondary)]">Type:</span>
                   <span className="ml-1 font-medium text-[var(--color-text-primary)]">
-                    {vehicle.vehicleType?.name || vehicle.vehicleTypeId}
+                    {highlightSearchTerm(
+                      vehicle.vehicleType?.name || vehicle.vehicleTypeId,
+                      searchQuery
+                    )}
                   </span>
                 </div>
                 <div>

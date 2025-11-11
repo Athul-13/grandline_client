@@ -8,6 +8,7 @@ import { useFilterOptions } from '../../hooks/fleet/use_filter_options';
 import { useVehicles } from '../../hooks/fleet/use_vehicles';
 import { useAmenities } from '../../hooks/fleet/use_amenities';
 import { useAmenityMutations } from '../../hooks/fleet/use_amenity_mutations';
+import { useSearchContext } from '../../hooks/use_search_context';
 import { VehicleTypeFormModal } from '../../components/fleet/vehicle_type_form_modal';
 import { AmenityFormModal } from '../../components/fleet/amenity_form_modal';
 import { VehicleFormModal } from '../../components/fleet/vehicle_form_modal';
@@ -148,6 +149,9 @@ export const AdminFleetManagementPage: React.FC = () => {
   const [deletingVehicleType, setDeletingVehicleType] = useState<VehicleType | undefined>(undefined);
   const [deletingAmenity, setDeletingAmenity] = useState<Amenity | undefined>(undefined);
   
+  // Search context
+  const { searchQuery } = useSearchContext();
+
   // Filter Options from API
   const { data: filterConfig, isLoading: isLoadingFilterOptions } = useFilterOptions();
   const filters = useMemo(() => filterConfig?.filters || [], [filterConfig?.filters]);
@@ -155,9 +159,14 @@ export const AdminFleetManagementPage: React.FC = () => {
   // Dynamic filter values state
   const [filterValues, setFilterValues] = useState<FilterValues>({});
   
-  // Build filter query params from filterValues
+  // Build filter query params from filterValues, including search
   const filterQueryParams = useMemo(() => {
     const params: Record<string, unknown> = {};
+    
+    // Add search parameter if search query exists
+    if (searchQuery.trim()) {
+      params.search = searchQuery.trim();
+    }
     
     if (filters.length > 0) {
       filters.forEach((filter) => {
@@ -185,7 +194,7 @@ export const AdminFleetManagementPage: React.FC = () => {
     }
     
     return params;
-  }, [filters, filterValues, sortField, sortDirection]);
+  }, [filters, filterValues, sortField, sortDirection, searchQuery]);
   
   // Vehicles with pagination and filters
   const { 
@@ -200,6 +209,11 @@ export const AdminFleetManagementPage: React.FC = () => {
   const vehicles = vehiclesData?.data || [];
   const vehiclesPagination = vehiclesData?.pagination;
   const totalPagesVehicles = vehiclesPagination?.totalPages || 1;
+
+  // Reset pagination to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPageVehicles(1);
+  }, [searchQuery]);
 
   // Initialize filter values when config is loaded
   useEffect(() => {
