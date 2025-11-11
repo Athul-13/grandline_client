@@ -33,7 +33,11 @@ export const highlightSearchTerm = (
     parts.push(
       <mark
         key={index}
-        className="bg-yellow-200 dark:bg-yellow-800 text-[var(--color-text-primary)] font-medium px-0.5 rounded"
+        className="font-medium px-0.5 rounded"
+        style={{
+          backgroundColor: 'var(--color-search-highlight-bg)',
+          color: 'var(--color-search-highlight-text)',
+        }}
       >
         {text.substring(index, index + searchQuery.length)}
       </mark>
