@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { AdminNavbar } from '../admin/navbar';
 import { AdminSidebar } from '../admin/sidebar';
-import { SearchProvider } from '../../contexts/search_context';
+import { SearchProvider } from '../../contexts/search_provider';
 
 interface AdminLayoutProps {
   children: ReactNode;

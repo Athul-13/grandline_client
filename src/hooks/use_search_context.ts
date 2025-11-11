@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { SearchContext, type SearchContextType } from '../contexts/search_context';
+import { SearchContext, type SearchContextType } from '../contexts/search_provider';
 
 /**
  * Custom hook for search context
