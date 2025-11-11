@@ -9,6 +9,8 @@ import { store } from './store/store';
 import { getSettings } from './utils/settings';
 import './index.css';
 import App from './App.tsx';
+import { queryClient } from './config/query_client.ts';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 // Load settings from localStorage
 const settings = getSettings();
@@ -21,13 +23,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={googleClientId}>
       <Provider store={store}>
-        <BrowserRouter>
-          <ThemeProvider defaultTheme={defaultTheme} enableSystem>
-            <LanguageProvider defaultLanguage={defaultLanguage}>
-              <App />
-            </LanguageProvider>
-          </ThemeProvider>
-        </BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <ThemeProvider defaultTheme={defaultTheme} enableSystem>
+              <LanguageProvider defaultLanguage={defaultLanguage}>
+                <App />
+              </LanguageProvider>
+            </ThemeProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
       </Provider>
     </GoogleOAuthProvider>
   </StrictMode>

@@ -1,6 +1,6 @@
 import { useLanguage } from '../../hooks/use_language';
 
-export const AdminQuotesReservationsPage: React.FC = () => {
+export const AdminReservationsPage: React.FC = () => {
   const { t } = useLanguage();
 
   return (
@@ -8,13 +8,13 @@ export const AdminQuotesReservationsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">
-            {t('admin.sidebar.quotesReservations') || 'Quotes & Reservations'}
+            {t('admin.sidebar.reservationsManagement') || 'Reservations Management'}
           </h1>
         </div>
         
         <div className="bg-[var(--color-bg-card)] rounded-lg shadow-md p-6">
           <p className="text-[var(--color-text-secondary)]">
-            {t('admin.dashboard.comingSoon') || 'Quotes & reservations features coming soon...'}
+            {t('admin.dashboard.comingSoon') || 'Reservations features coming soon...'}
           </p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   LayoutDashboard, 
   Route, 
   FileText, 
+  ClipboardList,
   Truck, 
   Users, 
   UserCircle, 
@@ -43,9 +44,14 @@ export const AdminSidebar: React.FC = () => {
       icon: Route 
     },
     { 
-      path: ROUTES.admin.quotesReservations, 
-      label: t('admin.sidebar.quotesReservations') || 'Quotes & Reservations', 
+      path: ROUTES.admin.quotes, 
+      label: t('admin.sidebar.quotesManagement') || 'Quotes Management', 
       icon: FileText 
+    },
+    { 
+      path: ROUTES.admin.reservations, 
+      label: t('admin.sidebar.reservationsManagement') || 'Reservations Management', 
+      icon: ClipboardList 
     },
     { 
       path: ROUTES.admin.fleetManagement, 

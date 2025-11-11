@@ -4,9 +4,10 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { Button } from '../../../components/common/button';
 import { FormInput } from '../../../components/common/form_input';
 import { ImageCropModal } from '../../../components/common/image_crop_modal';
-import { fetchUserProfileAsync, updateUserProfileAsync } from '../../../store/slices/profile_slice';
 import { linkGoogleAsync } from '../../../store/slices/auth_slice';
 import { useProfilePictureUpload } from '../../../hooks/profile/use_profile_picture_upload';
+import { useProfileQuery } from '../../../hooks/profile/use_profile_query';
+import { useUpdateProfileMutation } from '../../../hooks/profile/use_update_profile_mutation';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../../hooks/use_language';
 import { Upload } from 'lucide-react';
@@ -18,13 +19,15 @@ import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanit
 export const MyProfileForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const { profile, isLoading } = useAppSelector((state) => state.profile);
+  // Use TanStack Query for profile data instead of Redux
+  const { data: profile, isLoading, refetch: refetchProfile } = useProfileQuery();
+  // Use TanStack Query mutation for profile updates
+  const updateProfile = useUpdateProfileMutation();
   const { t } = useLanguage();
   const { uploadProfilePicture, isUploading, error: uploadError, clearError } = useProfilePictureUpload();
   
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
   const [pendingProfilePicture, setPendingProfilePicture] = useState<string | null>(null);
@@ -37,14 +40,8 @@ export const MyProfileForm: React.FC = () => {
     profilePicture: '',
   });
 
-  // Fetch profile on mount
-  useEffect(() => {
-    if (!profile) {
-      dispatch(fetchUserProfileAsync());
-    }
-  }, [dispatch, profile]);
-
   // Update form when profile is loaded and set initial values
+  // Note: Profile fetching is now handled automatically by useProfileQuery
   useEffect(() => {
     if (profile) {
       const initialFullName = profile.fullName || '';
@@ -133,9 +130,9 @@ export const MyProfileForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isSubmitting || !hasChanges) return;
+    // Use mutation's isPending state instead of local isSubmitting
+    if (updateProfile.isPending || !hasChanges) return;
 
-    setIsSubmitting(true);
     try {
       const updateData: {
         fullName?: string;
@@ -154,7 +151,8 @@ export const MyProfileForm: React.FC = () => {
         updateData.profilePicture = pendingProfilePicture;
       }
 
-      await dispatch(updateUserProfileAsync(updateData)).unwrap();
+      // Use TanStack Query mutation instead of Redux
+      await updateProfile.mutateAsync(updateData);
       
       // Update initial values after successful save
       setInitialValues({
@@ -167,8 +165,6 @@ export const MyProfileForm: React.FC = () => {
       toast.success(t('profile.myProfile.updateSuccess') || 'Profile updated successfully');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('profile.myProfile.updateError') || 'Failed to update profile');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -196,7 +192,7 @@ export const MyProfileForm: React.FC = () => {
       const result = await dispatch(linkGoogleAsync(credentialResponse.credential)).unwrap();
       toast.success(result.message || t('profile.myProfile.linkGoogleSuccess'));
       // Refetch profile to get updated hasGoogleAuth value
-      await dispatch(fetchUserProfileAsync());
+      await refetchProfile();
     } catch (err) {
       const sanitizedMessage = sanitizeErrorMessage(err);
       logErrorForDev(err, sanitizedMessage);
@@ -241,7 +237,7 @@ export const MyProfileForm: React.FC = () => {
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading || isSubmitting || isUploading}
+              disabled={isLoading || updateProfile.isPending || isUploading}
               className="flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
@@ -278,7 +274,7 @@ export const MyProfileForm: React.FC = () => {
             required
             minLength={3}
             placeholder={t('profile.myProfile.fullNamePlaceholder')}
-            disabled={isLoading || isSubmitting}
+            disabled={isLoading || updateProfile.isPending}
             className="px-3 sm:px-4 py-2 text-sm sm:text-base"
           />
 
@@ -303,7 +299,7 @@ export const MyProfileForm: React.FC = () => {
             pattern="[0-9]{10}"
             maxLength={10}
             placeholder={t('profile.myProfile.phoneNumberPlaceholder')}
-            disabled={isLoading || isSubmitting}
+            disabled={isLoading || updateProfile.isPending}
             className="px-3 sm:px-4 py-2 text-sm sm:text-base"
           />
         </div>
@@ -314,16 +310,16 @@ export const MyProfileForm: React.FC = () => {
             variant="outline"
             className="w-full sm:w-auto"
             onClick={handleCancel}
-            disabled={isLoading || isSubmitting || !hasChanges}
+            disabled={isLoading || updateProfile.isPending || !hasChanges}
           >
             {t('profile.myProfile.cancel')}
           </Button>
           <Button
             type="submit"
             className="w-full sm:w-auto"
-            disabled={isLoading || isSubmitting || !hasChanges}
+            disabled={isLoading || updateProfile.isPending || !hasChanges}
           >
-            {isSubmitting ? t('profile.myProfile.saving') : t('profile.myProfile.saveChanges')}
+            {updateProfile.isPending ? t('profile.myProfile.saving') : t('profile.myProfile.saveChanges')}
           </Button>
         </div>
       </form>
@@ -349,7 +345,7 @@ export const MyProfileForm: React.FC = () => {
           <div className="max-w-md">
             {/* Hidden GoogleLogin component */}
             <div ref={googleLoginRef} className="hidden">
-              {!(isLoading || isSubmitting) && !profile?.hasGoogleAuth && (
+              {!(isLoading || updateProfile.isPending) && !profile?.hasGoogleAuth && (
                 <GoogleLogin
                   onSuccess={handleLinkGoogleSuccess}
                   onError={handleLinkGoogleError}
@@ -367,7 +363,7 @@ export const MyProfileForm: React.FC = () => {
               type="button"
               variant="outline"
               onClick={triggerGoogleLogin}
-              disabled={isLoading || isSubmitting || profile?.hasGoogleAuth === true}
+              disabled={isLoading || updateProfile.isPending || profile?.hasGoogleAuth === true}
               className="w-full sm:w-auto"
             >
               {profile?.hasGoogleAuth

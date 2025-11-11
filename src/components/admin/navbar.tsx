@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logoutAsync } from '../../store/slices/auth_slice';
 import { ROUTES } from '../../constants/routes';
@@ -11,6 +12,7 @@ import { useLanguage } from '../../hooks/use_language';
 export const AdminNavbar: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const { user } = useAppSelector((state) => state.auth);
   const { t } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -37,6 +39,8 @@ export const AdminNavbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await dispatch(logoutAsync()).unwrap();
+      // Clear TanStack Query cache on logout
+      queryClient.removeQueries({ queryKey: ['profile'] });
       toast.success('Logged out successfully');
       navigate(ROUTES.admin.login);
       setIsDropdownOpen(false);

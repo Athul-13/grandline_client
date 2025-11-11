@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { PasswordInput } from '../../../components/common/password_input';
 import { useLanguage } from '../../../hooks/use_language';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { setupPasswordAsync } from '../../../store/slices/auth_slice';
-import { fetchUserProfileAsync } from '../../../store/slices/profile_slice';
+import { useProfileQuery } from '../../../hooks/profile/use_profile_query';
 import { userService } from '../../../services/api/user_service';
 import toast from 'react-hot-toast';
 import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
@@ -40,15 +40,9 @@ export const SecuritySettings: React.FC = () => {
   const { t } = useLanguage();
   const dispatch = useAppDispatch();
   const { isLoading: authLoading } = useAppSelector((state) => state.auth);
-  const { profile, isLoading: profileLoading } = useAppSelector((state) => state.profile);
+  // Use TanStack Query for profile data instead of Redux
+  const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfileQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fetch profile on mount if not already loaded
-  useEffect(() => {
-    if (!profile) {
-      dispatch(fetchUserProfileAsync());
-    }
-  }, [dispatch, profile]);
 
   // Get hasPassword from profile data
   const hasPassword = profile?.hasPassword ?? false;
@@ -89,7 +83,7 @@ export const SecuritySettings: React.FC = () => {
       toast.success(result.message || 'Password set up successfully');
       resetSetup();
       // Refetch profile to get updated hasPassword value
-      await dispatch(fetchUserProfileAsync());
+      await refetchProfile();
     } catch (err) {
       const sanitizedMessage = sanitizeErrorMessage(err);
       logErrorForDev(err, sanitizedMessage);
@@ -106,7 +100,7 @@ export const SecuritySettings: React.FC = () => {
       toast.success(result.message || 'Password changed successfully');
       resetChange();
       // Refetch profile to ensure data is up to date
-      await dispatch(fetchUserProfileAsync());
+      await refetchProfile();
     } catch (err) {
       const sanitizedMessage = sanitizeErrorMessage(err);
       logErrorForDev(err, sanitizedMessage);

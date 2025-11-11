@@ -42,21 +42,19 @@ export const API_ENDPOINTS = {
     buses: '/admin/buses',
     routes: '/admin/routes',
   },
-} as const;
-
-/**
- * HTTP Status Codes
- */
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
+  // Fleet endpoints
+  fleet: {
+    vehicleTypes: '/vehicle-types',
+    vehicleTypesById: (id: string) => `/vehicle-types/${id}`,
+    vehicles: '/vehicles',
+    vehiclesById: (id: string) => `/vehicles/${id}`,
+    filterOptions: '/vehicles/filter-options',
+    uploadSignature: '/vehicles/upload-signature',
+    deleteImages: '/vehicles/images',
+    amenities: '/amenities',
+    amenitiesById: (id: string) => `/amenities/${id}`,
+    amenitiesPaid: '/amenities/paid',
+  },
 } as const;
 
 /**

@@ -1,7 +1,6 @@
-import { useState, useCallback } from 'react';
-import { useAppDispatch } from '../../store/hooks';
+import { useMutation } from '@tanstack/react-query';
 import { userService } from '../../services/api/user_service';
-import { updateUserProfileAsync } from '../../store/slices/profile_slice';
+import { useUpdateProfileMutation } from './use_update_profile_mutation';
 import { uploadImageToCloudinary, CloudinaryUploadError } from '../../utils/cloudinary_uploader';
 
 interface UseProfilePictureUploadReturn {
@@ -11,23 +10,26 @@ interface UseProfilePictureUploadReturn {
   clearError: () => void;
 }
 
+interface UploadParams {
+  file: File | Blob;
+  fileName?: string;
+}
+
 /**
  * Custom hook for uploading profile pictures to Cloudinary
+ * Uses TanStack Query mutations for automatic state management and cache updates
  */
 export const useProfilePictureUpload = (): UseProfilePictureUploadReturn => {
-  const dispatch = useAppDispatch();
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Use the update profile mutation hook for step 3
+  const updateProfile = useUpdateProfileMutation();
 
-  const uploadProfilePicture = useCallback(async (file: File | Blob, fileName?: string): Promise<string | null> => {
-    setIsUploading(true);
-    setError(null);
-
-    try {
-      // Step 1: Get signed upload URL from server
+  // Main upload mutation that chains all three steps
+  const uploadMutation = useMutation<string, Error, UploadParams>({
+    mutationFn: async ({ file, fileName }: UploadParams) => {
+      // Get signed upload URL from server
       const uploadData = await userService.getUploadUrl();
 
-      // Step 2: Upload image to Cloudinary
+      // Upload image to Cloudinary
       const imageUrl = await uploadImageToCloudinary(
         file,
         uploadData.uploadUrl,
@@ -35,37 +37,44 @@ export const useProfilePictureUpload = (): UseProfilePictureUploadReturn => {
         fileName
       );
 
-      // Step 3: Update profile with image URL
-      await dispatch(
-        updateUserProfileAsync({ profilePicture: imageUrl })
-      ).unwrap();
+      // Update profile with image URL using TanStack Query mutation
+      await updateProfile.mutateAsync({ profilePicture: imageUrl });
 
-      setIsUploading(false);
       return imageUrl;
-    } catch (err) {
-      setIsUploading(false);
-      
-      let errorMessage = 'Failed to upload profile picture';
-      
-      if (err instanceof CloudinaryUploadError) {
-        errorMessage = err.message;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'string') {
-        errorMessage = err;
-      }
-      
-      setError(errorMessage);
+    },
+  });
+
+  // Wrapper function to match the original interface
+  const uploadProfilePicture = async (
+    file: File | Blob,
+    fileName?: string
+  ): Promise<string | null> => {
+    try {
+      const imageUrl = await uploadMutation.mutateAsync({ file, fileName });
+      return imageUrl;
+    } catch {
+      // Error is automatically handled by mutation and available in mutation.error
       return null;
     }
-  }, [dispatch]);
+  };
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  // Convert mutation error to string for compatibility
+  const error =
+    uploadMutation.error instanceof CloudinaryUploadError
+      ? uploadMutation.error.message
+      : uploadMutation.error instanceof Error
+      ? uploadMutation.error.message
+      : uploadMutation.error
+      ? String(uploadMutation.error)
+      : null;
+
+  // Clear error by resetting the mutation
+  const clearError = () => {
+    uploadMutation.reset();
+  };
 
   return {
-    isUploading,
+    isUploading: uploadMutation.isPending,
     error,
     uploadProfilePicture,
     clearError,
