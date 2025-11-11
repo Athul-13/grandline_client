@@ -6,8 +6,9 @@ import { logoutAsync } from '../../store/slices/auth_slice';
 import { ROUTES } from '../../constants/routes';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
-import { ChevronDown, LogOut, Search } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
 import { useLanguage } from '../../hooks/use_language';
+import { SearchBar } from '../common/search_bar';
 
 export const AdminNavbar: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +17,6 @@ export const AdminNavbar: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { t } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -49,34 +49,12 @@ export const AdminNavbar: React.FC = () => {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    if (searchQuery.trim()) {
-      console.log('Searching for:', searchQuery);
-      // Navigate to search results or filter current page
-    }
-  };
-
   return (
     <nav className="bg-[var(--color-bg-primary)]/80 backdrop-blur-sm z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center items-center h-16 gap-4">
           {/* Search Bar - Centered with fixed width */}
-          <div className="w-96">
-            <form onSubmit={handleSearch} className="relative">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--color-text-muted)]" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('admin.navbar.searchPlaceholder') || 'Search...'}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-all duration-200"
-                />
-              </div>
-            </form>
-          </div>
+          <SearchBar />
 
           {/* Right side: Admin Name with Dropdown */}
           <div className="absolute right-4 sm:right-6 lg:right-8 shrink-0" ref={dropdownRef}>
