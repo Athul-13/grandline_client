@@ -55,6 +55,28 @@ export const API_ENDPOINTS = {
     amenitiesById: (id: string) => `/amenities/${id}`,
     amenitiesPaid: '/amenities/paid',
   },
+  // Quote endpoints
+  quotes: {
+    list: '/quotes',
+    getById: (id: string) => `/quotes/${id}`,
+    create: '/quotes',
+    update: (id: string) => `/quotes/${id}`,
+    delete: (id: string) => `/quotes/${id}`,
+    calculateRoutes: (id: string) => `/quotes/${id}/calculate-routes`,
+    calculatePricing: (id: string) => `/quotes/${id}/calculate-pricing`,
+    submit: (id: string) => `/quotes/${id}/submit`,
+    recommendations: '/quotes/recommendations',
+  },
+  // Event type endpoints
+  eventTypes: {
+    list: '/event-types',
+    create: '/event-types',
+  },
+  // Chat endpoints
+  chat: {
+    getMessages: (id: string) => `/quotes/${id}/chat`,
+    sendMessage: (id: string) => `/quotes/${id}/chat`,
+  },
 } as const;
 
 /**
