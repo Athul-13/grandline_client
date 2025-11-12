@@ -5,6 +5,7 @@ import { useAppDispatch } from './store/hooks';
 import { checkAuthAsync } from './store/slices/auth_slice';
 import { UserRoutes } from './routes/user_routes';
 import { AdminRoutes } from './routes/admin_routes';
+import { MapboxTestPage } from './pages/test/mapbox_test_page';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -45,6 +46,9 @@ function App() {
         
         {/* User routes */}
         <Route path="/*" element={<UserRoutes />} />
+
+        {/* Test routes */}
+        <Route path="/test/mapbox" element={<MapboxTestPage />} />
       </Routes>
     </>
   );
