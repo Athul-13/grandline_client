@@ -1,5 +1,6 @@
 import { useQuoteBuilder } from '../../../hooks/quotes/use_quote_builder';
 import { StepNavigation } from './step_navigation';
+import { Step1TripType } from './step_1_trip_type';
 
 /**
  * Quote Builder Container
@@ -8,8 +9,13 @@ import { StepNavigation } from './step_navigation';
 export const QuoteBuilderContainer: React.FC = () => {
   const {
     currentStep,
+    tripType,
+    quoteId,
     validation,
     goToStep,
+    setTripType,
+    createDraft,
+    goToNextStep,
     isLoading,
     error,
   } = useQuoteBuilder();
@@ -61,12 +67,32 @@ export const QuoteBuilderContainer: React.FC = () => {
       {/* Step Content */}
       <div className="container mx-auto px-6 py-8">
         <div className="bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6">
-          {/* Step content will be rendered here in subsequent commits */}
-          <div className="text-center py-12">
-            <p className="text-[var(--color-text-secondary)]">
-              Step {currentStep} content will be implemented here
-            </p>
-          </div>
+          {currentStep === 1 && (
+            <Step1TripType
+              tripType={tripType}
+              onTripTypeSelect={setTripType}
+              onNext={async () => {
+                if (!tripType) return;
+
+                // If no quoteId, create draft (combines POST + PUT)
+                if (!quoteId) {
+                  await createDraft(tripType);
+                } else {
+                  // If quoteId exists, just go to next step
+                  await goToNextStep();
+                }
+              }}
+              isLoading={isLoading}
+            />
+          )}
+
+          {currentStep > 1 && (
+            <div className="text-center py-12">
+              <p className="text-[var(--color-text-secondary)]">
+                Step {currentStep} content will be implemented in subsequent commits
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
