@@ -7,9 +7,11 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 
 /**
  * Geocode result from Mapbox
+ * Matches the structure returned by Mapbox Geocoder
  */
 export interface GeocodeResult {
-  placeName: string;
+  place_name?: string;
+  text?: string;
   center: [number, number]; // [longitude, latitude]
   geometry: {
     type: string;
@@ -34,7 +36,7 @@ export const mapboxService = {
       accessToken,
       mapboxgl: mapboxglNamespace as never, // Type assertion needed for MapboxGeocoder typing
       placeholder: 'Search for a location...',
-      countries: undefined,
+      countries: 'IN',
       types: 'address,poi',
     });
     return geocoder;
@@ -45,7 +47,7 @@ export const mapboxService = {
    */
   formatGeocodeResult: (result: GeocodeResult) => {
     return {
-      locationName: result.placeName,
+      locationName: result.place_name || result.text || 'Unknown Location',
       latitude: result.center[1],
       longitude: result.center[0],
     };

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useQuoteBuilder } from '../../../hooks/quotes/use_quote_builder';
 import { StepNavigation } from './step_navigation';
 import { Step1TripType } from './step_1_trip_type';
+import { Step2Itinerary } from './step_2_itinerary';
 
 /**
  * Quote Builder Container
@@ -11,14 +13,20 @@ export const QuoteBuilderContainer: React.FC = () => {
     currentStep,
     tripType,
     quoteId,
+    itinerary,
     validation,
     goToStep,
     setTripType,
+    setItinerary,
     createDraft,
     goToNextStep,
+    goToPreviousStep,
     isLoading,
     error,
   } = useQuoteBuilder();
+
+  // Local state for return trip enabled status
+  const [isReturnEnabled, setIsReturnEnabled] = useState(false);
 
   // Calculate completed steps
   const completedSteps = [
@@ -65,35 +73,52 @@ export const QuoteBuilderContainer: React.FC = () => {
       />
 
       {/* Step Content */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6">
-          {currentStep === 1 && (
-            <Step1TripType
-              tripType={tripType}
-              onTripTypeSelect={setTripType}
-              onNext={async () => {
-                if (!tripType) return;
+      <div className={currentStep === 2 ? 'h-[calc(100vh-120px)]' : 'container mx-auto px-6 py-8'}>
+        {currentStep === 2 ? (
+          <Step2Itinerary
+            tripType={tripType || 'one_way'}
+            itinerary={itinerary}
+            onItineraryChange={setItinerary}
+            onNext={async () => {
+              await goToNextStep();
+            }}
+            onPrevious={goToPreviousStep}
+            isLoading={isLoading}
+            isReturnEnabled={isReturnEnabled}
+            onReturnEnabledChange={setIsReturnEnabled}
+          />
+        ) : (
+          <div className="container mx-auto px-6 py-8">
+            <div className="bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6">
+              {currentStep === 1 && (
+                <Step1TripType
+                  tripType={tripType}
+                  onTripTypeSelect={setTripType}
+                  onNext={async () => {
+                    if (!tripType) return;
 
-                // If no quoteId, create draft (combines POST + PUT)
-                if (!quoteId) {
-                  await createDraft(tripType);
-                } else {
-                  // If quoteId exists, just go to next step
-                  await goToNextStep();
-                }
-              }}
-              isLoading={isLoading}
-            />
-          )}
+                    // If no quoteId, create draft (combines POST + PUT)
+                    if (!quoteId) {
+                      await createDraft(tripType);
+                    } else {
+                      // If quoteId exists, just go to next step
+                      await goToNextStep();
+                    }
+                  }}
+                  isLoading={isLoading}
+                />
+              )}
 
-          {currentStep > 1 && (
-            <div className="text-center py-12">
-              <p className="text-[var(--color-text-secondary)]">
-                Step {currentStep} content will be implemented in subsequent commits
-              </p>
+              {currentStep > 2 && (
+                <div className="text-center py-12">
+                  <p className="text-[var(--color-text-secondary)]">
+                    Step {currentStep} content will be implemented in subsequent commits
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
