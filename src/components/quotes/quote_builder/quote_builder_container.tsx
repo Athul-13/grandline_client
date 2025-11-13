@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuoteBuilder } from '../../../hooks/quotes/use_quote_builder';
 import { StepNavigation } from './step_navigation';
 import { Step1TripType } from './step_1_trip_type';
@@ -27,6 +27,17 @@ export const QuoteBuilderContainer: React.FC = () => {
 
   // Local state for return trip enabled status
   const [isReturnEnabled, setIsReturnEnabled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Calculate completed steps
   const completedSteps = [
@@ -64,16 +75,22 @@ export const QuoteBuilderContainer: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
-      {/* Step Navigation */}
-      <StepNavigation
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-        onStepClick={handleStepClick}
-      />
+    <div className="h-full w-full bg-[var(--color-bg-primary)] flex flex-col relative">
+      {/* Step Navigation - Hidden on mobile, overlay on map for step 2 */}
+      {!isMobile && (
+        <div
+          className={currentStep === 2 ? 'relative z-30 bg-white/80 backdrop-blur-sm' : 'relative'}
+        >
+          <StepNavigation
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepClick={handleStepClick}
+          />
+        </div>
+      )}
 
       {/* Step Content */}
-      <div className={currentStep === 2 ? 'h-[calc(100vh-120px)]' : 'container mx-auto px-6 py-8'}>
+      <div className={currentStep === 2 ? 'flex-1 overflow-hidden relative' : 'flex-1 container mx-auto px-6 py-8 overflow-y-auto'}>
         {currentStep === 2 ? (
           <Step2Itinerary
             tripType={tripType || 'one_way'}

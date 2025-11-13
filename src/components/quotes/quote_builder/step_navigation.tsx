@@ -32,7 +32,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   };
 
   return (
-    <div className="w-full bg-[var(--color-bg-card)] border-b border-[var(--color-border)] px-6 py-4">
+    <div className="w-full bg-transparent border-b border-[var(--color-border)] px-6 py-4">
       <div className="flex items-center justify-between max-w-4xl mx-auto">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.number);

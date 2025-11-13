@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { mapboxService } from '../../services/api/mapbox_service';
@@ -8,7 +8,12 @@ import type { Map } from 'mapbox-gl';
  * Mapbox Map Hook
  * Manages Mapbox map initialization, markers, and geocoder
  */
-export const useMapboxMap = (containerId: string, accessToken: string) => {
+export const useMapboxMap = (
+  containerId: string,
+  accessToken: string,
+  initialCenter?: [number, number], // [longitude, latitude]
+  initialZoom?: number
+) => {
   const mapRef = useRef<Map | null>(null);
   const geocoderRef = useRef<MapboxGeocoder | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -28,11 +33,15 @@ export const useMapboxMap = (containerId: string, accessToken: string) => {
     try {
       mapboxgl.accessToken = accessToken;
 
+      // Default to Kochi, India if no initial center provided
+      const defaultCenter: [number, number] = [76.2673, 9.9312]; // Kochi coordinates
+      const defaultZoom = 10;
+
       const map = new mapboxgl.Map({
         container: containerId,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [0, 0], // Default center, will be updated when locations are added
-        zoom: 2,
+        center: initialCenter || defaultCenter,
+        zoom: initialZoom || defaultZoom,
       });
 
       map.on('load', () => {
@@ -44,9 +53,8 @@ export const useMapboxMap = (containerId: string, accessToken: string) => {
         setMapError(e.error?.message || 'Map initialization failed');
       });
 
-      // Initialize geocoder
+      // Initialize geocoder (but don't add to map - will be added to custom container)
       const geocoderInstance = mapboxService.initializeGeocoder(accessToken, mapboxgl);
-      geocoderInstance.addTo(`#${containerId}`);
 
       mapRef.current = map;
       geocoderRef.current = geocoderInstance;
@@ -66,68 +74,13 @@ export const useMapboxMap = (containerId: string, accessToken: string) => {
     } catch (error) {
       setMapError(error instanceof Error ? error.message : 'Failed to initialize map');
     }
-  }, [containerId, accessToken]);
-
-  /**
-   * Add marker to map
-   */
-  const addMarker = useCallback((latitude: number, longitude: number, color = '#C5630C') => {
-    if (!mapRef.current) return null;
-
-    const el = document.createElement('div');
-    el.className = 'marker';
-    el.style.width = '20px';
-    el.style.height = '20px';
-    el.style.borderRadius = '50%';
-    el.style.backgroundColor = color;
-    el.style.border = '2px solid white';
-    el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-
-    const marker = new mapboxgl.Marker(el)
-      .setLngLat([longitude, latitude])
-      .addTo(mapRef.current);
-
-    markersRef.current.push(marker);
-    return marker;
-  }, []);
-
-  /**
-   * Remove all markers
-   */
-  const clearMarkers = useCallback(() => {
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
-  }, []);
-
-  /**
-   * Center map on location
-   */
-  const centerMap = useCallback((latitude: number, longitude: number, zoom = 12) => {
-    if (!mapRef.current) return;
-
-    mapRef.current.flyTo({
-      center: [longitude, latitude],
-      zoom,
-      duration: 1000,
-    });
-  }, []);
-
-  /**
-   * Get geocoder instance
-   */
-  const getGeocoder = useCallback(() => {
-    return geocoderRef.current;
-  }, []);
+  }, [containerId, accessToken, initialCenter, initialZoom]);
 
   return {
     map: mapRef.current,
     geocoder,
     isMapLoaded,
     mapError,
-    addMarker,
-    clearMarkers,
-    centerMap,
-    getGeocoder,
   };
 };
 

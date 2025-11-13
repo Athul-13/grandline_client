@@ -36,8 +36,6 @@ export const mapboxService = {
       accessToken,
       mapboxgl: mapboxglNamespace as never, // Type assertion needed for MapboxGeocoder typing
       placeholder: 'Search for a location...',
-      countries: 'IN',
-      types: 'address,poi',
     });
     return geocoder;
   },

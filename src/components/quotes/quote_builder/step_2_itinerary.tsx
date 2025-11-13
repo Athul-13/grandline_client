@@ -1,16 +1,19 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '../../../components/common/button';
 import { MapContainer } from './map_container';
-import { LocationSearch } from './location_search';
 import { ItineraryFloatingPanel } from './itinerary_floating_panel';
+import { RouteInfoBox } from './route_info_box';
+import { RouteSpinner } from './route_spinner';
 import { useItineraryAutoUpdate } from '../../../hooks/quotes/use_itinerary_auto_update';
-import mapboxgl from 'mapbox-gl';
+import { useRouteCalculation } from '../../../hooks/quotes/use_route_calculation';
+import { useMarkerManagement } from '../../../hooks/quotes/use_marker_management';
+import { useRouteDrawing } from '../../../hooks/quotes/use_route_drawing';
 import type { Map } from 'mapbox-gl';
-import type MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import type { GeocodeResult } from '../../../services/api/mapbox_service';
 import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
 import { StopType } from '../../../types/quotes/itinerary';
 import type { TripTypeType } from '../../../types/quotes/quote';
+import { getValidStops } from '../../../utils/stop_utils';
 
 interface Step2ItineraryProps {
   tripType: TripTypeType;
@@ -44,15 +47,49 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   onReturnEnabledChange,
 }) => {
   const [map, setMap] = useState<Map | null>(null);
-  const [geocoder, setGeocoder] = useState<MapboxGeocoder | null>(null);
-  const [activeTab] = useState<'outbound' | 'return'>('outbound');
-  const [selectedLocationType, setSelectedLocationType] = useState<'pickup' | 'stop' | 'dropoff'>(
-    'pickup'
-  );
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'outbound' | 'return'>('outbound');
+  const previousTabRef = useRef<'outbound' | 'return'>('outbound');
+
+  // Get Mapbox access token
+  const mapboxAccessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
+
+  // Route calculation hook for outbound
+  const outboundRoute = useRouteCalculation({
+    accessToken: mapboxAccessToken,
+    debounceMs: 500,
+    timeoutMs: 7000,
+    minDistanceMeters: 100,
+  });
+
+  // Route calculation hook for return
+  const returnRoute = useRouteCalculation({
+    accessToken: mapboxAccessToken,
+    debounceMs: 500,
+    timeoutMs: 7000,
+    minDistanceMeters: 100,
+  });
 
   const outboundStops = useMemo(() => itinerary?.outbound || [], [itinerary?.outbound]);
   const returnStops = useMemo(() => itinerary?.return || [], [itinerary?.return]);
+
+  // Calculate initial map center: pickup location if exists, otherwise Kochi
+  const initialCenter = useMemo(() => {
+    const pickupStop = outboundStops.find((s) => s.stopType === StopType.PICKUP);
+    if (pickupStop && pickupStop.latitude && pickupStop.longitude) {
+      return [pickupStop.longitude, pickupStop.latitude] as [number, number];
+    }
+    // Default to Kochi, India
+    return [76.2673, 9.9312] as [number, number];
+  }, [outboundStops]);
+
+  const initialZoom = useMemo(() => {
+    const pickupStop = outboundStops.find((s) => s.stopType === StopType.PICKUP);
+    if (pickupStop && pickupStop.latitude && pickupStop.longitude) {
+      return 12; // Zoom in for specific location
+    }
+    return 10; // Default zoom for Kochi
+  }, [outboundStops]);
 
   // Auto-update return trip when outbound changes
   useItineraryAutoUpdate({
@@ -68,149 +105,94 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     isReturnEnabled,
   });
 
-  // Handle location selection from geocoder
-  const handleLocationSelect = useCallback(
-    (result: GeocodeResult) => {
-      const location: ItineraryStopDto = {
-        locationName: result.place_name || result.text || 'Unknown Location',
-        latitude: result.center[1],
-        longitude: result.center[0],
-        arrivalTime: new Date().toISOString(),
-        departureTime: null,
-        isDriverStaying: false,
-        stayingDuration: null,
-        stopType:
-          selectedLocationType === 'pickup'
-            ? StopType.PICKUP
-            : selectedLocationType === 'dropoff'
-              ? StopType.DROPOFF
-              : StopType.STOP,
-      };
+  // Handle location selection from autocomplete
+  const handleLocationSelect = useCallback(() => {
+    // Location is already updated in the stop via onUpdate callback
+    // No need to create a new stop or do anything here
+  }, []);
 
-      const currentStops = activeTab === 'outbound' ? outboundStops : returnStops;
-      const isPickup = selectedLocationType === 'pickup';
-      const isDropoff = selectedLocationType === 'dropoff';
-
-      let newStops: ItineraryStopDto[];
-
-      if (isPickup) {
-        // Replace existing pickup or add at start
-        const existingPickupIndex = currentStops.findIndex((s) => s.stopType === StopType.PICKUP);
-        if (existingPickupIndex !== -1) {
-          newStops = [...currentStops];
-          newStops[existingPickupIndex] = location;
-        } else {
-          newStops = [location, ...currentStops];
-        }
-      } else if (isDropoff) {
-        // Replace existing dropoff or add at end
-        const existingDropoffIndex = currentStops.findIndex(
-          (s) => s.stopType === StopType.DROPOFF
-        );
-        if (existingDropoffIndex !== -1) {
-          newStops = [...currentStops];
-          newStops[existingDropoffIndex] = location;
-        } else {
-          newStops = [...currentStops, location];
-        }
-      } else {
-        // Add as stop
-        newStops = [...currentStops, location];
-      }
-
-      if (activeTab === 'outbound') {
-        onItineraryChange({
-          outbound: newStops,
-          return: returnStops,
-        });
-      } else {
-        onItineraryChange({
-          outbound: outboundStops,
-          return: newStops,
-        });
-      }
-
-      // Add marker to map
-      if (map) {
-        const el = document.createElement('div');
-        el.className = 'marker';
-        el.style.width = '20px';
-        el.style.height = '20px';
-        el.style.borderRadius = '50%';
-        el.style.backgroundColor = isPickup ? '#10b981' : isDropoff ? '#ef4444' : '#3b82f6';
-        el.style.border = '2px solid white';
-        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([location.longitude, location.latitude])
-          .addTo(map);
-
-        markersRef.current.push(marker);
-
-        // Center map on new location
-        map.flyTo({
-          center: [location.longitude, location.latitude],
-          zoom: 12,
-          duration: 1000,
-        });
-      }
-
-      // Reset selection type after adding
-      setSelectedLocationType('stop');
-    },
-    [activeTab, outboundStops, returnStops, selectedLocationType, map, onItineraryChange]
+  // Get current stops for active tab
+  const currentStops = useMemo(
+    () => (activeTab === 'outbound' ? outboundStops : returnStops),
+    [activeTab, outboundStops, returnStops]
   );
 
-  // Update markers when stops change
+  // Manage markers using custom hook
+  useMarkerManagement({
+    map,
+    isMapLoaded,
+    stops: currentStops,
+  });
+
+  // Calculate routes when stops change (only for active tab, only when map is loaded)
   useEffect(() => {
-    if (!map) return;
+    if (!isMapLoaded) return;
 
-    // Clear existing markers
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
+    const routeHook = activeTab === 'outbound' ? outboundRoute : returnRoute;
 
-    // Add markers for current tab's stops
-    const currentStops = activeTab === 'outbound' ? outboundStops : returnStops;
-    currentStops.forEach((stop) => {
-      if (stop.latitude && stop.longitude) {
-        const color =
-          stop.stopType === StopType.PICKUP
-            ? '#10b981'
-            : stop.stopType === StopType.DROPOFF
-              ? '#ef4444'
-              : '#3b82f6';
-
-        const el = document.createElement('div');
-        el.className = 'marker';
-        el.style.width = '20px';
-        el.style.height = '20px';
-        el.style.borderRadius = '50%';
-        el.style.backgroundColor = color;
-        el.style.border = '2px solid white';
-        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([stop.longitude, stop.latitude])
-          .addTo(map);
-
-        markersRef.current.push(marker);
+    // Cancel previous calculation if tab switched
+    if (previousTabRef.current !== activeTab) {
+      if (activeTab === 'outbound') {
+        returnRoute.cancelCalculation();
+      } else {
+        outboundRoute.cancelCalculation();
       }
-    });
-  }, [map, activeTab, outboundStops, returnStops]);
+      previousTabRef.current = activeTab;
+    }
 
-  const handleOutboundStopsChange = (stops: ItineraryStopDto[]) => {
-    onItineraryChange({
-      outbound: stops,
-      return: returnStops,
-    });
-  };
+    // Calculate route if 2+ stops with valid coordinates
+    const validStops = getValidStops(currentStops);
+    if (validStops.length >= 2) {
+      routeHook.calculateRoute(validStops);
+    } else {
+      // Clear route if not enough stops
+      routeHook.cancelCalculation();
+    }
+  }, [isMapLoaded, activeTab, currentStops, outboundRoute, returnRoute]);
 
-  const handleReturnStopsChange = (stops: ItineraryStopDto[]) => {
-    onItineraryChange({
-      outbound: outboundStops,
-      return: stops,
-    });
-  };
+  // Show toast on route calculation errors
+  useEffect(() => {
+    if (outboundRoute.error && activeTab === 'outbound') {
+      toast.error(outboundRoute.error);
+    }
+    if (returnRoute.error && activeTab === 'return') {
+      toast.error(returnRoute.error);
+    }
+  }, [outboundRoute.error, returnRoute.error, activeTab]);
+
+  // Get current route for active tab
+  const currentRoute = useMemo(
+    () => (activeTab === 'outbound' ? outboundRoute.route : returnRoute.route),
+    [activeTab, outboundRoute.route, returnRoute.route]
+  );
+
+  // Draw route on map using custom hook
+  useRouteDrawing({
+    map,
+    isMapLoaded,
+    route: currentRoute,
+    routeId: activeTab,
+  });
+
+  const handleOutboundStopsChange = useCallback(
+    (stops: ItineraryStopDto[]) => {
+      onItineraryChange({
+        outbound: stops,
+        return: returnStops,
+      });
+    },
+    [onItineraryChange, returnStops]
+  );
+
+  const handleReturnStopsChange = useCallback(
+    (stops: ItineraryStopDto[]) => {
+      onItineraryChange({
+        outbound: outboundStops,
+        return: stops,
+      });
+    },
+    [onItineraryChange, outboundStops]
+  );
 
   const handleNext = async () => {
     // Enable return tab if two-way and not already enabled
@@ -236,30 +218,34 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     }
   };
 
+  // Stable callback for map ready
+  const handleMapReady = useCallback((mapInstance: Map | null) => {
+    if (mapInstance) {
+      setMap(mapInstance);
+      // Set map loaded state when map is ready
+      mapInstance.once('load', () => {
+        setIsMapLoaded(true);
+      });
+      // If map is already loaded
+      if (mapInstance.loaded()) {
+        setIsMapLoaded(true);
+      }
+    } else {
+      setMap(null);
+      setIsMapLoaded(false);
+    }
+  }, []);
+
   return (
-    <div className="relative h-[calc(100vh-200px)] min-h-[600px]">
+    <div className="relative h-full w-full overflow-hidden">
       {/* Map */}
       <MapContainer
         className="absolute inset-0"
-        onMapReady={setMap}
-        onGeocoderReady={setGeocoder}
+        onMapReady={handleMapReady}
+        initialCenter={initialCenter}
+        initialZoom={initialZoom}
       />
 
-      {/* Location Search Controls */}
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <select
-          value={selectedLocationType}
-          onChange={(e) =>
-            setSelectedLocationType(e.target.value as 'pickup' | 'stop' | 'dropoff')
-          }
-          className="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-        >
-          <option value="pickup">Add Pickup</option>
-          <option value="stop">Add Stop</option>
-          <option value="dropoff">Add Dropoff</option>
-        </select>
-        <LocationSearch geocoder={geocoder} onLocationSelect={handleLocationSelect} />
-      </div>
 
       {/* Floating Itinerary Panel */}
       <ItineraryFloatingPanel
@@ -269,6 +255,25 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
         onOutboundStopsChange={handleOutboundStopsChange}
         onReturnStopsChange={handleReturnStopsChange}
         isReturnEnabled={isReturnEnabled}
+        map={map}
+        onLocationSelect={handleLocationSelect}
+        activeTab={activeTab}
+        onActiveTabChange={setActiveTab}
+      />
+
+      {/* Route Info Box */}
+      <RouteInfoBox
+        route={activeTab === 'outbound' ? outboundRoute.route : returnRoute.route}
+        isCalculating={
+          activeTab === 'outbound' ? outboundRoute.isCalculating : returnRoute.isCalculating
+        }
+      />
+
+      {/* Route Calculation Spinner */}
+      <RouteSpinner
+        isVisible={
+          activeTab === 'outbound' ? outboundRoute.isCalculating : returnRoute.isCalculating
+        }
       />
 
       {/* Navigation Buttons */}

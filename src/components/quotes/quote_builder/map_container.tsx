@@ -7,18 +7,31 @@ interface MapContainerProps {
   className?: string;
   onMapReady?: (map: Map | null) => void;
   onGeocoderReady?: (geocoder: MapboxGeocoder | null) => void;
+  initialCenter?: [number, number]; // [longitude, latitude]
+  initialZoom?: number;
 }
 
 /**
  * Map Container Component
  * Wrapper component for Mapbox map
  */
-export const MapContainer: React.FC<MapContainerProps> = ({ className, onMapReady, onGeocoderReady }) => {
+export const MapContainer: React.FC<MapContainerProps> = ({
+  className,
+  onMapReady,
+  onGeocoderReady,
+  initialCenter,
+  initialZoom,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const containerId = 'quote-builder-map';
   const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
 
-  const { map, geocoder, isMapLoaded, mapError } = useMapboxMap(containerId, accessToken);
+  const { map, geocoder, isMapLoaded, mapError } = useMapboxMap(
+    containerId,
+    accessToken,
+    initialCenter,
+    initialZoom
+  );
 
   useEffect(() => {
     if (containerRef.current && !containerRef.current.id) {
@@ -26,8 +39,12 @@ export const MapContainer: React.FC<MapContainerProps> = ({ className, onMapRead
     }
   }, [containerId]);
 
+  // Track if we've already called onMapReady to prevent infinite loops
+  const hasCalledMapReadyRef = useRef(false);
+
   useEffect(() => {
-    if (isMapLoaded && map && onMapReady) {
+    if (isMapLoaded && map && onMapReady && !hasCalledMapReadyRef.current) {
+      hasCalledMapReadyRef.current = true;
       onMapReady(map);
     }
   }, [isMapLoaded, map, onMapReady]);

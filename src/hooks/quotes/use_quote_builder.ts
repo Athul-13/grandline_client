@@ -3,6 +3,7 @@ import { useQuoteDraft } from './use_quote_draft';
 import { quoteService } from '../../services/api/quote_service';
 import type { TripTypeType } from '../../types/quotes/quote';
 import type { ItineraryStopDto } from '../../types/quotes/itinerary';
+import { StopType } from '../../types/quotes/itinerary';
 import type { PassengerDto } from '../../types/quotes/passenger';
 import type { SelectedVehicle } from '../../types/quotes/quote';
 
@@ -109,81 +110,114 @@ export const useQuoteBuilder = () => {
    * Update trip type
    */
   const setTripType = useCallback((tripType: TripTypeType) => {
-    setState((prev) => ({ ...prev, tripType }));
+    setState((prev) => {
+      // Auto-save if quoteId exists (use prev.quoteId to avoid stale closure)
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ tripType });
+        }, 0);
+      }
+      return { ...prev, tripType };
+    });
     setValidation((prev) => ({ ...prev, step1: true }));
-    
-    // Auto-save if quoteId exists
-    if (state.quoteId) {
-      autoSaveDraft({ tripType });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+  }, [autoSaveDraft]);
 
   /**
    * Update itinerary
    */
   const setItinerary = useCallback((itinerary: QuoteBuilderState['itinerary']) => {
-    setState((prev) => ({ ...prev, itinerary }));
-    
-    // Auto-save if quoteId exists
-    if (state.quoteId) {
-      autoSaveDraft({ itinerary: itinerary as { outbound: unknown[]; return?: unknown[] } });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      const newState = { ...prev, itinerary };
+      
+      // Auto-save if quoteId exists and itinerary is valid (use prev.quoteId to avoid stale closure)
+      if (prev.quoteId && itinerary) {
+        // Validate: Outbound must have at least pickup and dropoff
+        const hasPickup = itinerary.outbound.some((stop) => stop.stopType === StopType.PICKUP);
+        const hasDropoff = itinerary.outbound.some((stop) => stop.stopType === StopType.DROPOFF);
+        
+        // Only save if itinerary is valid (has pickup and dropoff)
+        if (hasPickup && hasDropoff) {
+          // Use setTimeout to avoid calling autoSaveDraft during state update
+          setTimeout(() => {
+            autoSaveDraft({ itinerary: itinerary as { outbound: unknown[]; return?: unknown[] } });
+          }, 0);
+        }
+        // If invalid, don't save (prevents 400 errors from backend)
+      }
+      
+      return newState;
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Update trip name
    */
   const setTripName = useCallback((tripName: string) => {
-    setState((prev) => ({ ...prev, tripName }));
-    
-    if (state.quoteId) {
-      autoSaveDraft({ tripName });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ tripName });
+        }, 0);
+      }
+      return { ...prev, tripName };
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Update event type
    */
   const setEventType = useCallback((eventType: string, customEventType?: string | null) => {
-    setState((prev) => ({ ...prev, eventType, customEventType: customEventType || null }));
-    
-    if (state.quoteId) {
-      autoSaveDraft({ eventType, customEventType: customEventType || null });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ eventType, customEventType: customEventType || null });
+        }, 0);
+      }
+      return { ...prev, eventType, customEventType: customEventType || null };
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Update passengers
    */
   const setPassengers = useCallback((passengers: PassengerDto[]) => {
-    setState((prev) => ({ ...prev, passengers }));
-    
-    if (state.quoteId) {
-      autoSaveDraft({ passengers: passengers as unknown[] });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ passengers: passengers as unknown[] });
+        }, 0);
+      }
+      return { ...prev, passengers };
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Update selected vehicles
    */
   const setSelectedVehicles = useCallback((selectedVehicles: SelectedVehicle[]) => {
-    setState((prev) => ({ ...prev, selectedVehicles }));
-    
-    if (state.quoteId) {
-      autoSaveDraft({ selectedVehicles });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ selectedVehicles });
+        }, 0);
+      }
+      return { ...prev, selectedVehicles };
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Update selected amenities
    */
   const setSelectedAmenities = useCallback((selectedAmenities: string[]) => {
-    setState((prev) => ({ ...prev, selectedAmenities }));
-    
-    if (state.quoteId) {
-      autoSaveDraft({ selectedAmenities });
-    }
-  }, [state.quoteId, autoSaveDraft]);
+    setState((prev) => {
+      if (prev.quoteId) {
+        setTimeout(() => {
+          autoSaveDraft({ selectedAmenities });
+        }, 0);
+      }
+      return { ...prev, selectedAmenities };
+    });
+  }, [autoSaveDraft]);
 
   /**
    * Navigate to step
