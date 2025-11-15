@@ -16,7 +16,7 @@ interface AddressAutocompleteProps {
 
 /**
  * Address Autocomplete Component
- * Provides autocomplete suggestions using Mapbox Geocoding API
+ * Provides autocomplete suggestions using Mapbox Geocoding API v6
  */
 export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value,
@@ -70,18 +70,26 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   }, [suggestions, value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const newValue = e.target.value;
     onChange(newValue);
     setHighlightedIndex(-1);
   };
 
   const handleInputFocus = () => {
+    if (disabled) return;
     if (suggestions.length > 0 && value.length >= 4) {
       setIsOpen(true);
     }
   };
 
   const handleSelect = (suggestion: GeocodeSuggestion) => {
+    console.log('🔵 STEP 1: AddressAutocomplete - Location selected', {
+      place_name: suggestion.place_name,
+      text: suggestion.text,
+      center: suggestion.center,
+      coordinates: suggestion.geometry?.coordinates,
+    });
     onChange(suggestion.place_name || suggestion.text);
     onSelect(suggestion);
     setIsOpen(false);
@@ -127,7 +135,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] ${className}`}
+          className={`w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] ${
+            disabled ? 'cursor-not-allowed opacity-60 bg-gray-100' : ''
+          } ${className}`}
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -137,7 +147,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       </div>
 
       {/* Suggestions Dropdown */}
-      {isOpen && (suggestions.length > 0 || isLoading) && (
+      {!disabled && isOpen && (suggestions.length > 0 || isLoading) && (
         <div
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
@@ -175,4 +185,3 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     </div>
   );
 };
-

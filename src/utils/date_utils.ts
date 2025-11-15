@@ -63,3 +63,64 @@ export const getMinDateTime = (previousStopArrivalTime?: string | null): Date =>
   return now;
 };
 
+/**
+ * Format ISO date string to short date format: "Sat, Nov 15"
+ */
+export const formatShortDate = (isoString: string | null | undefined): string => {
+  if (!isoString || isoString === '') return '';
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const dayName = days[date.getDay()];
+    const monthName = months[date.getMonth()];
+    const day = date.getDate();
+    
+    return `${dayName}, ${monthName} ${day}`;
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Format ISO date string to 12-hour time format: "9:00 am"
+ */
+export const format12HourTime = (isoString: string | null | undefined): string => {
+  if (!isoString || isoString === '') return '';
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+    return `${hours}:${minutesStr} ${ampm}`;
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Add duration (in seconds) to an ISO date string
+ */
+export const addDurationToDate = (isoString: string, durationSeconds: number): string => {
+  if (!isoString || isoString === '') return '';
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    
+    date.setSeconds(date.getSeconds() + durationSeconds);
+    return date.toISOString();
+  } catch {
+    return '';
+  }
+};
+

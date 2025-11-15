@@ -2,12 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { Menu, X, Plus } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { StopItemV2 } from './stop_item_v2';
-import type { GeocodeResult } from '../../../services/api/mapbox_service';
-import type { GeocodeSuggestion } from '../../../services/api/mapbox_geocoding_service';
 import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
 import { StopType } from '../../../types/quotes/itinerary';
 import type { TripTypeType } from '../../../types/quotes/quote';
 import { createNewStop, createPickupStop, createDropoffStop } from '../../../utils/stop_utils';
+import type { Map } from 'mapbox-gl';
 
 interface ItineraryFloatingPanelProps {
   outboundStops: ItineraryStopDto[];
@@ -16,9 +15,10 @@ interface ItineraryFloatingPanelProps {
   onOutboundStopsChange: (stops: ItineraryStopDto[]) => void;
   onReturnStopsChange?: (stops: ItineraryStopDto[]) => void;
   isReturnEnabled: boolean;
-  onLocationSelect: (result: GeocodeResult) => void;
   activeTab: 'outbound' | 'return';
   onActiveTabChange?: (tab: 'outbound' | 'return') => void;
+  map: Map | null;
+  isMapLoaded: boolean;
 }
 
 /**
@@ -32,9 +32,10 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
   onOutboundStopsChange,
   onReturnStopsChange,
   isReturnEnabled,
-  onLocationSelect,
   activeTab: externalActiveTab,
   onActiveTabChange,
+  map,
+  isMapLoaded,
 }) => {
   const [activeTab, setActiveTab] = useState<'outbound' | 'return'>(externalActiveTab);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -115,7 +116,7 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
       {/* Floating Panel */}
       <div
         className={cn(
-          'absolute top-28 left-4 z-10 w-96 max-h-[calc(100%-8rem)] bg-[var(--color-bg-card)] rounded-lg shadow-xl border border-[var(--color-border)] overflow-hidden flex flex-col transition-transform duration-300',
+          'absolute top-8 left-4 z-10 w-96 max-h-[calc(100%-8rem)] bg-[var(--color-bg-card)] rounded-lg shadow-xl border border-[var(--color-border)] overflow-hidden flex flex-col transition-transform duration-300',
           isMobile && isCollapsed && 'transform -translate-x-full opacity-0 pointer-events-none',
           !isMobile && 'translate-x-0 opacity-100'
         )}
@@ -185,15 +186,33 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     isPickup={true}
                     isDropoff={false}
                     onUpdate={(_index, updates) => {
+                      console.log('🟡 STEP 3: ItineraryFloatingPanel - Pickup onUpdate called', {
+                        _index,
+                        updates,
+                        pickupIndex,
+                        currentStopsCount: currentStops.length,
+                      });
                       const newStops = [...currentStops];
                       if (pickupIndex >= 0) {
                         // Update existing pickup
                         newStops[pickupIndex] = { ...newStops[pickupIndex], ...updates };
+                        console.log('🟡 STEP 3: Updated existing pickup', newStops[pickupIndex]);
                       } else {
                         // Add new pickup at the beginning
                         const newPickup = { ...displayPickup, ...updates, stopType: StopType.PICKUP };
                         newStops.unshift(newPickup);
+                        console.log('🟡 STEP 3: Added new pickup', newPickup);
                       }
+                      console.log('🟡 STEP 3: Calling onOutboundStopsChange/handleReturnStopsChange', {
+                        activeTab,
+                        newStopsCount: newStops.length,
+                        newStops: newStops.map(s => ({
+                          locationName: s.locationName,
+                          lat: s.latitude,
+                          lng: s.longitude,
+                          stopType: s.stopType
+                        }))
+                      });
                       if (activeTab === 'outbound') {
                         onOutboundStopsChange(newStops);
                       } else {
@@ -217,16 +236,8 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     }}
                     canRemove={canRemovePickup}
                     mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''}
-                    onLocationSelect={(suggestion: GeocodeSuggestion) => {
-                      if (onLocationSelect) {
-                        onLocationSelect({
-                          place_name: suggestion.place_name,
-                          text: suggestion.text,
-                          center: suggestion.center,
-                          geometry: suggestion.geometry,
-                        });
-                      }
-                    }}
+                    map={map}
+                    isMapLoaded={isMapLoaded}
                   />
 
                   {/* Add Stop Button after pickup - only if can add more */}
@@ -292,8 +303,23 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     isPickup={false}
                     isDropoff={false}
                     onUpdate={(index, updates) => {
+                      console.log('🟡 STEP 3: ItineraryFloatingPanel - Intermediate stop onUpdate called', {
+                        index,
+                        updates,
+                        currentStopsCount: currentStops.length,
+                      });
                       const newStops = [...currentStops];
                       newStops[index] = { ...newStops[index], ...updates };
+                      console.log('🟡 STEP 3: Updated intermediate stop', {
+                        updatedStop: newStops[index],
+                        newStopsCount: newStops.length,
+                        newStops: newStops.map(s => ({
+                          locationName: s.locationName,
+                          lat: s.latitude,
+                          lng: s.longitude,
+                          stopType: s.stopType
+                        }))
+                      });
                       if (activeTab === 'outbound') {
                         onOutboundStopsChange(newStops);
                       } else {
@@ -321,16 +347,8 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''}
-                    onLocationSelect={(suggestion: GeocodeSuggestion) => {
-                      if (onLocationSelect) {
-                        onLocationSelect({
-                          place_name: suggestion.place_name,
-                          text: suggestion.text,
-                          center: suggestion.center,
-                          geometry: suggestion.geometry,
-                        });
-                      }
-                    }}
+                    map={map}
+                    isMapLoaded={isMapLoaded}
                   />
 
                   {/* Add Stop Button after intermediate stop - only if can add more */}
@@ -361,22 +379,56 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
 
               const canRemoveDropoff = currentStops.length > 2;
               
+              // Check if dropoff should be disabled
+              // Disable if previous stop (last intermediate stop, or pickup if no intermediates) doesn't have required time
+              const intermediateStopsList = currentStops.filter((s) => s.stopType === StopType.STOP);
+              const previousStop = intermediateStopsList.length > 0
+                ? intermediateStopsList[intermediateStopsList.length - 1] // Last intermediate stop
+                : currentStops.find((s) => s.stopType === StopType.PICKUP); // Pickup if no intermediates
+              
+              // If there are intermediate stops, check for departure time
+              // If no intermediate stops, check if pickup has arrival time
+              const isDropoffDisabled = !previousStop || (
+                intermediateStopsList.length > 0
+                  ? (!previousStop.departureTime || previousStop.departureTime === '')
+                  : (!previousStop.arrivalTime || previousStop.arrivalTime === '')
+              );
+              
               return (
                 <StopItemV2
                   stop={displayDropoff}
                   index={displayDropoffIndex}
                   isPickup={false}
                   isDropoff={true}
+                  isDropoffDisabled={isDropoffDisabled}
                   onUpdate={(_index, updates) => {
+                    console.log('🟡 STEP 3: ItineraryFloatingPanel - Dropoff onUpdate called', {
+                      _index,
+                      updates,
+                      dropoffIndex,
+                      currentStopsCount: currentStops.length,
+                    });
                     const newStops = [...currentStops];
                     if (dropoffIndex >= 0) {
                       // Update existing dropoff
                       newStops[dropoffIndex] = { ...newStops[dropoffIndex], ...updates };
+                      console.log('🟡 STEP 3: Updated existing dropoff', newStops[dropoffIndex]);
                     } else {
                       // Add new dropoff at the end
                       const newDropoff = { ...displayDropoff, ...updates, stopType: StopType.DROPOFF };
                       newStops.push(newDropoff);
+                      console.log('🟡 STEP 3: Added new dropoff', newDropoff);
                     }
+                    console.log('🟡 STEP 3: Calling onOutboundStopsChange/handleReturnStopsChange', {
+                      activeTab,
+                      newStopsCount: newStops.length,
+                      newStops: newStops.map(s => ({
+                        locationName: s.locationName,
+                        lat: s.latitude,
+                        lng: s.longitude,
+                        stopType: s.stopType
+                      }))
+                    });
                     if (activeTab === 'outbound') {
                       onOutboundStopsChange(newStops);
                     } else {
@@ -400,16 +452,8 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                   }}
                   canRemove={canRemoveDropoff}
                   mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''}
-                  onLocationSelect={(suggestion) => {
-                    if (onLocationSelect) {
-                      onLocationSelect({
-                        place_name: suggestion.place_name,
-                        text: suggestion.text,
-                        center: suggestion.center,
-                        geometry: suggestion.geometry,
-                      });
-                    }
-                  }}
+                  map={map}
+                  isMapLoaded={isMapLoaded}
                 />
               );
             })()}

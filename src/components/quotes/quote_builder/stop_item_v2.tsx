@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Calendar, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { cn } from '../../../utils/cn';
 import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
 import { formatDate, formatTime, parseDate } from '../../../utils/date_utils';
 import { AddressAutocomplete } from './address_autocomplete';
-import type { GeocodeSuggestion } from '../../../services/api/mapbox_geocoding_service';
+import type { Map } from 'mapbox-gl';
 
 interface StopItemV2Props {
   stop: ItineraryStopDto;
@@ -25,7 +26,9 @@ interface StopItemV2Props {
   displayMode?: 'edit' | 'card'; // 'edit' = full editing, 'card' = simple display card
   onCardClick?: () => void; // Callback when card is clicked (for card mode)
   mapboxAccessToken?: string; // Mapbox access token for autocomplete
-  onLocationSelect?: (suggestion: GeocodeSuggestion) => void; // Callback when location is selected from autocomplete
+  map: Map | null; // Map instance for animation
+  isMapLoaded: boolean; // Whether map is loaded
+  isDropoffDisabled?: boolean; // Whether dropoff address input should be disabled
 }
 
 /**
@@ -47,7 +50,9 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
   onDrop,
   canRemove,
   mapboxAccessToken,
-  onLocationSelect,
+  map,
+  isMapLoaded,
+  isDropoffDisabled = false,
 }) => {
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -89,20 +94,41 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
     }
   };
 
-  // Memoize min date/time for validation - always use current time
+  // Memoize min date/time for validation - always use future time (next minute)
   const minDate = useMemo(() => {
     const now = new Date();
+    // Add 1 minute to ensure it's in the future
+    now.setMinutes(now.getMinutes() + 1);
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }, []);
+  
   const minTime = useMemo(() => {
     const now = new Date();
+    // Add 1 minute to ensure it's in the future
+    now.setMinutes(now.getMinutes() + 1);
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   }, []);
+
+  // For intermediate stops, calculate min departure time based on arrival time + staying duration
+  // This is ready for when departure time inputs are added
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const minDepartureDateTime = useMemo(() => {
+    if (!isPickup && !isDropoff && stop.arrivalTime && stop.arrivalTime !== '') {
+      const arrivalDate = new Date(stop.arrivalTime);
+      const stayingDuration = stop.stayingDuration || 0; // in seconds
+      // Add staying duration to arrival time
+      arrivalDate.setSeconds(arrivalDate.getSeconds() + stayingDuration);
+      // Add 1 minute buffer to ensure departure is after arrival + stay
+      arrivalDate.setMinutes(arrivalDate.getMinutes() + 1);
+      return arrivalDate;
+    }
+    return null;
+  }, [isPickup, isDropoff, stop.arrivalTime, stop.stayingDuration]);
 
   return (
       <div
@@ -160,84 +186,152 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
         {/* Address Input with Autocomplete */}
         <div className="mb-3">
           {mapboxAccessToken ? (
-            <AddressAutocomplete
-              value={stop.locationName || ''}
-              onChange={(value) => onUpdate(index, { locationName: value })}
-              onSelect={(suggestion) => {
-                onUpdate(index, {
-                  locationName: suggestion.place_name || suggestion.text,
-                  latitude: suggestion.center[1],
-                  longitude: suggestion.center[0],
-                });
-                if (onLocationSelect) {
-                  onLocationSelect(suggestion);
+            <div
+              onClick={() => {
+                if (isDropoff && isDropoffDisabled) {
+                  toast.error('Please set the departure time for the previous stop before setting the dropoff location');
                 }
               }}
-              placeholder="Address"
-              accessToken={mapboxAccessToken}
-            />
+              className={cn(
+                isDropoff && isDropoffDisabled && 'cursor-not-allowed opacity-60'
+              )}
+            >
+              <AddressAutocomplete
+                value={stop.locationName || ''}
+                onChange={(value) => {
+                  if (isDropoff && isDropoffDisabled) {
+                    toast.error('Please set the departure time for the previous stop before setting the dropoff location');
+                    return;
+                  }
+                  onUpdate(index, { locationName: value });
+                }}
+                onSelect={(suggestion) => {
+                  if (isDropoff && isDropoffDisabled) {
+                    toast.error('Please set the departure time for the previous stop before setting the dropoff location');
+                    return;
+                  }
+                  console.log('🟢 STEP 2: StopItemV2 - onSelect called', {
+                    index,
+                    suggestion,
+                    center: suggestion.center,
+                    latitude: suggestion.center[1],
+                    longitude: suggestion.center[0],
+                  });
+                  const updates = {
+                    locationName: suggestion.place_name || suggestion.text,
+                    latitude: suggestion.center[1],
+                    longitude: suggestion.center[0],
+                  };
+                  console.log('🟢 STEP 2: StopItemV2 - Calling onUpdate with', updates);
+                  onUpdate(index, updates);
+
+                  // Animate map to selected location
+                  if (map && isMapLoaded && suggestion.center && suggestion.center[0] && suggestion.center[1]) {
+                    try {
+                      map.flyTo({
+                        center: [suggestion.center[0], suggestion.center[1]], // [longitude, latitude]
+                        zoom: 14,
+                        duration: 1500, // Animation duration in milliseconds
+                        essential: true, // Animation is essential (won't be interrupted)
+                      });
+                      console.log('🗺️ Map animated to location', {
+                        center: [suggestion.center[0], suggestion.center[1]],
+                        zoom: 14,
+                      });
+                    } catch (error) {
+                      console.error('❌ Failed to animate map:', error);
+                    }
+                  }
+                }}
+                placeholder="Address"
+                accessToken={mapboxAccessToken}
+                disabled={isDropoff && isDropoffDisabled}
+              />
+            </div>
           ) : (
             <input
               type="text"
               value={stop.locationName || ''}
-              onChange={(e) => onUpdate(index, { locationName: e.target.value })}
+              onChange={(e) => {
+                if (isDropoff && isDropoffDisabled) {
+                  toast.error('Please set the departure time for the previous stop before setting the dropoff location');
+                  return;
+                }
+                onUpdate(index, { locationName: e.target.value });
+              }}
+              onClick={() => {
+                if (isDropoff && isDropoffDisabled) {
+                  toast.error('Please set the departure time for the previous stop before setting the dropoff location');
+                }
+              }}
               placeholder="Address"
-              className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
+              disabled={isDropoff && isDropoffDisabled}
+              className={cn(
+                "w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]",
+                isDropoff && isDropoffDisabled && 'cursor-not-allowed opacity-60 bg-gray-100'
+              )}
             />
           )}
         </div>
 
-        {/* Date and Time Inputs */}
-        <div className="flex gap-2">
-          {/* Date Input */}
-          <div className="relative flex-1">
-            <input
-              type="date"
-              value={formatDate(stop.arrivalTime)}
-              onChange={(e) => {
-                const newDate = e.target.value;
-                if (!newDate) {
-                  onUpdate(index, { arrivalTime: '' });
-                  return;
-                }
-                const currentTime = stop.arrivalTime ? formatTime(stop.arrivalTime) : minTime;
-                const newDateTime = parseDate(newDate, currentTime || minTime, stop.arrivalTime);
-                onUpdate(index, { arrivalTime: newDateTime });
-              }}
-              min={minDate}
-              className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
-            />
-            <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Time Input */}
-          <div className="relative flex-1">
-            <input
-              type="time"
-              value={formatTime(stop.arrivalTime)}
-              onChange={(e) => {
-                const newTime = e.target.value;
-                if (!newTime) {
-                  // If time is cleared, keep date but clear time
-                  const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
-                  if (currentDate) {
-                    const newDateTime = parseDate(currentDate, minTime, stop.arrivalTime);
-                    onUpdate(index, { arrivalTime: newDateTime });
-                  } else {
+        {/* Date and Time Inputs - Hidden for dropoff stops */}
+        {!isDropoff && (
+          <div className="flex gap-2">
+            {/* Date Input */}
+            <div className="relative flex-1">
+              <input
+                type="date"
+                value={formatDate(stop.arrivalTime)}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  if (!newDate) {
                     onUpdate(index, { arrivalTime: '' });
+                    return;
                   }
-                  return;
-                }
-                const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
-                const newDateTime = parseDate(currentDate || minDate, newTime, stop.arrivalTime);
-                onUpdate(index, { arrivalTime: newDateTime });
-              }}
-              min={minTime}
-              className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
-            />
-            <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  const currentTime = stop.arrivalTime ? formatTime(stop.arrivalTime) : minTime;
+                  const newDateTime = parseDate(newDate, currentTime || minTime, stop.arrivalTime);
+                  onUpdate(index, { arrivalTime: newDateTime });
+                }}
+                min={minDate}
+                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
+              />
+              <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Time Input */}
+            <div className="relative flex-1">
+              <input
+                type="time"
+                value={formatTime(stop.arrivalTime)}
+                onChange={(e) => {
+                  const newTime = e.target.value;
+                  if (!newTime) {
+                    // If time is cleared, keep date but clear time
+                    const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
+                    if (currentDate) {
+                      const newDateTime = parseDate(currentDate, minTime, stop.arrivalTime);
+                      onUpdate(index, { arrivalTime: newDateTime });
+                    } else {
+                      onUpdate(index, { arrivalTime: '' });
+                    }
+                    return;
+                  }
+                  const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
+                  const selectedDate = currentDate || minDate;
+                  const newDateTime = parseDate(selectedDate, newTime, stop.arrivalTime);
+                  onUpdate(index, { arrivalTime: newDateTime });
+                }}
+                min={(() => {
+                  // If selected date is today, use minTime, otherwise allow any time
+                  const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
+                  return currentDate === minDate ? minTime : '00:00';
+                })()}
+                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
+              />
+              <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
 };

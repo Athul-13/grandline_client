@@ -1,6 +1,7 @@
 /**
  * Mapbox Geocoding Service
- * Direct API calls to Mapbox Geocoding API for autocomplete
+ * Direct API calls to Mapbox Geocoding API v5 for autocomplete
+ * Reference: https://docs.mapbox.com/api/search/geocoding-v5/
  */
 
 export interface GeocodeSuggestion {
@@ -12,7 +13,7 @@ export interface GeocodeSuggestion {
     type: string;
     coordinates: [number, number];
   };
-  place_type?: string[]; // e.g., ['poi'], ['address'], ['street'], ['place']
+  place_type?: string[]; // e.g., ['address'], ['street'], ['place']
   context?: Array<{
     id: string;
     text: string;
@@ -27,7 +28,8 @@ export interface GeocodeResponse {
 }
 
 /**
- * Search for location suggestions using Mapbox Geocoding API
+ * Search for location suggestions using Mapbox Geocoding API v5
+ * Note: POI data has been deprecated in v5, but still works for now
  */
 export const searchLocations = async (
   query: string,
@@ -47,12 +49,13 @@ export const searchLocations = async (
   // Kerala: 74.5°E to 77.5°E longitude, 8.0°N to 12.8°N latitude
   const keralaBbox = '74.5,8.0,77.5,12.8';
 
-  // Build URL with parameters
+  // Build URL with parameters for v5 API
+  // v5 endpoint: https://api.mapbox.com/geocoding/v5/mapbox.places
   const baseUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
   const encodedQuery = encodeURIComponent(query);
   const params = new URLSearchParams({
     access_token: accessToken,
-    types: 'poi,address,place', // Prioritize POIs, addresses, and places (exclude streets)
+    types: 'poi,address,place', // POI deprecated but still works in v5
     bbox: keralaBbox, // Limit to Kerala region
     limit: limit.toString(),
     language: 'en',

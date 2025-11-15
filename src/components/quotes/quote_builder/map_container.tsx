@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import type { Map } from 'mapbox-gl';
 import type MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { useMapboxMap } from '../../../hooks/quotes/use_mapbox_map';
@@ -15,13 +15,19 @@ interface MapContainerProps {
  * Map Container Component
  * Wrapper component for Mapbox map
  */
-export const MapContainer: React.FC<MapContainerProps> = ({
+const MapContainerComponent: React.FC<MapContainerProps> = ({
   className,
   onMapReady,
   onGeocoderReady,
   initialCenter,
   initialZoom,
 }) => {
+  console.log('🗺️ MapContainer RENDERED', {
+    timestamp: new Date().toISOString(),
+    initialCenter,
+    initialZoom,
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
   const containerId = 'quote-builder-map';
   const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
@@ -75,4 +81,6 @@ export const MapContainer: React.FC<MapContainerProps> = ({
     />
   );
 };
+
+export const MapContainer = memo(MapContainerComponent);
 

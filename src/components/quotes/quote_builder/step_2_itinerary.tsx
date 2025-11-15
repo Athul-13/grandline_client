@@ -46,6 +46,7 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   isReturnEnabled,
   onReturnEnabledChange,
 }) => {
+
   const [map, setMap] = useState<Map | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState<'outbound' | 'return'>('outbound');
@@ -74,22 +75,27 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   const returnStops = useMemo(() => itinerary?.return || [], [itinerary?.return]);
 
   // Calculate initial map center: pickup location if exists, otherwise Kochi
-  const initialCenter = useMemo(() => {
+  // Use stable default - only calculate once on mount, don't update when stops change
+  // This prevents map re-rendering when locations are selected
+  // After initial load, use map.flyTo() to animate instead of re-rendering
+  const defaultCenter = [76.2673, 9.9312] as [number, number];
+  
+  // Use useState with lazy initializer to calculate only once
+  const [initialCenter] = useState<[number, number]>(() => {
     const pickupStop = outboundStops.find((s) => s.stopType === StopType.PICKUP);
     if (pickupStop && pickupStop.latitude && pickupStop.longitude) {
       return [pickupStop.longitude, pickupStop.latitude] as [number, number];
     }
-    // Default to Kochi, India
-    return [76.2673, 9.9312] as [number, number];
-  }, [outboundStops]);
+    return defaultCenter;
+  });
 
-  const initialZoom = useMemo(() => {
+  const [initialZoom] = useState<number>(() => {
     const pickupStop = outboundStops.find((s) => s.stopType === StopType.PICKUP);
     if (pickupStop && pickupStop.latitude && pickupStop.longitude) {
       return 12; // Zoom in for specific location
     }
     return 10; // Default zoom for Kochi
-  }, [outboundStops]);
+  });
 
   // Auto-update return trip when outbound changes
   useItineraryAutoUpdate({
@@ -105,17 +111,25 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     isReturnEnabled,
   });
 
-  // Handle location selection from autocomplete
-  const handleLocationSelect = useCallback(() => {
-    // Location is already updated in the stop via onUpdate callback
-    // No need to create a new stop or do anything here
-  }, []);
-
   // Get current stops for active tab
   const currentStops = useMemo(
     () => (activeTab === 'outbound' ? outboundStops : returnStops),
     [activeTab, outboundStops, returnStops]
   );
+
+  // Log when currentStops changes
+  useEffect(() => {
+    console.log('🟣 STEP 5: Step2Itinerary - currentStops changed', {
+      activeTab,
+      currentStopsCount: currentStops.length,
+      currentStops: currentStops.map(s => ({
+        locationName: s.locationName,
+        lat: s.latitude,
+        lng: s.longitude,
+        stopType: s.stopType
+      }))
+    });
+  }, [currentStops, activeTab]);
 
   // Manage markers using custom hook
   useMarkerManagement({
@@ -176,6 +190,15 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
 
   const handleOutboundStopsChange = useCallback(
     (stops: ItineraryStopDto[]) => {
+      console.log('🟠 STEP 4: Step2Itinerary - handleOutboundStopsChange called', {
+        stopsCount: stops.length,
+        stops: stops.map(s => ({
+          locationName: s.locationName,
+          lat: s.latitude,
+          lng: s.longitude,
+          stopType: s.stopType
+        }))
+      });
       onItineraryChange({
         outbound: stops,
         return: returnStops,
@@ -210,11 +233,21 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
       (s) => s.locationName && s.latitude && s.longitude
     );
 
+    // Check pickup has arrival time
+    const pickup = currentStops.find((s) => s.stopType === StopType.PICKUP);
+    const hasPickupTime = pickup && pickup.arrivalTime && pickup.arrivalTime !== '';
+
+    // Check all intermediate stops have both arrival and departure times
+    const intermediateStops = currentStops.filter((s) => s.stopType === StopType.STOP);
+    const hasAllIntermediateTimes = intermediateStops.every(
+      (s) => s.arrivalTime && s.arrivalTime !== '' && s.departureTime && s.departureTime !== ''
+    );
+
     if (activeTab === 'outbound') {
-      return hasPickup && hasDropoff && hasValidLocations;
+      return hasPickup && hasDropoff && hasValidLocations && hasPickupTime && hasAllIntermediateTimes;
     } else {
       // For return, we need pickup and last stop (dropoff)
-      return hasPickup && returnStops.length >= 2 && hasValidLocations;
+      return hasPickup && returnStops.length >= 2 && hasValidLocations && hasPickupTime && hasAllIntermediateTimes;
     }
   };
 
@@ -255,10 +288,10 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
         onOutboundStopsChange={handleOutboundStopsChange}
         onReturnStopsChange={handleReturnStopsChange}
         isReturnEnabled={isReturnEnabled}
-        map={map}
-        onLocationSelect={handleLocationSelect}
         activeTab={activeTab}
         onActiveTabChange={setActiveTab}
+        map={map}
+        isMapLoaded={isMapLoaded}
       />
 
       {/* Route Info Box */}
@@ -267,6 +300,7 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
         isCalculating={
           activeTab === 'outbound' ? outboundRoute.isCalculating : returnRoute.isCalculating
         }
+        stops={currentStops}
       />
 
       {/* Route Calculation Spinner */}

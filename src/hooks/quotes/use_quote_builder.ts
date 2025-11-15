@@ -123,6 +123,70 @@ export const useQuoteBuilder = () => {
   }, [autoSaveDraft]);
 
   /**
+   * Sanitize itinerary stops: convert empty arrivalTime strings to null
+   * For dropoff stops, omit arrivalTime entirely (backend will calculate it)
+   * This is used only when sending to API, not for internal state
+   */
+  const sanitizeItineraryForAPI = useCallback((itinerary: QuoteBuilderState['itinerary']) => {
+    if (!itinerary) return null;
+    
+    return {
+      outbound: itinerary.outbound.map((stop) => {
+        // For dropoff stops, omit arrivalTime (backend will calculate)
+        if (stop.stopType === StopType.DROPOFF) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { arrivalTime, ...stopWithoutArrivalTime } = stop;
+          return stopWithoutArrivalTime;
+        }
+        // For other stops, convert empty string to null
+        return {
+          ...stop,
+          arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,
+        };
+      }) as unknown as ItineraryStopDto[],
+      return: itinerary.return?.map((stop) => {
+        // For dropoff stops, omit arrivalTime (backend will calculate)
+        if (stop.stopType === StopType.DROPOFF) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { arrivalTime, ...stopWithoutArrivalTime } = stop;
+          return stopWithoutArrivalTime;
+        }
+        // For other stops, convert empty string to null
+        return {
+          ...stop,
+          arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,
+        };
+      }) as unknown as ItineraryStopDto[] | undefined,
+    };
+  }, []);
+
+  /**
+   * Check if itinerary has required times for draft saving
+   */
+  const hasRequiredTimes = useCallback((itinerary: QuoteBuilderState['itinerary']): boolean => {
+    if (!itinerary) return false;
+    
+    // Check pickup has arrival time
+    const pickup = itinerary.outbound.find((stop) => stop.stopType === StopType.PICKUP);
+    if (!pickup || !pickup.arrivalTime || pickup.arrivalTime === '') {
+      return false;
+    }
+    
+    // Check all intermediate stops have both arrival and departure times
+    const intermediateStops = itinerary.outbound.filter((stop) => stop.stopType === StopType.STOP);
+    for (const stop of intermediateStops) {
+      if (!stop.arrivalTime || stop.arrivalTime === '') {
+        return false;
+      }
+      if (!stop.departureTime || stop.departureTime === '') {
+        return false;
+      }
+    }
+    
+    return true;
+  }, []);
+
+  /**
    * Update itinerary
    */
   const setItinerary = useCallback((itinerary: QuoteBuilderState['itinerary']) => {
@@ -135,11 +199,14 @@ export const useQuoteBuilder = () => {
         const hasPickup = itinerary.outbound.some((stop) => stop.stopType === StopType.PICKUP);
         const hasDropoff = itinerary.outbound.some((stop) => stop.stopType === StopType.DROPOFF);
         
-        // Only save if itinerary is valid (has pickup and dropoff)
-        if (hasPickup && hasDropoff) {
+        // Only save if itinerary is valid (has pickup and dropoff) AND has required times
+        if (hasPickup && hasDropoff && hasRequiredTimes(itinerary)) {
+          // Sanitize itinerary before saving (convert empty strings to null)
+          const sanitized = sanitizeItineraryForAPI(itinerary);
+          
           // Use setTimeout to avoid calling autoSaveDraft during state update
           setTimeout(() => {
-            autoSaveDraft({ itinerary: itinerary as { outbound: unknown[]; return?: unknown[] } });
+            autoSaveDraft({ itinerary: sanitized as { outbound: unknown[]; return?: unknown[] } });
           }, 0);
         }
         // If invalid, don't save (prevents 400 errors from backend)
@@ -147,7 +214,7 @@ export const useQuoteBuilder = () => {
       
       return newState;
     });
-  }, [autoSaveDraft]);
+  }, [autoSaveDraft, sanitizeItineraryForAPI, hasRequiredTimes]);
 
   /**
    * Update trip name
