@@ -124,7 +124,6 @@ export const useQuoteBuilder = () => {
 
   /**
    * Sanitize itinerary stops: convert empty arrivalTime strings to null
-   * For dropoff stops, omit arrivalTime entirely (backend will calculate it)
    * This is used only when sending to API, not for internal state
    */
   const sanitizeItineraryForAPI = useCallback((itinerary: QuoteBuilderState['itinerary']) => {
@@ -132,26 +131,14 @@ export const useQuoteBuilder = () => {
     
     return {
       outbound: itinerary.outbound.map((stop) => {
-        // For dropoff stops, omit arrivalTime (backend will calculate)
-        if (stop.stopType === StopType.DROPOFF) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { arrivalTime, ...stopWithoutArrivalTime } = stop;
-          return stopWithoutArrivalTime;
-        }
-        // For other stops, convert empty string to null
+        // Convert empty string to null for all stops (including dropoff)
         return {
           ...stop,
           arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,
         };
       }) as unknown as ItineraryStopDto[],
       return: itinerary.return?.map((stop) => {
-        // For dropoff stops, omit arrivalTime (backend will calculate)
-        if (stop.stopType === StopType.DROPOFF) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { arrivalTime, ...stopWithoutArrivalTime } = stop;
-          return stopWithoutArrivalTime;
-        }
-        // For other stops, convert empty string to null
+        // Convert empty string to null for all stops (including dropoff)
         return {
           ...stop,
           arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,

@@ -22,12 +22,6 @@ const MapContainerComponent: React.FC<MapContainerProps> = ({
   initialCenter,
   initialZoom,
 }) => {
-  console.log('🗺️ MapContainer RENDERED', {
-    timestamp: new Date().toISOString(),
-    initialCenter,
-    initialZoom,
-  });
-
   const containerRef = useRef<HTMLDivElement>(null);
   const containerId = 'quote-builder-map';
   const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
@@ -45,7 +39,6 @@ const MapContainerComponent: React.FC<MapContainerProps> = ({
     }
   }, [containerId]);
 
-  // Track if we've already called onMapReady to prevent infinite loops
   const hasCalledMapReadyRef = useRef(false);
 
   useEffect(() => {

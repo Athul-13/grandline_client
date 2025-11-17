@@ -72,7 +72,7 @@ export const RouteInfoBox: React.FC<RouteInfoBoxProps> = ({
   return (
     <div
       className={`absolute top-8 z-20 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[300px] max-w-[300px] ${className}`}
-      style={{ left: '420px' }} // Right of floating sidebar (w-96 = 384px + padding)
+      style={{ left: '420px' }} 
     >
       {isCalculating ? (
         <div className="flex items-center gap-2">

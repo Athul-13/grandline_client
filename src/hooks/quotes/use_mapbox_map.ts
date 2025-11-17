@@ -33,8 +33,7 @@ export const useMapboxMap = (
     try {
       mapboxgl.accessToken = accessToken;
 
-      // Default to Kochi, India if no initial center provided
-      const defaultCenter: [number, number] = [76.2673, 9.9312]; // Kochi coordinates
+      const defaultCenter: [number, number] = [76.2673, 9.9312];
       const defaultZoom = 10;
 
       const map = new mapboxgl.Map({
@@ -53,7 +52,6 @@ export const useMapboxMap = (
         setMapError(e.error?.message || 'Map initialization failed');
       });
 
-      // Initialize geocoder (but don't add to map - will be added to custom container)
       const geocoderInstance = mapboxService.initializeGeocoder(accessToken, mapboxgl);
 
       mapRef.current = map;
@@ -61,7 +59,6 @@ export const useMapboxMap = (
       setGeocoder(geocoderInstance);
 
       return () => {
-        // Cleanup
         markersRef.current.forEach((marker) => marker.remove());
         markersRef.current = [];
         geocoderRef.current = null;

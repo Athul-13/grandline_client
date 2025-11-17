@@ -42,53 +42,30 @@ export const createMapMarker = (
   latitude: number,
   color: string = MARKER_COLORS.stop
 ): mapboxgl.Marker | null => {
-  console.log('📍 createMapMarker called', {
-    longitude,
-    latitude,
-    color,
-    hasMap: !!map,
-    hasContainer: !!map?.getContainer(),
-    mapLoaded: map?.loaded(),
-  });
-
-  // Basic validation - map and container must exist
   if (!map || !map.getContainer()) {
-    console.log('❌ createMapMarker: Map or container not ready');
     return null;
   }
 
-  // Check if map style is loaded - required for marker creation
   try {
     if (!map.isStyleLoaded()) {
-      console.log('❌ createMapMarker: Map style not loaded yet');
       return null;
     }
-  } catch (error) {
-    // isStyleLoaded() might throw if style isn't initialized
-    console.log('❌ createMapMarker: Cannot check style loaded state', error);
+  } catch {
     return null;
   }
 
-  // Try to create marker
   try {
     const el = createMarkerElement(color);
-    console.log('📍 createMapMarker: Marker element created');
-    
-    // Get the map's container element where markers are added
     const container = map.getContainer();
     if (!container) {
-      console.log('❌ createMapMarker: Map container not available');
       return null;
     }
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat([longitude, latitude])
       .addTo(map);
-    console.log('✅ createMapMarker: Marker added to map successfully');
     return marker;
-  } catch (error) {
-    // Marker creation failed
-    console.log('❌ createMapMarker: Failed to create marker', error);
+  } catch {
     return null;
   }
 };
@@ -101,7 +78,7 @@ export const removeMarkers = (markers: mapboxgl.Marker[]): void => {
     try {
       marker.remove();
     } catch {
-      // Marker might already be removed
+      // Silently handle removal errors
     }
   });
 };
