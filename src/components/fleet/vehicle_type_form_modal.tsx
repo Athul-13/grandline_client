@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../common/button';
 import { FormInput } from '../common/form_input';
 import { ConfirmationModal } from '../common/confirmation_modal';
 import { X } from 'lucide-react';
 import { useVehicleTypeMutations } from '../../hooks/fleet/use_vehicle_type_mutations';
 import type { VehicleType } from '../../types/fleet/vehicle_type';
+import { vehicleTypeFormSchema, type VehicleTypeFormData } from '../../types/fleet/vehicle_type_form';
 import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 
@@ -27,69 +30,57 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
 }) => {
   const { createVehicleType, updateVehicleType } = useVehicleTypeMutations();
   
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [nameError, setNameError] = useState('');
-  const [descriptionError, setDescriptionError] = useState('');
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [showCloseWarning, setShowCloseWarning] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<VehicleTypeFormData>({
+    resolver: zodResolver(vehicleTypeFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+    mode: 'onChange',
+  });
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  const [showCloseWarning, setShowCloseWarning] = React.useState(false);
+
+  const watchedName = watch('name');
+  const watchedDescription = watch('description');
 
   // Initialize form when modal opens or vehicleType changes
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && vehicleType) {
-        setName(vehicleType.name);
-        setDescription(vehicleType.description || '');
+        reset({
+          name: vehicleType.name,
+          description: vehicleType.description || '',
+        });
       } else {
-        setName('');
-        setDescription('');
+        reset({
+          name: '',
+          description: '',
+        });
       }
-      setNameError('');
-      setDescriptionError('');
       setHasUnsavedChanges(false);
     }
-  }, [isOpen, mode, vehicleType]);
+  }, [isOpen, mode, vehicleType, reset]);
 
   // Track unsaved changes
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && vehicleType) {
-        const nameChanged = name.trim() !== vehicleType.name.trim();
-        const descChanged = (description.trim() || '') !== (vehicleType.description?.trim() || '');
+        const nameChanged = (watchedName?.trim() || '') !== (vehicleType.name.trim() || '');
+        const descChanged = (watchedDescription?.trim() || '') !== (vehicleType.description?.trim() || '');
         setHasUnsavedChanges(nameChanged || descChanged);
       } else {
-        setHasUnsavedChanges(name.trim() !== '' || description.trim() !== '');
+        setHasUnsavedChanges((watchedName?.trim() || '') !== '' || (watchedDescription?.trim() || '') !== '');
       }
     }
-  }, [name, description, mode, vehicleType, isOpen]);
-
-  const validateName = (value: string): string => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return 'Name is required';
-    }
-    if (trimmed.length < 2) {
-      return 'Name must be at least 2 characters';
-    }
-    if (trimmed.length > 100) {
-      return 'Name must be at most 100 characters';
-    }
-    if (!trimmed.replace(/\s/g, '').length) {
-      return 'Name must contain non-whitespace characters';
-    }
-    return '';
-  };
-
-  const validateDescription = (): string => {
-    // Description is optional, no validation needed
-    return '';
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    setNameError(validateName(value));
-  };
+  }, [watchedName, watchedDescription, mode, vehicleType, isOpen]);
 
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -115,22 +106,9 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate
-    const nameErr = validateName(name);
-    const descErr = validateDescription();
-    
-    setNameError(nameErr);
-    setDescriptionError(descErr);
-
-    if (nameErr || descErr) {
-      return;
-    }
-
-    const trimmedName = name.trim();
-    const trimmedDescription = description.trim();
+  const onSubmit = async (data: VehicleTypeFormData) => {
+    const trimmedName = data.name.trim();
+    const trimmedDescription = data.description?.trim() || '';
 
     try {
       if (mode === 'add') {
@@ -181,13 +159,12 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4 mb-6">
               <FormInput
                 label="Name"
-                value={name}
-                onChange={handleNameChange}
-                error={nameError}
+                {...register('name')}
+                error={errors.name?.message}
                 disabled={isDisabled}
                 placeholder="Enter category name"
                 maxLength={100}
@@ -198,12 +175,7 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
                   Description
                 </label>
                 <textarea
-                  value={description}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setDescription(value);
-                    setDescriptionError(validateDescription());
-                  }}
+                  {...register('description')}
                   disabled={isDisabled}
                   placeholder="Enter category description (optional)"
                   rows={4}
@@ -214,14 +186,14 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
                     'text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]',
                     'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]',
                     'transition-colors',
-                    descriptionError
+                    errors.description
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                       : 'border-[var(--color-border)] focus:border-[var(--color-primary)]',
                     isDisabled && 'opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]'
                   )}
                 />
-                {descriptionError && (
-                  <p className="mt-1 text-sm text-red-500">{descriptionError}</p>
+                {errors.description && (
+                  <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
                 )}
               </div>
             </div>

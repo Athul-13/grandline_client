@@ -16,10 +16,11 @@ export const eventTypeService = {
    * GET /api/v1/event-types
    */
   getEventTypes: async (): Promise<EventTypeResponse[]> => {
-    const response = await grandlineAxiosClient.get<EventTypeResponse[]>(
+    const response = await grandlineAxiosClient.get<{ success: boolean; data: EventTypeResponse[] }>(
       API_ENDPOINTS.eventTypes.list
     );
-    return response.data;
+    // API returns {success: true, data: []}, so we need to extract the data array
+    return response.data.data || [];
   },
 
   /**

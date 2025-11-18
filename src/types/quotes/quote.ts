@@ -165,12 +165,17 @@ export interface QuoteResponse {
   eventType: string;
   customEventType?: string | null;
   passengerCount: number;
+  passengers?: unknown[]; // PassengerDto[] - defined in passenger.ts
   status: QuoteStatusType;
   currentStep: number;
   selectedVehicles: SelectedVehicle[];
   selectedAmenities: string[];
   pricing?: PricingBreakdown;
   routeData?: RouteData;
+  itinerary?: {
+    outbound: unknown[]; // ItineraryStopDto[] - defined in itinerary.ts
+    return?: unknown[]; // ItineraryStopDto[] - defined in itinerary.ts
+  };
   createdAt: Date | string;
   updatedAt: Date | string;
 }

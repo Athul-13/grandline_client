@@ -1,19 +1,20 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { Button } from '../../../components/common/button';
+import { Button } from '../../../../components/common/button';
 import { MapContainer } from './map_container';
 import { ItineraryFloatingPanel } from './itinerary_floating_panel';
 import { RouteInfoBox } from './route_info_box';
 import { RouteSpinner } from './route_spinner';
-import { useItineraryAutoUpdate } from '../../../hooks/quotes/use_itinerary_auto_update';
-import { useRouteCalculation } from '../../../hooks/quotes/use_route_calculation';
-import { useMarkerManagement } from '../../../hooks/quotes/use_marker_management';
-import { useRouteDrawing } from '../../../hooks/quotes/use_route_drawing';
+import { useItineraryAutoUpdate } from '../../../../hooks/quotes/use_itinerary_auto_update';
+import { useRouteCalculation } from '../../../../hooks/quotes/use_route_calculation';
+import { useMarkerManagement } from '../../../../hooks/quotes/use_marker_management';
+import { useRouteDrawing } from '../../../../hooks/quotes/use_route_drawing';
 import type { Map } from 'mapbox-gl';
-import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
-import { StopType } from '../../../types/quotes/itinerary';
-import type { TripTypeType } from '../../../types/quotes/quote';
-import { getValidStops } from '../../../utils/stop_utils';
+import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
+import { StopType } from '../../../../types/quotes/itinerary';
+import type { TripTypeType } from '../../../../types/quotes/quote';
+import { getValidStops } from '../../../../utils/stop_utils';
+import { addDurationToDate } from '../../../../utils/date_utils';
 
 interface Step2ItineraryProps {
   tripType: TripTypeType;
@@ -30,6 +31,7 @@ interface Step2ItineraryProps {
   isLoading?: boolean;
   isReturnEnabled: boolean;
   onReturnEnabledChange: (enabled: boolean) => void;
+  onStepComplete?: () => void; // Callback to mark step as completed
 }
 
 /**
@@ -45,6 +47,7 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   isLoading = false,
   isReturnEnabled,
   onReturnEnabledChange,
+  onStepComplete,
 }) => {
 
   const [map, setMap] = useState<Map | null>(null);
@@ -117,19 +120,6 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     [activeTab, outboundStops, returnStops]
   );
 
-  // Log when currentStops changes
-  useEffect(() => {
-    console.log('🟣 STEP 5: Step2Itinerary - currentStops changed', {
-      activeTab,
-      currentStopsCount: currentStops.length,
-      currentStops: currentStops.map(s => ({
-        locationName: s.locationName,
-        lat: s.latitude,
-        lng: s.longitude,
-        stopType: s.stopType
-      }))
-    });
-  }, [currentStops, activeTab]);
 
   // Manage markers using custom hook
   useMarkerManagement({
@@ -188,17 +178,101 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     routeId: activeTab,
   });
 
+  // Calculate intermediate stops' arrivalTime and dropoff arrivalTime from route
+  useEffect(() => {
+    if (!currentRoute || !currentRoute.legs || currentRoute.legs.length === 0) return;
+    
+    const pickupStop = currentStops.find((s) => s.stopType === StopType.PICKUP);
+    if (!pickupStop || !pickupStop.departureTime) return;
+
+    const intermediateStops = currentStops.filter((s) => s.stopType === StopType.STOP);
+    const dropoffStop = currentStops.find((s) => s.stopType === StopType.DROPOFF);
+    
+    let needsUpdate = false;
+    const updatedStops = [...currentStops];
+    
+    // Calculate arrivalTime for each intermediate stop
+    // Route legs: leg[0] = pickup to first intermediate stop, leg[1] = first to second, etc.
+    for (let i = 0; i < intermediateStops.length; i++) {
+      const stop = intermediateStops[i];
+      const stopIndex = updatedStops.findIndex((s) => s === stop);
+      
+      if (stopIndex === -1) continue;
+      
+      // Get the previous stop's departureTime
+      let previousDepartureTime: string | null = null;
+      if (i === 0) {
+        // First intermediate stop: use pickup departureTime
+        previousDepartureTime = pickupStop.departureTime;
+      } else {
+        // Use previous intermediate stop's departureTime
+        const previousStop = intermediateStops[i - 1];
+        previousDepartureTime = previousStop.departureTime || null;
+      }
+      
+      // Calculate arrivalTime = previousDepartureTime + route leg duration
+      if (previousDepartureTime && currentRoute.legs[i]) {
+        const legDuration = currentRoute.legs[i].duration;
+        const calculatedArrivalTime = addDurationToDate(previousDepartureTime, legDuration);
+        
+        // Only update if different from current value
+        if (stop.arrivalTime !== calculatedArrivalTime) {
+          updatedStops[stopIndex] = {
+            ...stop,
+            arrivalTime: calculatedArrivalTime,
+          };
+          needsUpdate = true;
+        }
+      }
+    }
+    
+    // Calculate dropoff arrivalTime from last stop's departureTime + last route leg duration
+    if (dropoffStop) {
+      const dropoffIndex = updatedStops.findIndex((s) => s === dropoffStop);
+      if (dropoffIndex !== -1) {
+        // Get the last stop before dropoff (last intermediate stop, or pickup if no intermediates)
+        const lastStopBeforeDropoff = intermediateStops.length > 0
+          ? intermediateStops[intermediateStops.length - 1]
+          : pickupStop;
+        
+        const lastDepartureTime = lastStopBeforeDropoff.departureTime || null;
+        
+        // Use the last route leg (from last stop to dropoff)
+        const lastLegIndex = intermediateStops.length; // leg[0] = pickup to first, leg[intermediateStops.length] = last to dropoff
+        if (lastDepartureTime && currentRoute.legs[lastLegIndex]) {
+          const legDuration = currentRoute.legs[lastLegIndex].duration;
+          const calculatedArrivalTime = addDurationToDate(lastDepartureTime, legDuration);
+          
+          // Only update if different from current value
+          if (dropoffStop.arrivalTime !== calculatedArrivalTime) {
+            updatedStops[dropoffIndex] = {
+              ...dropoffStop,
+              arrivalTime: calculatedArrivalTime,
+            };
+            needsUpdate = true;
+          }
+        }
+      }
+    }
+    
+    // Update stops if any changes were made
+    if (needsUpdate) {
+      if (activeTab === 'outbound') {
+        onItineraryChange({
+          outbound: updatedStops,
+          return: returnStops,
+        });
+      } else {
+        onItineraryChange({
+          outbound: outboundStops,
+          return: updatedStops,
+        });
+      }
+    }
+  }, [currentRoute, currentStops, activeTab, outboundStops, returnStops, onItineraryChange]);
+
   const handleOutboundStopsChange = useCallback(
     (stops: ItineraryStopDto[]) => {
-      console.log('🟠 STEP 4: Step2Itinerary - handleOutboundStopsChange called', {
-        stopsCount: stops.length,
-        stops: stops.map(s => ({
-          locationName: s.locationName,
-          lat: s.latitude,
-          lng: s.longitude,
-          stopType: s.stopType
-        }))
-      });
       onItineraryChange({
         outbound: stops,
         return: returnStops,
@@ -218,37 +292,59 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   );
 
   const handleNext = async () => {
+    // Validate step before proceeding
+    if (!isStepValid()) {
+      return; // Don't proceed if validation fails
+    }
+    
     // Enable return tab if two-way and not already enabled
     if (tripType === 'two_way' && !isReturnEnabled) {
       onReturnEnabledChange(true);
     }
+    
+    // Mark step 2 as completed
+    if (onStepComplete) {
+      onStepComplete();
+    }
+    
     await onNext();
   };
 
-  const isStepValid = () => {
-    const currentStops = activeTab === 'outbound' ? outboundStops : returnStops;
-    const hasPickup = currentStops.some((s) => s.stopType === StopType.PICKUP);
-    const hasDropoff = currentStops.some((s) => s.stopType === StopType.DROPOFF);
-    const hasValidLocations = currentStops.every(
-      (s) => s.locationName && s.latitude && s.longitude
+  // Validate a single set of stops (outbound or return)
+  const validateStops = (stops: ItineraryStopDto[]): boolean => {
+    const hasPickup = stops.some((s) => s.stopType === StopType.PICKUP);
+    const hasDropoff = stops.some((s) => s.stopType === StopType.DROPOFF);
+    
+    // Check all stops have valid locations (proper address with coordinates)
+    const hasValidLocations = stops.every(
+      (s) => s.locationName && s.locationName.trim() !== '' && s.latitude && s.longitude && s.latitude !== 0 && s.longitude !== 0
     );
 
-    // Check pickup has arrival time
-    const pickup = currentStops.find((s) => s.stopType === StopType.PICKUP);
-    const hasPickupTime = pickup && pickup.arrivalTime && pickup.arrivalTime !== '';
+    // Check pickup has departure time (arrivalTime is auto-calculated)
+    const pickup = stops.find((s) => s.stopType === StopType.PICKUP);
+    const hasPickupTime = !!(pickup && pickup.departureTime && pickup.departureTime !== '');
 
-    // Check all intermediate stops have both arrival and departure times
-    const intermediateStops = currentStops.filter((s) => s.stopType === StopType.STOP);
+    // Check all intermediate stops have departure time (arrivalTime is calculated from previous stop's departure + route duration)
+    const intermediateStops = stops.filter((s) => s.stopType === StopType.STOP);
     const hasAllIntermediateTimes = intermediateStops.every(
-      (s) => s.arrivalTime && s.arrivalTime !== '' && s.departureTime && s.departureTime !== ''
+      (s) => !!(s.departureTime && s.departureTime !== '')
     );
 
-    if (activeTab === 'outbound') {
-      return hasPickup && hasDropoff && hasValidLocations && hasPickupTime && hasAllIntermediateTimes;
-    } else {
-      // For return, we need pickup and last stop (dropoff)
-      return hasPickup && returnStops.length >= 2 && hasValidLocations && hasPickupTime && hasAllIntermediateTimes;
+    return hasPickup && hasDropoff && hasValidLocations && hasPickupTime && hasAllIntermediateTimes;
+  };
+
+  const isStepValid = () => {
+    // Always validate outbound
+    const isOutboundValid = validateStops(outboundStops);
+    
+    // For two-way trips, also validate return if it's enabled
+    if (tripType === 'two_way' && isReturnEnabled) {
+      const isReturnValid = validateStops(returnStops);
+      return isOutboundValid && isReturnValid;
     }
+    
+    // For one-way trips, only validate outbound
+    return isOutboundValid;
   };
 
   // Stable callback for map ready

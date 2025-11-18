@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../common/button';
 import { FormInput } from '../common/form_input';
 import { ConfirmationModal } from '../common/confirmation_modal';
 import { X } from 'lucide-react';
 import { useAmenityMutations } from '../../hooks/fleet/use_amenity_mutations';
 import type { Amenity } from '../../types/fleet/amenity';
+import { amenityFormSchema, type AmenityFormData } from '../../types/fleet/amenity_form';
 import toast from 'react-hot-toast';
 
 interface AmenityFormModalProps {
@@ -26,90 +29,58 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
 }) => {
   const { createAmenity, updateAmenity } = useAmenityMutations();
   
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [nameError, setNameError] = useState('');
-  const [priceError, setPriceError] = useState('');
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [showCloseWarning, setShowCloseWarning] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<AmenityFormData>({
+    resolver: zodResolver(amenityFormSchema),
+    defaultValues: {
+      name: '',
+      price: '',
+    },
+    mode: 'onChange',
+  });
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  const [showCloseWarning, setShowCloseWarning] = React.useState(false);
+
+  const watchedName = watch('name');
+  const watchedPrice = watch('price');
 
   // Initialize form when modal opens or amenity changes
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && amenity) {
-        setName(amenity.name);
-        setPrice(amenity.price !== null && amenity.price !== undefined ? amenity.price.toString() : '');
+        reset({
+          name: amenity.name,
+          price: amenity.price !== null && amenity.price !== undefined ? amenity.price.toString() : '',
+        });
       } else {
-        setName('');
-        setPrice('');
+        reset({
+          name: '',
+          price: '',
+        });
       }
-      setNameError('');
-      setPriceError('');
       setHasUnsavedChanges(false);
     }
-  }, [isOpen, mode, amenity]);
+  }, [isOpen, mode, amenity, reset]);
 
   // Track unsaved changes
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && amenity) {
-        const nameChanged = name.trim() !== amenity.name.trim();
-        const currentPrice = price.trim() === '' ? null : Number(price);
+        const nameChanged = (watchedName?.trim() || '') !== (amenity.name.trim() || '');
+        const currentPrice = watchedPrice?.trim() === '' ? null : Number(watchedPrice);
         const priceChanged = currentPrice !== amenity.price;
         setHasUnsavedChanges(nameChanged || priceChanged);
       } else {
-        setHasUnsavedChanges(name.trim() !== '' || price.trim() !== '');
+        setHasUnsavedChanges((watchedName?.trim() || '') !== '' || (watchedPrice?.trim() || '') !== '');
       }
     }
-  }, [name, price, mode, amenity, isOpen]);
-
-  const validateName = (value: string): string => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return 'Name is required';
-    }
-    if (trimmed.length < 2) {
-      return 'Name must be at least 2 characters';
-    }
-    if (trimmed.length > 100) {
-      return 'Name must be at most 100 characters';
-    }
-    if (!trimmed.replace(/\s/g, '').length) {
-      return 'Name must contain non-whitespace characters';
-    }
-    return '';
-  };
-
-  const validatePrice = (value: string): string => {
-    const trimmed = value.trim();
-    // Price is optional, so empty string is valid
-    if (trimmed === '') {
-      return '';
-    }
-    const num = Number(trimmed);
-    if (isNaN(num)) {
-      return 'Price must be a valid number';
-    }
-    if (num < 0) {
-      return 'Price must be at least 0';
-    }
-    if (num > 10000) {
-      return 'Price must be at most 10000';
-    }
-    return '';
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    setNameError(validateName(value));
-  };
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPrice(value);
-    setPriceError(validatePrice(value));
-  };
+  }, [watchedName, watchedPrice, mode, amenity, isOpen]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -134,22 +105,9 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate
-    const nameErr = validateName(name);
-    const priceErr = validatePrice(price);
-    
-    setNameError(nameErr);
-    setPriceError(priceErr);
-
-    if (nameErr || priceErr) {
-      return;
-    }
-
-    const trimmedName = name.trim();
-    const priceValue = price.trim() === '' ? null : Number(price);
+  const onSubmit = async (data: AmenityFormData) => {
+    const trimmedName = data.name.trim();
+    const priceValue = data.price === null || data.price === undefined || data.price === '' ? null : Number(data.price);
 
     try {
       if (mode === 'add') {
@@ -200,13 +158,12 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4 mb-6">
               <FormInput
                 label="Name"
-                value={name}
-                onChange={handleNameChange}
-                error={nameError}
+                {...register('name')}
+                error={errors.name?.message}
                 disabled={isDisabled}
                 placeholder="Enter amenity name"
                 maxLength={100}
@@ -216,9 +173,8 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
                 label="Price (₹)"
                 type="number"
                 step="0.01"
-                value={price}
-                onChange={handlePriceChange}
-                error={priceError}
+                {...register('price')}
+                error={errors.price?.message}
                 disabled={isDisabled}
                 placeholder="Enter price (optional)"
                 min={0}

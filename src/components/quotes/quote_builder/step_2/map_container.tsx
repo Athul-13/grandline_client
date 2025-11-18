@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo } from 'react';
 import type { Map } from 'mapbox-gl';
 import type MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import { useMapboxMap } from '../../../hooks/quotes/use_mapbox_map';
+import { useMapboxMap } from '../../../../hooks/quotes/use_mapbox_map';
 
 interface MapContainerProps {
   className?: string;

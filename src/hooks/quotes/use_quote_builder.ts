@@ -80,21 +80,77 @@ export const useQuoteBuilder = () => {
       try {
         const draft = await loadDraft();
         if (draft) {
+          const loadedItinerary = draft.itinerary ? {
+            outbound: (draft.itinerary.outbound || []) as ItineraryStopDto[],
+            return: draft.itinerary.return ? (draft.itinerary.return as ItineraryStopDto[]) : undefined,
+          } : null;
+          const loadedPassengers = (draft.passengers || []) as PassengerDto[];
+
           setState({
             quoteId: draft.quoteId,
             tripType: draft.tripType,
-            itinerary: draft.routeData ? {
-              outbound: [], // Will be populated from routeData
-              return: draft.routeData.return ? [] : undefined,
-            } : null,
+            itinerary: loadedItinerary,
             tripName: draft.tripName || '',
             eventType: draft.eventType || '',
             customEventType: draft.customEventType || null,
-            passengers: [], // Will be populated from draft
+            passengers: loadedPassengers,
             selectedVehicles: draft.selectedVehicles || [],
             selectedAmenities: draft.selectedAmenities || [],
             currentStep: draft.currentStep || 1,
           });
+
+          // Validate all steps based on loaded data
+          // Step 1: Valid if tripType exists
+          setValidation((prev) => ({
+            ...prev,
+            step1: !!draft.tripType,
+          }));
+
+          // Step 2: Valid if itinerary has pickup, dropoff, valid locations, and required times
+          if (loadedItinerary) {
+            const hasPickup = loadedItinerary.outbound.some((stop) => stop.stopType === StopType.PICKUP);
+            const hasDropoff = loadedItinerary.outbound.some((stop) => stop.stopType === StopType.DROPOFF);
+            
+            // Check valid locations (all stops with locationName have valid coordinates)
+            const allStops = [...loadedItinerary.outbound, ...(loadedItinerary.return || [])];
+            const hasValidLocations = allStops.every((stop) => {
+              if (!stop.locationName || stop.locationName.trim() === '') {
+                return true; // Skip validation for empty stops
+              }
+              return (
+                stop.latitude !== 0 &&
+                stop.longitude !== 0 &&
+                !isNaN(stop.latitude) &&
+                !isNaN(stop.longitude) &&
+                stop.latitude !== null &&
+                stop.longitude !== null
+              );
+            });
+            
+            // Check required times
+            const pickup = loadedItinerary.outbound.find((stop) => stop.stopType === StopType.PICKUP);
+            const hasPickupTime = pickup && pickup.departureTime && pickup.departureTime !== '';
+            const intermediateStops = loadedItinerary.outbound.filter((stop) => stop.stopType === StopType.STOP);
+            const hasAllIntermediateTimes = intermediateStops.every(
+              (stop) => stop.departureTime && stop.departureTime !== ''
+            );
+            const hasRequiredTimes = hasPickupTime && hasAllIntermediateTimes;
+            
+            const isValid = hasPickup && hasDropoff && hasValidLocations && hasRequiredTimes;
+            setValidation((prev) => ({
+              ...prev,
+              step2: isValid,
+            }));
+          }
+
+          // Step 3: Valid if tripName, eventType, and passengers exist
+          const tripNameValid = draft.tripName && draft.tripName.trim().length >= 3;
+          const eventTypeValid = !!draft.eventType && (draft.eventType !== 'other' || (draft.customEventType && draft.customEventType.trim().length > 0));
+          const passengersValid = loadedPassengers.length > 0;
+          setValidation((prev) => ({
+            ...prev,
+            step3: tripNameValid && eventTypeValid && passengersValid,
+          }));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load draft');
@@ -123,7 +179,25 @@ export const useQuoteBuilder = () => {
   }, [autoSaveDraft]);
 
   /**
-   * Sanitize itinerary stops: convert empty arrivalTime strings to null
+   * Validate if arrivalTime is a valid ISO string
+   * Checks if the string is a valid ISO 8601 format
+   */
+  const isValidISOString = useCallback((value: string | null | undefined): boolean => {
+    if (!value || value === '') return false;
+    try {
+      const date = new Date(value);
+      // Check if date is valid and value matches ISO format (YYYY-MM-DDTHH:mm:ss.sssZ)
+      if (isNaN(date.getTime())) return false;
+      // Check if it's a valid ISO string format
+      const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+      return isoRegex.test(value) || value === date.toISOString();
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /**
+   * Sanitize itinerary stops: convert empty arrivalTime strings to null and validate ISO format
    * This is used only when sending to API, not for internal state
    */
   const sanitizeItineraryForAPI = useCallback((itinerary: QuoteBuilderState['itinerary']) => {
@@ -132,20 +206,82 @@ export const useQuoteBuilder = () => {
     return {
       outbound: itinerary.outbound.map((stop) => {
         // Convert empty string to null for all stops (including dropoff)
+        // Ensure arrivalTime is valid ISO format if present
+        let arrivalTime = stop.arrivalTime === '' ? null : stop.arrivalTime;
+        if (arrivalTime && !isValidISOString(arrivalTime)) {
+          // If not valid ISO, try to convert it
+          try {
+            const date = new Date(arrivalTime);
+            if (!isNaN(date.getTime())) {
+              arrivalTime = date.toISOString();
+            } else {
+              arrivalTime = null;
+            }
+          } catch {
+            arrivalTime = null;
+          }
+        }
         return {
           ...stop,
-          arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,
+          arrivalTime,
         };
       }) as unknown as ItineraryStopDto[],
       return: itinerary.return?.map((stop) => {
         // Convert empty string to null for all stops (including dropoff)
+        // Ensure arrivalTime is valid ISO format if present
+        let arrivalTime = stop.arrivalTime === '' ? null : stop.arrivalTime;
+        if (arrivalTime && !isValidISOString(arrivalTime)) {
+          // If not valid ISO, try to convert it
+          try {
+            const date = new Date(arrivalTime);
+            if (!isNaN(date.getTime())) {
+              arrivalTime = date.toISOString();
+            } else {
+              arrivalTime = null;
+            }
+          } catch {
+            arrivalTime = null;
+          }
+        }
         return {
           ...stop,
-          arrivalTime: stop.arrivalTime === '' ? null : stop.arrivalTime,
+          arrivalTime,
         };
       }) as unknown as ItineraryStopDto[] | undefined,
     };
+  }, [isValidISOString]);
+
+  /**
+   * Check if stop has valid coordinates (location was selected from suggestions)
+   * Only checks stops that have a locationName (user has interacted with the field)
+   */
+  const hasValidCoordinates = useCallback((stop: ItineraryStopDto): boolean => {
+    // If stop has no locationName, don't check coordinates (stop not yet filled)
+    if (!stop.locationName || stop.locationName.trim() === '') {
+      return true; // Skip validation for empty stops
+    }
+    
+    // If stop has locationName, it must have valid coordinates (selected from suggestions)
+    return (
+      stop.latitude !== 0 &&
+      stop.longitude !== 0 &&
+      !isNaN(stop.latitude) &&
+      !isNaN(stop.longitude) &&
+      stop.latitude !== null &&
+      stop.longitude !== null
+    );
   }, []);
+
+  /**
+   * Check if itinerary has valid locations (all stops with locationName have coordinates from suggestions)
+   */
+  const hasValidLocations = useCallback((itinerary: QuoteBuilderState['itinerary']): boolean => {
+    if (!itinerary) return false;
+    
+    // Check all stops that have locationName also have valid coordinates (location was selected, not just typed)
+    const allStops = [...itinerary.outbound, ...(itinerary.return || [])];
+    return allStops.every((stop) => hasValidCoordinates(stop));
+  }, [hasValidCoordinates]);
 
   /**
    * Check if itinerary has required times for draft saving
@@ -153,18 +289,15 @@ export const useQuoteBuilder = () => {
   const hasRequiredTimes = useCallback((itinerary: QuoteBuilderState['itinerary']): boolean => {
     if (!itinerary) return false;
     
-    // Check pickup has arrival time
+    // Check pickup has departure time (arrivalTime is auto-calculated from departureTime - 30 minutes)
     const pickup = itinerary.outbound.find((stop) => stop.stopType === StopType.PICKUP);
-    if (!pickup || !pickup.arrivalTime || pickup.arrivalTime === '') {
+    if (!pickup || !pickup.departureTime || pickup.departureTime === '') {
       return false;
     }
     
-    // Check all intermediate stops have both arrival and departure times
+    // Check all intermediate stops have departure time (arrivalTime is calculated from previous stop's departure + route duration)
     const intermediateStops = itinerary.outbound.filter((stop) => stop.stopType === StopType.STOP);
     for (const stop of intermediateStops) {
-      if (!stop.arrivalTime || stop.arrivalTime === '') {
-        return false;
-      }
       if (!stop.departureTime || stop.departureTime === '') {
         return false;
       }
@@ -186,9 +319,12 @@ export const useQuoteBuilder = () => {
         const hasPickup = itinerary.outbound.some((stop) => stop.stopType === StopType.PICKUP);
         const hasDropoff = itinerary.outbound.some((stop) => stop.stopType === StopType.DROPOFF);
         
-        // Only save if itinerary is valid (has pickup and dropoff) AND has required times
-        if (hasPickup && hasDropoff && hasRequiredTimes(itinerary)) {
-          // Sanitize itinerary before saving (convert empty strings to null)
+        // Only save if:
+        // 1. Has pickup and dropoff
+        // 2. All stops have valid coordinates (location was selected from suggestions, not just typed)
+        // 3. Has required times
+        if (hasPickup && hasDropoff && hasValidLocations(itinerary) && hasRequiredTimes(itinerary)) {
+          // Sanitize itinerary before saving (convert empty strings to null, validate ISO format)
           const sanitized = sanitizeItineraryForAPI(itinerary);
           
           // Use setTimeout to avoid calling autoSaveDraft during state update
@@ -197,11 +333,12 @@ export const useQuoteBuilder = () => {
           }, 0);
         }
         // If invalid, don't save (prevents 400 errors from backend)
+        // This prevents saving when user is just typing in address field (no coordinates yet)
       }
       
       return newState;
     });
-  }, [autoSaveDraft, sanitizeItineraryForAPI, hasRequiredTimes]);
+  }, [autoSaveDraft, sanitizeItineraryForAPI, hasRequiredTimes, hasValidLocations]);
 
   /**
    * Update trip name

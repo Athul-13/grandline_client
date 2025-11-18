@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { Button } from '../../../components/common/button';
@@ -8,6 +10,7 @@ import { linkGoogleAsync } from '../../../store/slices/auth_slice';
 import { useProfilePictureUpload } from '../../../hooks/profile/use_profile_picture_upload';
 import { useProfileQuery } from '../../../hooks/profile/use_profile_query';
 import { useUpdateProfileMutation } from '../../../hooks/profile/use_update_profile_mutation';
+import { profileFormSchema, type ProfileFormData } from '../../../types/profile/profile_form';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../../hooks/use_language';
 import { Upload } from 'lucide-react';
@@ -26,8 +29,23 @@ export const MyProfileForm: React.FC = () => {
   const { t } = useLanguage();
   const { uploadProfilePicture, isUploading, error: uploadError, clearError } = useProfilePictureUpload();
   
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    control,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      fullName: '',
+      phoneNumber: '',
+      profilePicture: '',
+    },
+    mode: 'onChange',
+  });
+
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
   const [pendingProfilePicture, setPendingProfilePicture] = useState<string | null>(null);
@@ -40,6 +58,9 @@ export const MyProfileForm: React.FC = () => {
     profilePicture: '',
   });
 
+  const watchedFullName = watch('fullName');
+  const watchedPhoneNumber = watch('phoneNumber');
+
   // Update form when profile is loaded and set initial values
   // Note: Profile fetching is now handled automatically by useProfileQuery
   useEffect(() => {
@@ -48,8 +69,11 @@ export const MyProfileForm: React.FC = () => {
       const initialPhoneNumber = profile.phoneNumber || '';
       const initialProfilePicture = profile.profilePicture || '';
       
-      setFullName(initialFullName);
-      setPhoneNumber(initialPhoneNumber);
+      reset({
+        fullName: initialFullName,
+        phoneNumber: initialPhoneNumber || '',
+        profilePicture: initialProfilePicture,
+      });
       setPendingProfilePicture(null); // Reset pending picture
       
       setInitialValues({
@@ -60,14 +84,18 @@ export const MyProfileForm: React.FC = () => {
     } else if (user) {
       // Fallback to auth user data
       const initialFullName = user.fullName || '';
-      setFullName(initialFullName);
+      reset({
+        fullName: initialFullName,
+        phoneNumber: '',
+        profilePicture: '',
+      });
       setInitialValues({
         fullName: initialFullName,
         phoneNumber: '',
         profilePicture: '',
       });
     }
-  }, [profile, user]);
+  }, [profile, user, reset]);
 
   // Check if form has changes
   const hasChanges = useMemo(() => {
@@ -75,11 +103,11 @@ export const MyProfileForm: React.FC = () => {
     const initialProfilePicture = initialValues.profilePicture || '';
     
     return (
-      fullName.trim() !== initialValues.fullName ||
-      phoneNumber.trim() !== initialValues.phoneNumber ||
+      (watchedFullName?.trim() || '') !== (initialValues.fullName || '') ||
+      (watchedPhoneNumber?.trim() || '') !== (initialValues.phoneNumber || '') ||
       currentProfilePicture !== initialProfilePicture
     );
-  }, [fullName, phoneNumber, pendingProfilePicture, profile?.profilePicture, initialValues]);
+  }, [watchedFullName, watchedPhoneNumber, pendingProfilePicture, profile?.profilePicture, initialValues]);
 
   // Get current profile picture to display
   const currentProfilePicture = pendingProfilePicture || profile?.profilePicture || '';
@@ -127,9 +155,7 @@ export const MyProfileForm: React.FC = () => {
     setSelectedImageSrc(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: ProfileFormData) => {
     // Use mutation's isPending state instead of local isSubmitting
     if (updateProfile.isPending || !hasChanges) return;
 
@@ -141,11 +167,11 @@ export const MyProfileForm: React.FC = () => {
       } = {};
 
       // Only include fields that have changed
-      if (fullName.trim() !== initialValues.fullName) {
-        updateData.fullName = fullName.trim() || undefined;
+      if ((data.fullName?.trim() || '') !== (initialValues.fullName || '')) {
+        updateData.fullName = data.fullName?.trim() || undefined;
       }
-      if (phoneNumber.trim() !== initialValues.phoneNumber) {
-        updateData.phoneNumber = phoneNumber.trim() || undefined;
+      if ((data.phoneNumber?.trim() || '') !== (initialValues.phoneNumber || '')) {
+        updateData.phoneNumber = data.phoneNumber?.trim() || undefined;
       }
       if (pendingProfilePicture) {
         updateData.profilePicture = pendingProfilePicture;
@@ -156,8 +182,8 @@ export const MyProfileForm: React.FC = () => {
       
       // Update initial values after successful save
       setInitialValues({
-        fullName: fullName.trim(),
-        phoneNumber: phoneNumber.trim(),
+        fullName: data.fullName?.trim() || '',
+        phoneNumber: data.phoneNumber?.trim() || '',
         profilePicture: pendingProfilePicture || profile?.profilePicture || '',
       });
       setPendingProfilePicture(null);
@@ -170,12 +196,18 @@ export const MyProfileForm: React.FC = () => {
 
   const handleCancel = () => {
     if (profile) {
-      setFullName(profile.fullName || '');
-      setPhoneNumber(profile.phoneNumber || '');
+      reset({
+        fullName: profile.fullName || '',
+        phoneNumber: profile.phoneNumber || '',
+        profilePicture: profile.profilePicture || '',
+      });
       setPendingProfilePicture(null);
     } else if (user) {
-      setFullName(user.fullName || '');
-      setPhoneNumber('');
+      reset({
+        fullName: user.fullName || '',
+        phoneNumber: '',
+        profilePicture: '',
+      });
       setPendingProfilePicture(null);
     }
   };
@@ -214,7 +246,7 @@ export const MyProfileForm: React.FC = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
         {/* Profile Picture Section */}
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="flex-shrink-0">
@@ -227,7 +259,7 @@ export const MyProfileForm: React.FC = () => {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[var(--color-text-muted)] text-2xl font-semibold">
-                  {fullName.charAt(0).toUpperCase() || user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                  {(watchedFullName?.charAt(0) || user?.fullName?.charAt(0) || 'U').toUpperCase()}
                 </div>
               )}
             </div>
@@ -269,8 +301,8 @@ export const MyProfileForm: React.FC = () => {
           <FormInput
             label={t('profile.myProfile.fullName')}
             type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            {...register('fullName')}
+            error={errors.fullName?.message}
             required
             minLength={3}
             placeholder={t('profile.myProfile.fullNamePlaceholder')}
@@ -291,16 +323,26 @@ export const MyProfileForm: React.FC = () => {
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">{t('profile.myProfile.emailCannotChange')}</p>
           </div>
 
-          <FormInput
-            label={t('profile.myProfile.phoneNumber')}
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-            pattern="[0-9]{10}"
-            maxLength={10}
-            placeholder={t('profile.myProfile.phoneNumberPlaceholder')}
-            disabled={isLoading || updateProfile.isPending}
-            className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+          <Controller
+            name="phoneNumber"
+            control={control}
+            render={({ field }) => (
+              <FormInput
+                label={t('profile.myProfile.phoneNumber')}
+                type="tel"
+                value={field.value || ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  field.onChange(value);
+                }}
+                error={errors.phoneNumber?.message}
+                pattern="[0-9]{10}"
+                maxLength={10}
+                placeholder={t('profile.myProfile.phoneNumberPlaceholder')}
+                disabled={isLoading || updateProfile.isPending}
+                className="px-3 sm:px-4 py-2 text-sm sm:text-base"
+              />
+            )}
           />
         </div>
 

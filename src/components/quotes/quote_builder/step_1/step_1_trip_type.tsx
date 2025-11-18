@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button } from '../../../components/common/button';
-import { TripType } from '../../../types/quotes/quote';
-import type { TripTypeType } from '../../../types/quotes/quote';
-import { cn } from '../../../utils/cn';
+import { Button } from '../../../../components/common/button';
+import { TripType } from '../../../../types/quotes/quote';
+import type { TripTypeType } from '../../../../types/quotes/quote';
+import { cn } from '../../../../utils/cn';
 
 interface Step1TripTypeProps {
   tripType: TripTypeType | null;

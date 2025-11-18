@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useMapboxAutocomplete } from '../../../hooks/quotes/use_mapbox_autocomplete';
-import type { GeocodeSuggestion } from '../../../services/api/mapbox_geocoding_service';
+import { useMapboxAutocomplete } from '../../../../hooks/quotes/use_mapbox_autocomplete';
+import type { GeocodeSuggestion } from '../../../../services/api/mapbox_geocoding_service';
 import { Loader2 } from 'lucide-react';
 
 interface AddressAutocompleteProps {
@@ -84,12 +84,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   };
 
   const handleSelect = (suggestion: GeocodeSuggestion) => {
-    console.log('🔵 STEP 1: AddressAutocomplete - Location selected', {
-      place_name: suggestion.place_name,
-      text: suggestion.text,
-      center: suggestion.center,
-      coordinates: suggestion.geometry?.coordinates,
-    });
     onChange(suggestion.place_name || suggestion.text);
     onSelect(suggestion);
     setIsOpen(false);

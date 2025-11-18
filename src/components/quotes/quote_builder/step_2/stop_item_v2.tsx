@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Calendar, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { cn } from '../../../utils/cn';
-import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
-import { formatDate, formatTime, parseDate } from '../../../utils/date_utils';
+import { cn } from '../../../../utils/cn';
+import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
+import { formatDate, formatTime, parseDate } from '../../../../utils/date_utils';
 import { AddressAutocomplete } from './address_autocomplete';
+import { FormDateInput } from '../../../../components/common/form_date_input';
+import { FormTimeInput } from '../../../../components/common/form_time_input';
 import type { Map } from 'mapbox-gl';
 
 interface StopItemV2Props {
@@ -94,11 +95,11 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
     }
   };
 
-  // Memoize min date/time for validation - always use future time (next minute)
+  // Memoize min date/time for validation - departureTime must be at least 1 hour from now
   const minDate = useMemo(() => {
     const now = new Date();
-    // Add 1 minute to ensure it's in the future
-    now.setMinutes(now.getMinutes() + 1);
+    // Add 1 hour to ensure departureTime is at least 1 hour from now
+    now.setHours(now.getHours() + 1);
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -107,8 +108,8 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
   
   const minTime = useMemo(() => {
     const now = new Date();
-    // Add 1 minute to ensure it's in the future
-    now.setMinutes(now.getMinutes() + 1);
+    // Add 1 hour to ensure departureTime is at least 1 hour from now
+    now.setHours(now.getHours() + 1);
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -116,19 +117,7 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
 
   // For intermediate stops, calculate min departure time based on arrival time + staying duration
   // This is ready for when departure time inputs are added
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const minDepartureDateTime = useMemo(() => {
-    if (!isPickup && !isDropoff && stop.arrivalTime && stop.arrivalTime !== '') {
-      const arrivalDate = new Date(stop.arrivalTime);
-      const stayingDuration = stop.stayingDuration || 0; // in seconds
-      // Add staying duration to arrival time
-      arrivalDate.setSeconds(arrivalDate.getSeconds() + stayingDuration);
-      // Add 1 minute buffer to ensure departure is after arrival + stay
-      arrivalDate.setMinutes(arrivalDate.getMinutes() + 1);
-      return arrivalDate;
-    }
-    return null;
-  }, [isPickup, isDropoff, stop.arrivalTime, stop.stayingDuration]);
+  // Note: minDepartureDateTime calculation will be used when departure time inputs are implemented
 
   return (
       <div
@@ -210,36 +199,24 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
                     toast.error('Please set the departure time for the previous stop before setting the dropoff location');
                     return;
                   }
-                  console.log('🟢 STEP 2: StopItemV2 - onSelect called', {
-                    index,
-                    suggestion,
-                    center: suggestion.center,
-                    latitude: suggestion.center[1],
-                    longitude: suggestion.center[0],
-                  });
                   const updates = {
                     locationName: suggestion.place_name || suggestion.text,
                     latitude: suggestion.center[1],
                     longitude: suggestion.center[0],
                   };
-                  console.log('🟢 STEP 2: StopItemV2 - Calling onUpdate with', updates);
                   onUpdate(index, updates);
 
                   // Animate map to selected location
                   if (map && isMapLoaded && suggestion.center && suggestion.center[0] && suggestion.center[1]) {
                     try {
                       map.flyTo({
-                        center: [suggestion.center[0], suggestion.center[1]], // [longitude, latitude]
-                        zoom: 14,
-                        duration: 1500, // Animation duration in milliseconds
-                        essential: true, // Animation is essential (won't be interrupted)
-                      });
-                      console.log('🗺️ Map animated to location', {
                         center: [suggestion.center[0], suggestion.center[1]],
                         zoom: 14,
+                        duration: 1500,
+                        essential: true,
                       });
-                    } catch (error) {
-                      console.error('❌ Failed to animate map:', error);
+                    } catch {
+                      // Silently handle animation errors
                     }
                   }
                 }}
@@ -274,61 +251,93 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
           )}
         </div>
 
-        {/* Date and Time Inputs - Hidden for dropoff stops */}
+        {/* Date and Time Inputs - Show departureTime for pickup and intermediate stops, hidden for dropoff */}
         {!isDropoff && (
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {/* Date Input */}
-            <div className="relative flex-1">
-              <input
-                type="date"
-                value={formatDate(stop.arrivalTime)}
+            <div className="flex-1">
+              <FormDateInput
+                label=""
+                value={formatDate(stop.departureTime || '')}
                 onChange={(e) => {
                   const newDate = e.target.value;
                   if (!newDate) {
-                    onUpdate(index, { arrivalTime: '' });
-                    return;
-                  }
-                  const currentTime = stop.arrivalTime ? formatTime(stop.arrivalTime) : minTime;
-                  const newDateTime = parseDate(newDate, currentTime || minTime, stop.arrivalTime);
-                  onUpdate(index, { arrivalTime: newDateTime });
-                }}
-                min={minDate}
-                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
-              />
-              <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-
-            {/* Time Input */}
-            <div className="relative flex-1">
-              <input
-                type="time"
-                value={formatTime(stop.arrivalTime)}
-                onChange={(e) => {
-                  const newTime = e.target.value;
-                  if (!newTime) {
-                    // If time is cleared, keep date but clear time
-                    const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
-                    if (currentDate) {
-                      const newDateTime = parseDate(currentDate, minTime, stop.arrivalTime);
-                      onUpdate(index, { arrivalTime: newDateTime });
-                    } else {
+                    onUpdate(index, { departureTime: null });
+                    // Clear arrivalTime if departureTime is cleared
+                    if (isPickup) {
                       onUpdate(index, { arrivalTime: '' });
                     }
                     return;
                   }
-                  const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
+                  const currentTime = stop.departureTime ? formatTime(stop.departureTime) : minTime;
+                  const newDepartureDateTime = parseDate(newDate, currentTime || minTime, stop.departureTime || undefined);
+                  
+                  const updates: Partial<ItineraryStopDto> = { departureTime: newDepartureDateTime };
+                  
+                  // For pickup: auto-calculate arrivalTime = departureTime - 30 minutes
+                  if (isPickup && newDepartureDateTime) {
+                    const departureDate = new Date(newDepartureDateTime);
+                    departureDate.setMinutes(departureDate.getMinutes() - 30);
+                    updates.arrivalTime = departureDate.toISOString();
+                  }
+                  
+                  onUpdate(index, updates);
+                }}
+                min={minDate}
+                className="[&>label]:hidden"
+              />
+            </div>
+
+            {/* Time Input */}
+            <div className="flex-1">
+              <FormTimeInput
+                label=""
+                value={formatTime(stop.departureTime || '')}
+                selectedDate={stop.departureTime ? formatDate(stop.departureTime) : minDate}
+                onChange={(e) => {
+                  const newTime = e.target.value;
+                  if (!newTime) {
+                    const currentDate = stop.departureTime ? formatDate(stop.departureTime) : minDate;
+                    if (currentDate) {
+                      const newDateTime = parseDate(currentDate, minTime, stop.departureTime || undefined);
+                      const updates: Partial<ItineraryStopDto> = { departureTime: newDateTime };
+                      
+                      // For pickup: clear arrivalTime if departureTime is cleared
+                      if (isPickup) {
+                        updates.arrivalTime = '';
+                      }
+                      
+                      onUpdate(index, updates);
+                    } else {
+                      const updates: Partial<ItineraryStopDto> = { departureTime: null };
+                      if (isPickup) {
+                        updates.arrivalTime = '';
+                      }
+                      onUpdate(index, updates);
+                    }
+                    return;
+                  }
+                  const currentDate = stop.departureTime ? formatDate(stop.departureTime) : minDate;
                   const selectedDate = currentDate || minDate;
-                  const newDateTime = parseDate(selectedDate, newTime, stop.arrivalTime);
-                  onUpdate(index, { arrivalTime: newDateTime });
+                  const newDepartureDateTime = parseDate(selectedDate, newTime, stop.departureTime || undefined);
+                  
+                  const updates: Partial<ItineraryStopDto> = { departureTime: newDepartureDateTime };
+                  
+                  // For pickup: auto-calculate arrivalTime = departureTime - 30 minutes
+                  if (isPickup && newDepartureDateTime) {
+                    const departureDate = new Date(newDepartureDateTime);
+                    departureDate.setMinutes(departureDate.getMinutes() - 30);
+                    updates.arrivalTime = departureDate.toISOString();
+                  }
+                  
+                  onUpdate(index, updates);
                 }}
                 min={(() => {
-                  // If selected date is today, use minTime, otherwise allow any time
-                  const currentDate = stop.arrivalTime ? formatDate(stop.arrivalTime) : minDate;
+                  const currentDate = stop.departureTime ? formatDate(stop.departureTime) : minDate;
                   return currentDate === minDate ? minTime : '00:00';
                 })()}
-                className="w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] appearance-none"
+                className="[&>label]:hidden"
               />
-              <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           </div>
         )}

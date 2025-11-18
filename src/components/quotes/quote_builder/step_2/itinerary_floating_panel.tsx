@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Menu, X, Plus } from 'lucide-react';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../../utils/cn';
 import { StopItemV2 } from './stop_item_v2';
-import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
-import { StopType } from '../../../types/quotes/itinerary';
-import type { TripTypeType } from '../../../types/quotes/quote';
-import { createNewStop, createPickupStop, createDropoffStop } from '../../../utils/stop_utils';
+import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
+import { StopType } from '../../../../types/quotes/itinerary';
+import type { TripTypeType } from '../../../../types/quotes/quote';
+import { createNewStop, createPickupStop, createDropoffStop } from '../../../../utils/stop_utils';
 import type { Map } from 'mapbox-gl';
 
 interface ItineraryFloatingPanelProps {
@@ -186,33 +186,15 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     isPickup={true}
                     isDropoff={false}
                     onUpdate={(_index, updates) => {
-                      console.log('🟡 STEP 3: ItineraryFloatingPanel - Pickup onUpdate called', {
-                        _index,
-                        updates,
-                        pickupIndex,
-                        currentStopsCount: currentStops.length,
-                      });
                       const newStops = [...currentStops];
                       if (pickupIndex >= 0) {
                         // Update existing pickup
                         newStops[pickupIndex] = { ...newStops[pickupIndex], ...updates };
-                        console.log('🟡 STEP 3: Updated existing pickup', newStops[pickupIndex]);
                       } else {
                         // Add new pickup at the beginning
                         const newPickup = { ...displayPickup, ...updates, stopType: StopType.PICKUP };
                         newStops.unshift(newPickup);
-                        console.log('🟡 STEP 3: Added new pickup', newPickup);
                       }
-                      console.log('🟡 STEP 3: Calling onOutboundStopsChange/handleReturnStopsChange', {
-                        activeTab,
-                        newStopsCount: newStops.length,
-                        newStops: newStops.map(s => ({
-                          locationName: s.locationName,
-                          lat: s.latitude,
-                          lng: s.longitude,
-                          stopType: s.stopType
-                        }))
-                      });
                       if (activeTab === 'outbound') {
                         onOutboundStopsChange(newStops);
                       } else {
@@ -303,23 +285,8 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                     isPickup={false}
                     isDropoff={false}
                     onUpdate={(index, updates) => {
-                      console.log('🟡 STEP 3: ItineraryFloatingPanel - Intermediate stop onUpdate called', {
-                        index,
-                        updates,
-                        currentStopsCount: currentStops.length,
-                      });
                       const newStops = [...currentStops];
                       newStops[index] = { ...newStops[index], ...updates };
-                      console.log('🟡 STEP 3: Updated intermediate stop', {
-                        updatedStop: newStops[index],
-                        newStopsCount: newStops.length,
-                        newStops: newStops.map(s => ({
-                          locationName: s.locationName,
-                          lat: s.latitude,
-                          lng: s.longitude,
-                          stopType: s.stopType
-                        }))
-                      });
                       if (activeTab === 'outbound') {
                         onOutboundStopsChange(newStops);
                       } else {
@@ -402,33 +369,15 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                   isDropoff={true}
                   isDropoffDisabled={isDropoffDisabled}
                   onUpdate={(_index, updates) => {
-                    console.log('🟡 STEP 3: ItineraryFloatingPanel - Dropoff onUpdate called', {
-                      _index,
-                      updates,
-                      dropoffIndex,
-                      currentStopsCount: currentStops.length,
-                    });
                     const newStops = [...currentStops];
                     if (dropoffIndex >= 0) {
                       // Update existing dropoff
                       newStops[dropoffIndex] = { ...newStops[dropoffIndex], ...updates };
-                      console.log('🟡 STEP 3: Updated existing dropoff', newStops[dropoffIndex]);
                     } else {
                       // Add new dropoff at the end
                       const newDropoff = { ...displayDropoff, ...updates, stopType: StopType.DROPOFF };
                       newStops.push(newDropoff);
-                      console.log('🟡 STEP 3: Added new dropoff', newDropoff);
                     }
-                    console.log('🟡 STEP 3: Calling onOutboundStopsChange/handleReturnStopsChange', {
-                      activeTab,
-                      newStopsCount: newStops.length,
-                      newStops: newStops.map(s => ({
-                        locationName: s.locationName,
-                        lat: s.latitude,
-                        lng: s.longitude,
-                        stopType: s.stopType
-                      }))
-                    });
                     if (activeTab === 'outbound') {
                       onOutboundStopsChange(newStops);
                     } else {

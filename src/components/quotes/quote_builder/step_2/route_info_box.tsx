@@ -1,9 +1,9 @@
 import { useMemo, useRef } from 'react';
-import { formatDuration } from '../../../services/api/mapbox_directions_service';
-import type { RouteResponse } from '../../../services/api/mapbox_directions_service';
-import type { ItineraryStopDto } from '../../../types/quotes/itinerary';
-import { StopType } from '../../../types/quotes/itinerary';
-import { formatShortDate, format12HourTime, addDurationToDate } from '../../../utils/date_utils';
+import { formatDuration } from '../../../../services/api/mapbox_directions_service';
+import type { RouteResponse } from '../../../../services/api/mapbox_directions_service';
+import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
+import { StopType } from '../../../../types/quotes/itinerary';
+import { formatShortDate, format12HourTime, addDurationToDate } from '../../../../utils/date_utils';
 
 interface RouteInfoBoxProps {
   route: RouteResponse | null;
@@ -42,19 +42,19 @@ export const RouteInfoBox: React.FC<RouteInfoBoxProps> = ({
     s.locationName && s.locationName.trim() !== ''
   );
 
-  // Calculate dropoff time from pickup time + route duration
+  // Calculate dropoff arrivalTime from pickup departureTime + route duration
   const calculatedDropoffTime = useMemo(() => {
-    if (pickupStop?.arrivalTime && route?.duration) {
-      return addDurationToDate(pickupStop.arrivalTime, route.duration);
+    if (pickupStop?.departureTime && route?.duration) {
+      return addDurationToDate(pickupStop.departureTime, route.duration);
     }
     return null;
-  }, [pickupStop?.arrivalTime, route?.duration]);
+  }, [pickupStop?.departureTime, route?.duration]);
 
   // Determine what to show based on available information
   // Only show if location has valid coordinates (actually selected, not just typed)
   const hasPickupLocation = pickupStop && pickupStop.locationName && 
     pickupStop.latitude !== 0 && pickupStop.longitude !== 0;
-  const hasPickupDateTime = pickupStop?.arrivalTime && pickupStop.arrivalTime !== '';
+  const hasPickupDateTime = pickupStop?.departureTime && pickupStop.departureTime !== '';
   const hasDropoffLocation = dropoffStop && dropoffStop.locationName && 
     dropoffStop.latitude !== 0 && dropoffStop.longitude !== 0;
   const hasRoute = route && route.duration > 0;
@@ -84,14 +84,14 @@ export const RouteInfoBox: React.FC<RouteInfoBoxProps> = ({
           {/* Pickup Section */}
           {hasPickupLocation && (
             <div className="flex items-start gap-3 relative mb-4">
-              {/* Time and Date */}
+              {/* Time and Date - Show departureTime for pickup */}
               {hasPickupDateTime ? (
                 <div ref={pickupTimeRef} className="flex-shrink-0 text-right min-w-[80px] pr-3 relative">
                   <div className="text-sm font-semibold text-gray-900">
-                    {format12HourTime(pickupStop.arrivalTime)}
+                    {format12HourTime(pickupStop.departureTime)}
                   </div>
                   <div className="text-xs text-gray-600">
-                    {formatShortDate(pickupStop.arrivalTime)}
+                    {formatShortDate(pickupStop.departureTime)}
                   </div>
                 </div>
               ) : (

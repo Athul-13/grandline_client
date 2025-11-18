@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQuoteBuilder } from '../../../hooks/quotes/use_quote_builder';
 import { StepNavigation } from './step_navigation';
-import { Step1TripType } from './step_1_trip_type';
-import { Step2Itinerary } from './step_2_itinerary';
+import { Step1TripType } from './step_1/step_1_trip_type';
+import { Step2Itinerary } from './step_2/step_2_itinerary';
+import { Step3UserDetails } from './step_3/step_3_user_details';
 
 /**
  * Quote Builder Container
@@ -14,13 +15,21 @@ export const QuoteBuilderContainer: React.FC = () => {
     tripType,
     quoteId,
     itinerary,
+    tripName,
+    eventType,
+    customEventType,
+    passengers,
     validation,
     goToStep,
     setTripType,
     setItinerary,
+    setTripName,
+    setEventType,
+    setPassengers,
     createDraft,
     goToNextStep,
     goToPreviousStep,
+    setStepValidation,
     isLoading,
     error,
   } = useQuoteBuilder();
@@ -90,7 +99,7 @@ export const QuoteBuilderContainer: React.FC = () => {
       )}
 
       {/* Step Content */}
-      <div className={currentStep === 2 ? 'flex-1 overflow-hidden relative' : 'flex-1 container mx-auto px-6 py-8 overflow-y-auto'}>
+      <div className={currentStep === 2 ? 'flex-1 overflow-hidden relative' : currentStep === 3 ? 'flex-1 container mx-auto px-6 py-6 flex flex-col' : 'flex-1 container mx-auto px-6 py-8 overflow-y-auto'}>
         {currentStep === 2 ? (
           <Step2Itinerary
             tripType={tripType || 'one_way'}
@@ -103,10 +112,13 @@ export const QuoteBuilderContainer: React.FC = () => {
             isLoading={isLoading}
             isReturnEnabled={isReturnEnabled}
             onReturnEnabledChange={setIsReturnEnabled}
+            onStepComplete={() => {
+              setStepValidation(2, true);
+            }}
           />
         ) : (
-          <div className="container mx-auto px-6 py-8">
-            <div className="bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6">
+          <div className={currentStep === 3 ? 'h-full flex flex-col' : 'container mx-auto px-6 py-8'}>
+            <div className={currentStep === 3 ? 'h-full flex flex-col bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6' : 'bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6'}>
               {currentStep === 1 && (
                 <Step1TripType
                   tripType={tripType}
@@ -126,7 +138,27 @@ export const QuoteBuilderContainer: React.FC = () => {
                 />
               )}
 
-              {currentStep > 2 && (
+              {currentStep === 3 && (
+                <Step3UserDetails
+                  tripName={tripName}
+                  eventType={eventType}
+                  customEventType={customEventType}
+                  passengers={passengers}
+                  onTripNameChange={setTripName}
+                  onEventTypeChange={setEventType}
+                  onPassengersChange={setPassengers}
+                  onNext={async () => {
+                    await goToNextStep();
+                  }}
+                  onPrevious={goToPreviousStep}
+                  onStepValidationChange={(isValid) => {
+                    setStepValidation(3, isValid);
+                  }}
+                  isLoading={isLoading}
+                />
+              )}
+
+              {currentStep > 3 && (
                 <div className="text-center py-12">
                   <p className="text-[var(--color-text-secondary)]">
                     Step {currentStep} content will be implemented in subsequent commits
