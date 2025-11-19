@@ -226,7 +226,7 @@ export const ItineraryFloatingPanel: React.FC<ItineraryFloatingPanelProps> = ({
                   {canAddMoreStops && (
                     <button
                       onClick={handleAddStop}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 my-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 my-2 border-2 border-dashed border-[var(--color-border)] rounded-lg text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
                       type="button"
                     >
                       <Plus className="w-5 h-5" />

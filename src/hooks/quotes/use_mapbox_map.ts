@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { mapboxService } from '../../services/api/mapbox_service';
+import { useTheme } from '../use_theme';
 import type { Map } from 'mapbox-gl';
 
 /**
@@ -20,6 +21,16 @@ export const useMapboxMap = (
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [geocoder, setGeocoder] = useState<MapboxGeocoder | null>(null);
+  const { resolvedTheme } = useTheme();
+
+  /**
+   * Get map style based on theme
+   */
+  const getMapStyle = (theme: string | undefined): string => {
+    return theme === 'dark'
+      ? 'mapbox://styles/mapbox/dark-v11'
+      : 'mapbox://styles/mapbox/streets-v12';
+  };
 
   /**
    * Initialize map
@@ -38,7 +49,7 @@ export const useMapboxMap = (
 
       const map = new mapboxgl.Map({
         container: containerId,
-        style: 'mapbox://styles/mapbox/streets-v12',
+        style: getMapStyle(resolvedTheme),
         center: initialCenter || defaultCenter,
         zoom: initialZoom || defaultZoom,
       });
@@ -71,7 +82,33 @@ export const useMapboxMap = (
     } catch (error) {
       setMapError(error instanceof Error ? error.message : 'Failed to initialize map');
     }
-  }, [containerId, accessToken, initialCenter, initialZoom]);
+  }, [containerId, accessToken, initialCenter, initialZoom, resolvedTheme]);
+
+  /**
+   * Update map style when theme changes
+   */
+  useEffect(() => {
+    if (mapRef.current && isMapLoaded) {
+      const newStyle = getMapStyle(resolvedTheme);
+      // Preserve current view when switching styles
+      const currentCenter = mapRef.current.getCenter();
+      const currentZoom = mapRef.current.getZoom();
+      const currentBearing = mapRef.current.getBearing();
+      const currentPitch = mapRef.current.getPitch();
+
+      mapRef.current.setStyle(newStyle);
+
+      // Restore view after style loads
+      mapRef.current.once('style.load', () => {
+        if (mapRef.current) {
+          mapRef.current.setCenter(currentCenter);
+          mapRef.current.setZoom(currentZoom);
+          mapRef.current.setBearing(currentBearing);
+          mapRef.current.setPitch(currentPitch);
+        }
+      });
+    }
+  }, [resolvedTheme, isMapLoaded]);
 
   return {
     map: mapRef.current,

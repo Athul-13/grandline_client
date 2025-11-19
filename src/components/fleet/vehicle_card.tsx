@@ -84,7 +84,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
 
   return (
     <>
-      <div className="w-full self-start flex flex-col bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] hover:shadow-md transition-shadow overflow-hidden">
+      <div className="w-full self-start flex flex-col bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] hover:shadow-md transition-shadow">
         {/* First Row - Image and Right Content */}
         <div className="flex flex-row p-4">
           {/* Vehicle Image - Left Side */}

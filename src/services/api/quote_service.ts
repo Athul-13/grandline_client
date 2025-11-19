@@ -22,12 +22,14 @@ import type { CalculatePricingResponse } from '../../types/quotes/pricing';
 export const quoteService = {
   /**
    * Get all quotes (with optional pagination and filters)
-   * GET /api/v1/quotes?page=1&limit=20&status=draft,submitted
+   * GET /api/v1/quotes?page=1&limit=20&status=draft,submitted&sortBy=createdAt&sortOrder=desc
    */
   getQuotes: async (params?: {
     page?: number;
     limit?: number;
     status?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }): Promise<QuoteListResponse> => {
     const queryParams = new URLSearchParams();
     

@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useQuoteBuilder } from '../../../hooks/quotes/use_quote_builder';
+import { quoteService } from '../../../services/api/quote_service';
+import { useNavigate } from 'react-router-dom';
 import { StepNavigation } from './step_navigation';
 import { Step1TripType } from './step_1/step_1_trip_type';
 import { Step2Itinerary } from './step_2/step_2_itinerary';
 import { Step3UserDetails } from './step_3/step_3_user_details';
+import { Step4VehicleSelection } from './step_4/step_4_vehicle_selection';
+import { Step5AdditionalAmenities } from './step_5/step_5_additional_amenities';
 
 /**
  * Quote Builder Container
  * Main container for the 5-step quote building process
  */
 export const QuoteBuilderContainer: React.FC = () => {
+  const navigate = useNavigate();
   const {
     currentStep,
     tripType,
@@ -19,6 +24,8 @@ export const QuoteBuilderContainer: React.FC = () => {
     eventType,
     customEventType,
     passengers,
+    selectedVehicles,
+    selectedAmenities,
     validation,
     goToStep,
     setTripType,
@@ -26,6 +33,9 @@ export const QuoteBuilderContainer: React.FC = () => {
     setTripName,
     setEventType,
     setPassengers,
+    setSelectedVehicles,
+    setSelectedAmenities,
+    saveDraft,
     createDraft,
     goToNextStep,
     goToPreviousStep,
@@ -88,7 +98,7 @@ export const QuoteBuilderContainer: React.FC = () => {
       {/* Step Navigation - Hidden on mobile, overlay on map for step 2 */}
       {!isMobile && (
         <div
-          className={currentStep === 2 ? 'relative z-30 bg-white/80 backdrop-blur-sm' : 'relative'}
+          className={currentStep === 2 ? 'relative z-30 bg-[var(--color-bg-primary)]/80 dark:bg-[var(--color-bg-primary)]/90 backdrop-blur-sm' : 'relative'}
         >
           <StepNavigation
             currentStep={currentStep}
@@ -99,11 +109,12 @@ export const QuoteBuilderContainer: React.FC = () => {
       )}
 
       {/* Step Content */}
-      <div className={currentStep === 2 ? 'flex-1 overflow-hidden relative' : currentStep === 3 ? 'flex-1 container mx-auto px-6 py-6 flex flex-col' : 'flex-1 container mx-auto px-6 py-8 overflow-y-auto'}>
+      <div className={currentStep === 2 ? 'flex-1 overflow-hidden relative' : currentStep === 3 || currentStep === 4 || currentStep === 5 ? 'flex-1 container mx-auto px-6 py-6 flex flex-col' : 'flex-1 container mx-auto px-6 py-8 overflow-y-auto'}>
         {currentStep === 2 ? (
           <Step2Itinerary
             tripType={tripType || 'one_way'}
             itinerary={itinerary}
+            quoteId={quoteId}
             onItineraryChange={setItinerary}
             onNext={async () => {
               await goToNextStep();
@@ -117,8 +128,8 @@ export const QuoteBuilderContainer: React.FC = () => {
             }}
           />
         ) : (
-          <div className={currentStep === 3 ? 'h-full flex flex-col' : 'container mx-auto px-6 py-8'}>
-            <div className={currentStep === 3 ? 'h-full flex flex-col bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6' : 'bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6'}>
+          <div className={currentStep === 3 || currentStep === 4 || currentStep === 5 ? 'h-full flex flex-col' : 'container mx-auto px-6 py-8'}>
+            <div className={currentStep === 3 || currentStep === 4 || currentStep === 5 ? 'h-full flex flex-col bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6' : 'bg-[var(--color-bg-card)] rounded-lg shadow-lg p-6'}>
               {currentStep === 1 && (
                 <Step1TripType
                   tripType={tripType}
@@ -158,7 +169,63 @@ export const QuoteBuilderContainer: React.FC = () => {
                 />
               )}
 
-              {currentStep > 3 && (
+              {currentStep === 4 && (
+                <Step4VehicleSelection
+                  passengerCount={passengers.length}
+                  itinerary={itinerary}
+                  tripType={tripType}
+                  selectedVehicles={selectedVehicles}
+                  isStep5Completed={validation.step5}
+                  onNext={async () => {
+                    await goToNextStep();
+                  }}
+                  onPrevious={goToPreviousStep}
+                  onStepValidationChange={(isValid) => {
+                    setStepValidation(4, isValid);
+                  }}
+                  onSelectedVehiclesChange={setSelectedVehicles}
+                  isLoading={isLoading}
+                />
+              )}
+
+              {currentStep === 5 && (
+                <Step5AdditionalAmenities
+                  passengerCount={passengers.length}
+                  itinerary={itinerary}
+                  tripType={tripType}
+                  selectedVehicles={selectedVehicles}
+                  selectedAmenities={selectedAmenities}
+                  quoteId={quoteId}
+                  onNext={async () => {
+                    await goToNextStep();
+                  }}
+                  onPrevious={goToPreviousStep}
+                  onStepValidationChange={(isValid) => {
+                    setStepValidation(5, isValid);
+                  }}
+                  onSelectedAmenitiesChange={setSelectedAmenities}
+                  onSubmitQuote={async () => {
+                    if (!quoteId) return;
+
+                    try {
+                      // Update draft with currentStep: 5
+                      await saveDraft({ currentStep: 5 });
+                      
+                      // Submit quote
+                      await quoteService.submitQuote(quoteId);
+                      
+                      // Redirect to quotes list page
+                      navigate('/user/quotes');
+                    } catch (error) {
+                      console.error('Failed to submit quote:', error);
+                      // TODO: Show error message to user
+                    }
+                  }}
+                  isLoading={isLoading}
+                />
+              )}
+
+              {currentStep > 5 && (
                 <div className="text-center py-12">
                   <p className="text-[var(--color-text-secondary)]">
                     Step {currentStep} content will be implemented in subsequent commits

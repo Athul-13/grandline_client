@@ -32,7 +32,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   };
 
   return (
-    <div className="w-full bg-transparent border-b border-[var(--color-border)] px-6 py-4">
+    <div className="w-full bg-[var(--color-bg-primary)] border-b border-[var(--color-border)] px-6 py-4">
       <div className="flex items-center justify-between max-w-4xl mx-auto">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.number);
@@ -48,11 +48,11 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
                   disabled={!isClickable}
                   className={cn(
                     'relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all',
-                    'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2',
+                    'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--color-bg-primary)]',
                     isCurrent
                       ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
                       : isCompleted
-                      ? 'bg-green-500 border-green-500 text-white cursor-pointer hover:scale-110'
+                      ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 text-white cursor-pointer hover:scale-110'
                       : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-secondary)] cursor-not-allowed'
                   )}
                   aria-label={`Step ${step.number}: ${step.label}`}
@@ -71,7 +71,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
                     isCurrent
                       ? 'text-[var(--color-primary)]'
                       : isCompleted
-                      ? 'text-green-600'
+                      ? 'text-green-600 dark:text-green-400'
                       : 'text-[var(--color-text-secondary)]'
                   )}
                 >
@@ -85,7 +85,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
                   className={cn(
                     'flex-1 h-0.5 mx-2 -mt-5',
                     completedSteps.includes(step.number + 1) || currentStep > step.number
-                      ? 'bg-green-500'
+                      ? 'bg-green-500 dark:bg-green-600'
                       : 'bg-[var(--color-border)]'
                   )}
                 />

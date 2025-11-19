@@ -9,6 +9,7 @@ import { useItineraryAutoUpdate } from '../../../../hooks/quotes/use_itinerary_a
 import { useRouteCalculation } from '../../../../hooks/quotes/use_route_calculation';
 import { useMarkerManagement } from '../../../../hooks/quotes/use_marker_management';
 import { useRouteDrawing } from '../../../../hooks/quotes/use_route_drawing';
+import { quoteService } from '../../../../services/api/quote_service';
 import type { Map } from 'mapbox-gl';
 import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
 import { StopType } from '../../../../types/quotes/itinerary';
@@ -22,6 +23,7 @@ interface Step2ItineraryProps {
     outbound: ItineraryStopDto[];
     return?: ItineraryStopDto[];
   } | null;
+  quoteId: string | null;
   onItineraryChange: (itinerary: {
     outbound: ItineraryStopDto[];
     return?: ItineraryStopDto[];
@@ -41,6 +43,7 @@ interface Step2ItineraryProps {
 export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
   tripType,
   itinerary,
+  quoteId,
   onItineraryChange,
   onNext,
   onPrevious,
@@ -291,6 +294,8 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     [onItineraryChange, outboundStops]
   );
 
+  const [isCalculatingRoutes, setIsCalculatingRoutes] = useState(false);
+
   const handleNext = async () => {
     // Validate step before proceeding
     if (!isStepValid()) {
@@ -300,6 +305,26 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
     // Enable return tab if two-way and not already enabled
     if (tripType === 'two_way' && !isReturnEnabled) {
       onReturnEnabledChange(true);
+    }
+    
+    // Calculate routes via backend API if quoteId exists
+    if (quoteId && itinerary) {
+      try {
+        setIsCalculatingRoutes(true);
+        await quoteService.calculateRoutes(quoteId, {
+          itinerary: {
+            outbound: itinerary.outbound,
+            return: itinerary.return,
+          },
+        });
+        toast.success('Routes calculated successfully');
+      } catch (error) {
+        console.error('Failed to calculate routes:', error);
+        toast.error(error instanceof Error ? error.message : 'Failed to calculate routes');
+        // Still proceed to next step even if route calculation fails
+      } finally {
+        setIsCalculatingRoutes(false);
+      }
     }
     
     // Mark step 2 as completed
@@ -413,9 +438,9 @@ export const Step2Itinerary: React.FC<Step2ItineraryProps> = ({
         </Button>
         <Button
           onClick={handleNext}
-          disabled={!isStepValid() || isLoading}
-          loading={isLoading}
-          loadingText="Calculating routes..."
+          disabled={!isStepValid() || isLoading || isCalculatingRoutes}
+          loading={isLoading || isCalculatingRoutes}
+          loadingText={isCalculatingRoutes ? "Calculating routes..." : "Loading..."}
         >
           Next
         </Button>

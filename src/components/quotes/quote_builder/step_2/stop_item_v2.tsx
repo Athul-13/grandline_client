@@ -128,14 +128,14 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
         onDrop={handleDrop}
         onDragEnd={handleDragEnd}
         className={cn(
-          'relative bg-white rounded-lg border-2 p-4 transition-all',
+          'relative bg-[var(--color-bg-card)] dark:bg-[var(--color-bg-card)] rounded-lg border-2 p-4 transition-all',
           isPickup
-            ? 'border-green-500 bg-green-50/30'
+            ? 'border-green-500 dark:border-green-600 bg-green-50/30 dark:bg-green-900/20'
             : isDropoff
-              ? 'border-red-500 bg-red-50/30'
-              : 'border-blue-500 bg-blue-50/30 cursor-move',
+              ? 'border-red-500 dark:border-red-600 bg-red-50/30 dark:bg-red-900/20'
+              : 'border-blue-500 dark:border-blue-600 bg-blue-50/30 dark:bg-blue-900/20 cursor-move',
           isDragging && 'opacity-50',
-          isDraggedOver && 'border-[var(--color-primary)] border-2 bg-[var(--color-primary)]/5'
+          isDraggedOver && 'border-[var(--color-primary)] border-2 bg-[var(--color-primary)]/5 dark:bg-[var(--color-primary)]/10'
         )}
       >
         {/* Header */}
@@ -147,7 +147,7 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
                 isPickup ? 'bg-green-500' : isDropoff ? 'bg-red-500' : 'bg-blue-500'
               )}
             />
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-[var(--color-text-primary)]">
               {isPickup ? 'Pickup Location' : isDropoff ? 'Dropoff Location' : `Stop ${stopNumber || ''}`}
             </h3>
           </div>
@@ -155,7 +155,7 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
           {!isPickup && !isDropoff && canRemove && (
             <button
               onClick={() => onRemove(index)}
-              className="text-red-500 hover:text-red-700 text-sm font-medium"
+              className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium"
               type="button"
             >
               Remove
@@ -164,7 +164,7 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
           {(isPickup || isDropoff) && canRemove && (
             <button
               onClick={() => onRemove(index)}
-              className="text-red-500 hover:text-red-700 text-sm font-medium"
+              className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium"
               type="button"
             >
               Remove
@@ -244,8 +244,8 @@ export const StopItemV2: React.FC<StopItemV2Props> = ({
               placeholder="Address"
               disabled={isDropoff && isDropoffDisabled}
               className={cn(
-                "w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]",
-                isDropoff && isDropoffDisabled && 'cursor-not-allowed opacity-60 bg-gray-100'
+                "w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]",
+                isDropoff && isDropoffDisabled && 'cursor-not-allowed opacity-60 bg-[var(--color-bg-secondary)]'
               )}
             />
           )}

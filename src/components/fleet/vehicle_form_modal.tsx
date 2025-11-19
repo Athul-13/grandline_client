@@ -149,6 +149,15 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  // Sync form's imageUrls field with actual uploaded images
+  useEffect(() => {
+    if (isOpen) {
+      const allImageUrls = [...existingImages, ...getSuccessfullyUploadedUrls()];
+      setValue('imageUrls', allImageUrls, { shouldValidate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingImages, uploadedImages, isOpen, setValue]);
+
   // Track unsaved changes
   useEffect(() => {
     if (isOpen) {

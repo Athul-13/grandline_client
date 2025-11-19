@@ -190,6 +190,8 @@ export interface QuoteListItem {
   status: QuoteStatusType;
   currentStep: number;
   totalPrice?: number;
+  startLocation?: string; // Location name of pickup
+  endLocation?: string; // Location name of dropoff
   createdAt: Date | string;
 }
 
