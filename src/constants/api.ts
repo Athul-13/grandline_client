@@ -42,6 +42,12 @@ export const API_ENDPOINTS = {
     buses: '/admin/buses',
     routes: '/admin/routes',
     quotes: '/admin/quotes',
+    pricingConfig: {
+      active: '/admin/pricing-config',
+      create: '/admin/pricing-config',
+      history: '/admin/pricing-config/history',
+      activate: (id: string) => `/admin/pricing-config/${id}/activate`,
+    },
   },
   // Fleet endpoints
   fleet: {

@@ -281,10 +281,16 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
                 <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
                   {formatDate(quote.createdAt)}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                <td 
+                  className="px-4 py-3 text-sm text-[var(--color-text-secondary)] max-w-[200px] truncate"
+                  title={quote.startLocation || undefined}
+                >
                   {quote.startLocation || '-'}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                <td 
+                  className="px-4 py-3 text-sm text-[var(--color-text-secondary)] max-w-[200px] truncate"
+                  title={quote.endLocation || undefined}
+                >
                   {quote.endLocation || '-'}
                 </td>
               </tr>

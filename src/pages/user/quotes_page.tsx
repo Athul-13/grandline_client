@@ -26,7 +26,7 @@ export const QuotesPage: React.FC = () => {
   };
 
   return (
-    <div className="p-5 sm:p-4 md:p-6 space-y-4 sm:space-y-6 h-full flex flex-col">
+    <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10 space-y-4 sm:space-y-6 h-full flex flex-col">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
           {t('dashboard.quotes.title')}
