@@ -42,6 +42,8 @@ export const API_ENDPOINTS = {
     buses: '/admin/buses',
     routes: '/admin/routes',
     quotes: '/admin/quotes',
+    quoteDetails: (id: string) => `/admin/quotes/${id}`,
+    updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
     pricingConfig: {
       active: '/admin/pricing-config',
       create: '/admin/pricing-config',

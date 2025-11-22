@@ -11,6 +11,9 @@ import type {
 import type {
   AdminQuoteListResponse,
   AdminQuoteListParams,
+  AdminQuoteDetailsResponse,
+  UpdateQuoteStatusRequest,
+  UpdateQuoteStatusResponse,
 } from '../../types/quotes/admin_quote';
 import type {
   CalculateRoutesRequest,
@@ -172,6 +175,32 @@ export const quoteService = {
     const url = queryString ? `${API_ENDPOINTS.admin.quotes}?${queryString}` : API_ENDPOINTS.admin.quotes;
     
     const response = await grandlineAxiosClient.get<AdminQuoteListResponse>(url);
+    return response.data;
+  },
+
+  /**
+   * Get admin quote details
+   * GET /api/v1/admin/quotes/:id
+   */
+  getAdminQuoteDetails: async (id: string): Promise<AdminQuoteDetailsResponse> => {
+    const response = await grandlineAxiosClient.get<AdminQuoteDetailsResponse>(
+      API_ENDPOINTS.admin.quoteDetails(id)
+    );
+    return response.data;
+  },
+
+  /**
+   * Update quote status (admin only)
+   * PUT /api/v1/admin/quotes/:id/status
+   */
+  updateQuoteStatus: async (
+    id: string,
+    data: UpdateQuoteStatusRequest
+  ): Promise<UpdateQuoteStatusResponse> => {
+    const response = await grandlineAxiosClient.put<UpdateQuoteStatusResponse>(
+      API_ENDPOINTS.admin.updateQuoteStatus(id),
+      data
+    );
     return response.data;
   },
 };

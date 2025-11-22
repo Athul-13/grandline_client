@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSearchContext } from '../../hooks/use_search_context';
 import { AdminQuotesTable } from '../../components/quotes/admin_quotes_table';
 import { useAdminQuotesList } from '../../hooks/quotes/use_admin_quotes_list';
 import { Pagination } from '../../components/common/pagination';
 
 export const AdminQuotesPage: React.FC = () => {
+  const { id: quoteId } = useParams<{ id?: string }>();
   const { searchQuery } = useSearchContext();
   const [currentPage, setCurrentPage] = useState(1);
   const [includeDeleted, setIncludeDeleted] = useState(false);
@@ -67,11 +69,12 @@ export const AdminQuotesPage: React.FC = () => {
               pagination={pagination}
               isLoading={isLoading}
               onPageChange={handlePageChange}
+              quoteId={quoteId}
             />
           </div>
 
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
+          {/* Pagination - Disabled when viewing details */}
+          {!quoteId && pagination && pagination.totalPages > 1 && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
               <Pagination
                 currentPage={pagination.page}

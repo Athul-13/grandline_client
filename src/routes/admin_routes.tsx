@@ -50,9 +50,17 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* Quotes */}
+      {/* Quotes - handles both list and details */}
       <Route
         path="quotes"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminQuotesPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+      <Route
+        path="quotes/:id"
         element={
           <ProtectedAdminLayoutRoute>
             <AdminQuotesPage />

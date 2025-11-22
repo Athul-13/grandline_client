@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Pagination } from '../common/pagination';
+import { FilterSection } from '../common/filter_section';
 import type { AdminQuoteListItem } from '../../types/quotes/admin_quote';
 import { QuoteStatus } from '../../types/quotes/quote';
 import type { QuoteStatusType } from '../../types/quotes/quote';
 import { cn } from '../../utils/cn';
 import { highlightSearchTerm } from '../../utils/highlight_search';
 import { useSearchContext } from '../../hooks/use_search_context';
+import { ROUTES } from '../../constants/routes';
+import { useAdminQuoteDetails } from '../../hooks/quotes/use_admin_quote_details';
+import { useUpdateQuoteStatus } from '../../hooks/quotes/use_update_quote_status';
 
 interface AdminQuotesTableProps {
   quotes: AdminQuoteListItem[];
@@ -20,6 +25,7 @@ interface AdminQuotesTableProps {
   isLoading: boolean;
   onPageChange: (page: number) => void;
   showPaginationOnly?: boolean;
+  quoteId?: string; // When provided, show quote details instead of table
 }
 
 /**
@@ -71,9 +77,66 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   isLoading,
   onPageChange,
   showPaginationOnly = false,
+  quoteId,
 }) => {
   const { searchQuery } = useSearchContext();
   const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
+  // Quote details state
+  const { quoteDetails, isLoading: isLoadingDetails, error: detailsError, refetch } = useAdminQuoteDetails(quoteId || '');
+  const { updateStatus, isLoading: isUpdatingStatus } = useUpdateQuoteStatus();
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    basicInfo: false,
+    itinerary: false,
+    vehicles: false,
+    amenities: false,
+    pricing: false,
+    route: false,
+  });
+
+  // Toggle accordion section
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  // Handle status update
+  const handleStatusChange = async (newStatus: 'paid' | 'submitted') => {
+    if (!quoteId || !quoteDetails) return;
+
+    const result = await updateStatus(quoteId, { status: newStatus });
+
+    if (result) {
+      toast.success(`Quote status updated to ${newStatus}`);
+      await refetch();
+    } else {
+      toast.error('Failed to update quote status');
+    }
+  };
+
+  // Get available status options based on current status
+  const getAvailableStatuses = (): Array<{ value: 'paid' | 'submitted'; label: string }> => {
+    if (!quoteDetails) return [];
+
+    const currentStatus = quoteDetails.status;
+
+    // Can only change between PAID and SUBMITTED
+    if (currentStatus === QuoteStatus.PAID) {
+      return [{ value: 'submitted', label: 'Submitted' }];
+    } else if (currentStatus === QuoteStatus.SUBMITTED) {
+      return [{ value: 'paid', label: 'Paid' }];
+    }
+
+    return [];
+  };
+
+  // Handle back navigation
+  const handleBack = () => {
+    navigate(-1); // Go back to previous page (maintains state)
+  };
 
   // Get trip type label
   const getTripTypeLabel = (tripType: string): string => {
@@ -81,11 +144,11 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   };
 
   // Copy quote ID to clipboard
-  const handleCopyQuoteId = async (quoteId: string, e: React.MouseEvent) => {
+  const handleCopyQuoteId = async (quoteIdToCopy: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(quoteId);
-      setCopiedQuoteId(quoteId);
+      await navigator.clipboard.writeText(quoteIdToCopy);
+      setCopiedQuoteId(quoteIdToCopy);
       toast.success('Quote ID copied to clipboard');
       setTimeout(() => setCopiedQuoteId(null), 2000);
     } catch {
@@ -117,6 +180,198 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
         totalPages={pagination?.totalPages || 1}
         onPageChange={onPageChange}
       />
+    );
+  }
+
+  // Quote Details View
+  if (quoteId) {
+    if (isLoadingDetails) {
+      return (
+        <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (detailsError || !quoteDetails) {
+      return (
+        <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+          <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+            <p className="text-lg font-medium text-[var(--color-text-primary)] mb-2">Error</p>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+              {detailsError || 'Quote not found'}
+            </p>
+            <button
+              onClick={handleBack}
+              className="px-4 py-2 text-sm border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const availableStatuses = getAvailableStatuses();
+
+    return (
+      <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+        {/* Header with Back Button and Status Control */}
+        <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors text-[var(--color-text-primary)]"
+                title="Back to quotes"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Quote Details</p>
+                <p className="text-xs text-[var(--color-text-secondary)] font-mono">
+                  {quoteDetails.quoteId}
+                </p>
+              </div>
+            </div>
+
+            {/* Status Update Control */}
+            {availableStatuses.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--color-text-secondary)]">Status:</span>
+                <select
+                  value={quoteDetails.status}
+                  onChange={(e) => {
+                    const newStatus = e.target.value as 'paid' | 'submitted';
+                    if (newStatus === 'paid' || newStatus === 'submitted') {
+                      handleStatusChange(newStatus);
+                    }
+                  }}
+                  disabled={isUpdatingStatus}
+                  className="px-3 py-1.5 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value={quoteDetails.status}>
+                    {quoteDetails.status.charAt(0).toUpperCase() + quoteDetails.status.slice(1)}
+                  </option>
+                  {availableStatuses.map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Content Area with Accordions */}
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
+          {/* Basic Information Accordion */}
+          <FilterSection
+            title="Basic Information"
+            isExpanded={expandedSections.basicInfo}
+            onToggle={() => toggleSection('basicInfo')}
+          >
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="font-medium text-[var(--color-text-secondary)]">Trip Name:</span>
+                <span className="ml-2 text-[var(--color-text-primary)]">
+                  {quoteDetails.tripName || '-'}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--color-text-secondary)]">Trip Type:</span>
+                <span className="ml-2 text-[var(--color-text-primary)]">
+                  {quoteDetails.tripType === 'one_way' ? 'One Way' : 'Two Way'}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--color-text-secondary)]">Event Type:</span>
+                <span className="ml-2 text-[var(--color-text-primary)]">
+                  {quoteDetails.eventType || '-'}
+                </span>
+              </div>
+              {quoteDetails.customEventType && (
+                <div>
+                  <span className="font-medium text-[var(--color-text-secondary)]">Custom Event Type:</span>
+                  <span className="ml-2 text-[var(--color-text-primary)]">
+                    {quoteDetails.customEventType}
+                  </span>
+                </div>
+              )}
+              <div>
+                <span className="font-medium text-[var(--color-text-secondary)]">Passenger Count:</span>
+                <span className="ml-2 text-[var(--color-text-primary)]">
+                  {quoteDetails.passengerCount}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--color-text-secondary)]">Current Step:</span>
+                <span className="ml-2 text-[var(--color-text-primary)]">
+                  {quoteDetails.currentStep} / 5
+                </span>
+              </div>
+            </div>
+          </FilterSection>
+
+          {/* Itinerary Accordion */}
+          <FilterSection
+            title="Itinerary"
+            isExpanded={expandedSections.itinerary}
+            onToggle={() => toggleSection('itinerary')}
+          >
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              Itinerary details will be displayed here
+            </div>
+          </FilterSection>
+
+          {/* Vehicles Accordion */}
+          <FilterSection
+            title="Selected Vehicles"
+            isExpanded={expandedSections.vehicles}
+            onToggle={() => toggleSection('vehicles')}
+          >
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              Vehicle details will be displayed here
+            </div>
+          </FilterSection>
+
+          {/* Amenities Accordion */}
+          <FilterSection
+            title="Selected Amenities"
+            isExpanded={expandedSections.amenities}
+            onToggle={() => toggleSection('amenities')}
+          >
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              Amenity details will be displayed here
+            </div>
+          </FilterSection>
+
+          {/* Pricing Accordion */}
+          <FilterSection
+            title="Pricing Breakdown"
+            isExpanded={expandedSections.pricing}
+            onToggle={() => toggleSection('pricing')}
+          >
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              Pricing details will be displayed here
+            </div>
+          </FilterSection>
+
+          {/* Route Data Accordion */}
+          <FilterSection
+            title="Route Information"
+            isExpanded={expandedSections.route}
+            onToggle={() => toggleSection('route')}
+          >
+            <div className="text-sm text-[var(--color-text-secondary)]">
+              Route details will be displayed here
+            </div>
+          </FilterSection>
+        </div>
+      </div>
     );
   }
 
@@ -185,7 +440,8 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
               {quotes.map((quote) => (
                 <tr
                   key={quote.quoteId}
-                  className="flex hover:bg-[var(--color-bg-secondary)] transition-colors"
+                  className="flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+                  onClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}
                 >
                   <td 
                     className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group"
@@ -243,7 +499,8 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
         {quotes.map((quote) => (
           <div
             key={quote.quoteId}
-            className="bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4"
+            className="bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors"
+            onClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}
           >
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="flex-1 min-w-0">

@@ -43,3 +43,84 @@ export interface AdminQuoteListParams {
   search?: string;
 }
 
+/**
+ * Admin Quote Details Response
+ * GET /api/v1/admin/quotes/:id
+ */
+export interface AdminQuoteDetailsResponse {
+  success: boolean;
+  quoteId: string;
+  userId: string;
+  tripType: TripTypeType;
+  tripName: string;
+  eventType: string;
+  customEventType?: string | null;
+  passengerCount: number;
+  status: QuoteStatusType;
+  currentStep: number;
+  selectedVehicles: Array<{
+    vehicleId: string;
+    quantity: number;
+  }>;
+  selectedAmenities: string[];
+  pricing?: {
+    fuelPriceAtTime: number;
+    averageDriverRateAtTime: number;
+    taxPercentageAtTime: number;
+    baseFare: number;
+    distanceFare: number;
+    driverCharge: number;
+    fuelMaintenance: number;
+    nightCharge: number;
+    amenitiesTotal: number;
+    subtotal: number;
+    tax: number;
+    total: number;
+  };
+  routeData?: {
+    outbound: {
+      totalDistance: number;
+      totalDuration: number;
+      routeGeometry: string;
+    };
+    return?: {
+      totalDistance: number;
+      totalDuration: number;
+      routeGeometry: string;
+    };
+  };
+  itinerary?: {
+    outbound: unknown[];
+    return?: unknown[];
+  };
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+/**
+ * Update Quote Status Request
+ * PUT /api/v1/admin/quotes/:id/status
+ */
+export interface UpdateQuoteStatusRequest {
+  status: 'paid' | 'submitted';
+}
+
+/**
+ * Update Quote Status Response
+ * PUT /api/v1/admin/quotes/:id/status
+ */
+export interface UpdateQuoteStatusResponse {
+  success: boolean;
+  quoteId: string;
+  userId: string;
+  tripType: TripTypeType;
+  tripName: string;
+  status: QuoteStatusType;
+  currentStep: number;
+  pricing?: {
+    total: number;
+  };
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
