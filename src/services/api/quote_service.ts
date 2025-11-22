@@ -9,6 +9,10 @@ import type {
   SubmitQuoteResponse,
 } from '../../types/quotes/quote';
 import type {
+  AdminQuoteListResponse,
+  AdminQuoteListParams,
+} from '../../types/quotes/admin_quote';
+import type {
   CalculateRoutesRequest,
   RouteCalculationResponse,
 } from '../../types/quotes/itinerary';
@@ -142,6 +146,32 @@ export const quoteService = {
       API_ENDPOINTS.quotes.recommendations,
       data
     );
+    return response.data;
+  },
+
+  /**
+   * Get admin quotes list (with optional pagination, search, and includeDeleted)
+   * GET /api/v1/admin/quotes?page=1&limit=20&includeDeleted=false&search=...
+   */
+  getAdminQuotes: async (params?: AdminQuoteListParams): Promise<AdminQuoteListResponse> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          if (typeof value === 'boolean') {
+            queryParams.append(key, String(value));
+          } else {
+            queryParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ENDPOINTS.admin.quotes}?${queryString}` : API_ENDPOINTS.admin.quotes;
+    
+    const response = await grandlineAxiosClient.get<AdminQuoteListResponse>(url);
     return response.data;
   },
 };

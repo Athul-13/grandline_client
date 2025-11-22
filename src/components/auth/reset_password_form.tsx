@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authService } from '../../services/api/auth_service';
-import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { PasswordInput } from '../common/password_input';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
@@ -19,13 +18,19 @@ const resetPasswordSchema = z
     newPassword: z
       .string()
       .min(1, 'Password is required')
+      .refine((val) => val.trim().length > 0, {
+        message: 'Password cannot be empty or contain only spaces',
+      })
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
         'Password must contain at least one lowercase letter, one uppercase letter, and one number'
       ),
     confirmPassword: z
       .string()
-      .min(1, 'Please confirm your password'),
+      .min(1, 'Please confirm your password')
+      .refine((val) => val.trim().length > 0, {
+        message: 'Password confirmation cannot be empty or contain only spaces',
+      }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'Passwords do not match',

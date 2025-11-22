@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
     bookings: '/admin/bookings',
     buses: '/admin/buses',
     routes: '/admin/routes',
+    quotes: '/admin/quotes',
   },
   // Fleet endpoints
   fleet: {

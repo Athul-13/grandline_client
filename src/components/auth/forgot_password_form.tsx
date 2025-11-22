@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authService } from '../../services/api/auth_service';
-import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
@@ -17,6 +16,9 @@ const forgotPasswordSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
+    .refine((val) => val.trim().length > 0, {
+      message: 'Email cannot be empty or contain only spaces',
+    })
     .email('Please enter a valid email address'),
 });
 

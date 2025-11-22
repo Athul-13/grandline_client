@@ -1,7 +1,6 @@
 import grandlineAxiosClient from './axios_client';
 import { API_ENDPOINTS } from '../../constants/api';
 import type {
-  Amenity,
   CreateAmenityRequest,
   CreateAmenityResponse,
   UpdateAmenityRequest,

@@ -1,21 +1,85 @@
-import { useLanguage } from '../../hooks/use_language';
+import { useState, useEffect } from 'react';
+import { useSearchContext } from '../../hooks/use_search_context';
+import { AdminQuotesTable } from '../../components/quotes/admin_quotes_table';
+import { useAdminQuotesList } from '../../hooks/quotes/use_admin_quotes_list';
+import { Pagination } from '../../components/common/pagination';
 
 export const AdminQuotesPage: React.FC = () => {
-  const { t } = useLanguage();
+  const { searchQuery } = useSearchContext();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const itemsPerPage = 15;
+
+  const { quotes, pagination, isLoading, error } = useAdminQuotesList({
+    page: currentPage,
+    limit: itemsPerPage,
+    includeDeleted,
+    search: searchQuery,
+  });
+
+  // Reset pagination to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, includeDeleted]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
-    <div className="h-full overflow-y-auto bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">
-            {t('admin.sidebar.quotesManagement') || 'Quotes Management'}
-          </h1>
-        </div>
-        
-        <div className="bg-[var(--color-bg-card)] rounded-lg shadow-md p-6">
-          <p className="text-[var(--color-text-secondary)]">
-            {t('admin.dashboard.comingSoon') || 'Quotes features coming soon...'}
-          </p>
+    <div className="h-full overflow-hidden bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] relative">
+      {/* Main Content */}
+      <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col px-4 py-3">
+          {/* Controls Bar */}
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              {/* Include Deleted Toggle */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="includeDeleted"
+                  checked={includeDeleted}
+                  onChange={(e) => setIncludeDeleted(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="includeDeleted"
+                  className="text-sm text-[var(--color-text-primary)] cursor-pointer"
+                >
+                  Include Deleted
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Error State */}
+          {error && (
+            <div className="mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4">
+              <p className="text-sm sm:text-base text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          {/* Quotes Table */}
+          <div className="flex-1 overflow-y-auto">
+            <AdminQuotesTable
+              quotes={quotes}
+              pagination={pagination}
+              isLoading={isLoading}
+              onPageChange={handlePageChange}
+            />
+          </div>
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

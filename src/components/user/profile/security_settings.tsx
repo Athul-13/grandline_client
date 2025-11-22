@@ -13,17 +13,48 @@ import toast from 'react-hot-toast';
 import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
 
 const setupPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
+  password: z
+    .string()
+    .min(1, 'Password is required')
+    .refine((val) => val.trim().length > 0, {
+      message: 'Password cannot be empty or contain only spaces',
+    })
+    .refine((val) => val.trim().length >= 8, {
+      message: 'Password must be at least 8 characters',
+    }),
+  confirmPassword: z
+    .string()
+    .min(1, 'Please confirm your password')
+    .refine((val) => val.trim().length > 0, {
+      message: 'Password confirmation cannot be empty or contain only spaces',
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
 
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
+  currentPassword: z
+    .string()
+    .min(1, 'Current password is required')
+    .refine((val) => val.trim().length > 0, {
+      message: 'Current password cannot be empty or contain only spaces',
+    }),
+  newPassword: z
+    .string()
+    .min(1, 'New password is required')
+    .refine((val) => val.trim().length > 0, {
+      message: 'New password cannot be empty or contain only spaces',
+    })
+    .refine((val) => val.trim().length >= 8, {
+      message: 'Password must be at least 8 characters',
+    }),
+  confirmPassword: z
+    .string()
+    .min(1, 'Please confirm your password')
+    .refine((val) => val.trim().length > 0, {
+      message: 'Password confirmation cannot be empty or contain only spaces',
+    }),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],

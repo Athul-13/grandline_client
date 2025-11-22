@@ -8,10 +8,14 @@ export const amenityFormSchema = z.object({
   name: z
     .string()
     .min(1, 'Name is required')
-    .min(2, 'Name must be at least 2 characters')
-    .max(100, 'Name must be at most 100 characters')
-    .refine((val) => val.trim().replace(/\s/g, '').length > 0, {
-      message: 'Name must contain non-whitespace characters',
+    .refine((val) => val.trim().length > 0, {
+      message: 'Name cannot be empty or contain only spaces',
+    })
+    .refine((val) => val.trim().length >= 2, {
+      message: 'Name must be at least 2 characters',
+    })
+    .refine((val) => val.trim().length <= 100, {
+      message: 'Name must be at most 100 characters',
     }),
   price: z
     .string()

@@ -196,9 +196,6 @@ export const QuoteBuilderContainer: React.FC = () => {
                   selectedVehicles={selectedVehicles}
                   selectedAmenities={selectedAmenities}
                   quoteId={quoteId}
-                  onNext={async () => {
-                    await goToNextStep();
-                  }}
                   onPrevious={goToPreviousStep}
                   onStepValidationChange={(isValid) => {
                     setStepValidation(5, isValid);

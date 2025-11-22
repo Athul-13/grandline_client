@@ -269,7 +269,6 @@ export const useRouteCalculation = (options: UseRouteCalculationOptions) => {
         debounceTimeoutRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on unmount
 
   return {

@@ -7,7 +7,12 @@ export const profileFormSchema = z.object({
   fullName: z
     .string()
     .min(1, 'Full name is required')
-    .min(3, 'Full name must be at least 3 characters'),
+    .refine((val) => val.trim().length > 0, {
+      message: 'Full name cannot be empty or contain only spaces',
+    })
+    .refine((val) => val.trim().length >= 3, {
+      message: 'Full name must be at least 3 characters',
+    }),
   phoneNumber: z
     .string()
     .regex(/^\d{10}$/, 'Phone number must be exactly 10 digits')

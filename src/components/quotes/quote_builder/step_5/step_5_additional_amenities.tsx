@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '../../../../components/common/button';
 import { usePaidAmenities } from '../../../../hooks/quotes/use_paid_amenities';
 import { useVehicleRecommendations } from '../../../../hooks/quotes/use_vehicle_recommendations';
@@ -6,7 +6,6 @@ import { Check } from 'lucide-react';
 import { cn } from '../../../../utils/cn';
 import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
 import type { TripTypeType, SelectedVehicle } from '../../../../types/quotes/quote';
-import type { AvailableVehicle } from '../../../../types/quotes/vehicle_recommendation';
 
 interface Step5AdditionalAmenitiesProps {
   passengerCount: number;
@@ -18,7 +17,6 @@ interface Step5AdditionalAmenitiesProps {
   selectedVehicles: SelectedVehicle[];
   selectedAmenities: string[];
   quoteId: string | null;
-  onNext: () => Promise<void>;
   onPrevious: () => void;
   onStepValidationChange?: (isValid: boolean) => void;
   onSelectedAmenitiesChange: (amenities: string[]) => void;
@@ -37,7 +35,6 @@ export const Step5AdditionalAmenities: React.FC<Step5AdditionalAmenitiesProps> =
   selectedVehicles,
   selectedAmenities,
   quoteId,
-  onNext,
   onPrevious,
   onStepValidationChange,
   onSelectedAmenitiesChange,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -22,6 +22,14 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
   title,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  const handlePrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
 
   // Reset to initial index when modal opens or images change
   useEffect(() => {
@@ -48,7 +56,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, currentIndex, images.length]);
+  }, [isOpen, handlePrevious, handleNext, onClose]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -61,14 +69,6 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
 
   const handleThumbnailClick = (index: number) => {
     setCurrentIndex(index);
