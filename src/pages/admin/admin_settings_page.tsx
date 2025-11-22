@@ -24,6 +24,7 @@ export const AdminSettingsPage: React.FC = () => {
   const [initialLanguage, setInitialLanguage] = useState<Language>(contextLanguage);
   const [initialTheme, setInitialTheme] = useState<'light' | 'dark' | 'system'>(getValidTheme(contextTheme));
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -235,7 +236,13 @@ export const AdminSettingsPage: React.FC = () => {
 
             {/* Pricing Configuration */}
             <div>
-              <PricingConfigSection onHistoryClick={() => setShowHistoryModal(true)} />
+              <PricingConfigSection
+                onHistoryClick={() => setShowHistoryModal(true)}
+                onConfigCreated={() => {
+                  // Trigger history modal to refetch when new config is created
+                  setHistoryRefreshTrigger((prev) => prev + 1);
+                }}
+              />
             </div>
           </div>
         </div>
@@ -245,6 +252,7 @@ export const AdminSettingsPage: React.FC = () => {
       <PricingConfigHistoryModal
         isOpen={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
+        refreshTrigger={historyRefreshTrigger}
       />
     </div>
   );

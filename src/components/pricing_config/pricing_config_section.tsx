@@ -7,21 +7,24 @@ import { FormInput } from '../common/form_input';
 import { ConfirmationModal } from '../common/confirmation_modal';
 import { useActivePricingConfig } from '../../hooks/pricing_config/use_active_pricing_config';
 import { useCreatePricingConfig } from '../../hooks/pricing_config/use_create_pricing_config';
+import { useActivatePricingConfig } from '../../hooks/pricing_config/use_activate_pricing_config';
 import { pricingConfigFormSchema, type PricingConfigFormData } from '../../types/quotes/pricing_config_form';
 import toast from 'react-hot-toast';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 
 interface PricingConfigSectionProps {
   onHistoryClick: () => void;
+  onConfigCreated?: () => void; // Callback to notify parent when config is created
 }
 
 /**
  * Pricing Configuration Section Component
  * Form for creating new pricing configuration versions
  */
-export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHistoryClick }) => {
+export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHistoryClick, onConfigCreated }) => {
   const { pricingConfig, isLoading: isLoadingConfig, error: configError, refetch } = useActivePricingConfig();
   const { createPricingConfig, isLoading: isCreating } = useCreatePricingConfig();
+  const { activatePricingConfig, isLoading: isActivating } = useActivatePricingConfig();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [initialValues, setInitialValues] = useState({
     fuelPrice: '',
@@ -52,7 +55,7 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
   const watchedTaxPercentage = watch('taxPercentage');
   const watchedNightCharge = watch('nightChargePerNight');
 
-  // Update form when active config is loaded
+  // Update form when active config is loaded or changes
   useEffect(() => {
     if (pricingConfig) {
       const fuelPrice = pricingConfig.fuelPrice.toString();
@@ -60,25 +63,45 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
       const taxPercentage = pricingConfig.taxPercentage.toString();
       const nightCharge = pricingConfig.nightChargePerNight.toString();
 
-      reset({
+      const newInitialValues = {
         fuelPrice,
         averageDriverPerHourRate: driverRate,
         taxPercentage,
         nightChargePerNight: nightCharge,
-      });
+      };
 
+      // Always reset form with new values to ensure it updates
+      reset(newInitialValues);
+      setInitialValues(newInitialValues);
+    } else {
+      // No active config - clear form
+      reset({
+        fuelPrice: '',
+        averageDriverPerHourRate: '',
+        taxPercentage: '',
+        nightChargePerNight: '',
+      });
       setInitialValues({
-        fuelPrice,
-        averageDriverPerHourRate: driverRate,
-        taxPercentage,
-        nightChargePerNight: nightCharge,
+        fuelPrice: '',
+        averageDriverPerHourRate: '',
+        taxPercentage: '',
+        nightChargePerNight: '',
       });
     }
   }, [pricingConfig, reset]);
 
   // Check if form has changes
   const hasChanges = useMemo(() => {
-    if (!pricingConfig) return false;
+    // If no active config exists, any filled values are considered changes
+    if (!pricingConfig) {
+      return (
+        watchedFuelPrice.trim() !== '' ||
+        watchedDriverRate.trim() !== '' ||
+        watchedTaxPercentage.trim() !== '' ||
+        watchedNightCharge.trim() !== ''
+      );
+    }
+    // If active config exists, compare with initial values
     return (
       watchedFuelPrice !== initialValues.fuelPrice ||
       watchedDriverRate !== initialValues.averageDriverPerHourRate ||
@@ -90,11 +113,20 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
   // Handle cancel - revert to initial values
   const handleCancel = () => {
     if (pricingConfig) {
+      // Revert to active config values
       reset({
         fuelPrice: initialValues.fuelPrice,
         averageDriverPerHourRate: initialValues.averageDriverPerHourRate,
         taxPercentage: initialValues.taxPercentage,
         nightChargePerNight: initialValues.nightChargePerNight,
+      });
+    } else {
+      // No active config - clear form
+      reset({
+        fuelPrice: '',
+        averageDriverPerHourRate: '',
+        taxPercentage: '',
+        nightChargePerNight: '',
       });
     }
   };
@@ -109,22 +141,36 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
         nightChargePerNight: Number(data.nightChargePerNight.trim()),
       };
 
-      const result = await createPricingConfig(configData);
+      // Step 1: Create the new pricing configuration
+      const createdConfig = await createPricingConfig(configData);
 
-      if (result) {
+      if (!createdConfig) {
+        toast.error('Failed to create pricing configuration');
+        return;
+      }
+
+      // Step 2: Immediately activate the newly created configuration
+      const activatedConfig = await activatePricingConfig(createdConfig.pricingConfigId);
+
+      if (activatedConfig) {
         toast.success('New pricing configuration created and activated successfully');
-        // Refetch active config to get updated values
+        
+        // Step 3: Refetch active config to get updated values
         await refetch();
-        // Update initial values to new values
-        setInitialValues({
-          fuelPrice: result.fuelPrice.toString(),
-          averageDriverPerHourRate: result.averageDriverPerHourRate.toString(),
-          taxPercentage: result.taxPercentage.toString(),
-          nightChargePerNight: result.nightChargePerNight.toString(),
-        });
+        
+        // Step 4: Notify parent (history modal) that a new config was created
+        if (onConfigCreated) {
+          onConfigCreated();
+        }
+        
         setShowConfirmModal(false);
       } else {
-        toast.error('Failed to create pricing configuration');
+        toast.error('Configuration created but failed to activate. Please activate it manually from history.');
+        // Still refetch and notify even if activation failed
+        await refetch();
+        if (onConfigCreated) {
+          onConfigCreated();
+        }
       }
     } catch (error) {
       const sanitizedMessage = sanitizeErrorMessage(error);
@@ -151,20 +197,11 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
     );
   }
 
+  // Only show error for actual errors (network, server, etc.), not "no active config"
   if (configError) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
         <p className="text-sm text-red-800 dark:text-red-200">{configError}</p>
-      </div>
-    );
-  }
-
-  if (!pricingConfig) {
-    return (
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          No active pricing configuration found
-        </p>
       </div>
     );
   }
@@ -178,7 +215,9 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
             Pricing Configuration
           </h3>
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-            Manage pricing configuration settings. Changes will create a new version and activate it.
+            {pricingConfig
+              ? 'Manage pricing configuration settings. Changes will create a new version and activate it.'
+              : 'No active pricing configuration found. Create the first pricing configuration below.'}
           </p>
         </div>
         <button
@@ -252,9 +291,9 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
           <Button
             type="button"
             onClick={handleSaveClick}
-            disabled={!hasChanges || isCreating}
-            loading={isCreating}
-            loadingText="Creating..."
+            disabled={!hasChanges || isCreating || isActivating}
+            loading={isCreating || isActivating}
+            loadingText={isCreating ? 'Creating...' : 'Activating...'}
           >
             Save
           </Button>
@@ -266,8 +305,12 @@ export const PricingConfigSection: React.FC<PricingConfigSectionProps> = ({ onHi
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleConfirm}
-        title="Create New Pricing Configuration"
-        message="Create new pricing configuration version and activate it?"
+        title={pricingConfig ? 'Create New Pricing Configuration' : 'Create Pricing Configuration'}
+        message={
+          pricingConfig
+            ? 'Create new pricing configuration version and activate it?'
+            : 'Create the first pricing configuration and activate it?'
+        }
         confirmText="Create & Activate"
         cancelText="Cancel"
         variant="info"

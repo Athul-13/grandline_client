@@ -25,9 +25,34 @@ export const useActivePricingConfig = (enabled: boolean = true): UseActivePricin
       const config = await pricingConfigService.getActivePricingConfig();
       setPricingConfig(config);
     } catch (err) {
-      console.error('Failed to fetch active pricing config:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch active pricing configuration');
-      setPricingConfig(null);
+      // Check if error is "no active config" - this is a valid state, not an error
+      let errorMessage = '';
+      let errorCode = '';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        errorMessage = ('message' in err && typeof err.message === 'string') ? err.message : String(err);
+        errorCode = ('code' in err && typeof err.code === 'string') ? err.code : '';
+      } else {
+        errorMessage = String(err);
+      }
+
+      const isNoActiveConfig = 
+        errorMessage.includes('No active pricing configuration found') ||
+        errorMessage.includes('not found') ||
+        errorCode === 'NOT_FOUND';
+
+      if (isNoActiveConfig) {
+        // No active config is a valid state - set to null without error
+        setPricingConfig(null);
+        setError(null);
+      } else {
+        // Actual error (network, server, etc.)
+        console.error('Failed to fetch active pricing config:', err);
+        setError(errorMessage || 'Failed to fetch active pricing configuration');
+        setPricingConfig(null);
+      }
     } finally {
       setIsLoading(false);
     }

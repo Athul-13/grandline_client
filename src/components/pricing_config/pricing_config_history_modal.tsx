@@ -13,6 +13,7 @@ import { cn } from '../../utils/cn';
 interface PricingConfigHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  refreshTrigger?: number; // When this changes, refetch history
 }
 
 /**
@@ -23,6 +24,7 @@ interface PricingConfigHistoryModalProps {
 export const PricingConfigHistoryModal: React.FC<PricingConfigHistoryModalProps> = ({
   isOpen,
   onClose,
+  refreshTrigger,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [configToActivate, setConfigToActivate] = useState<PricingConfigResponse | null>(null);
@@ -37,14 +39,23 @@ export const PricingConfigHistoryModal: React.FC<PricingConfigHistoryModalProps>
   const { refetch: refetchActive } = useActivePricingConfig();
   const { activatePricingConfig, isLoading: isActivating } = useActivatePricingConfig();
 
-  // Reset page when modal opens
+  // Reset page and refetch when modal opens
   useEffect(() => {
     if (isOpen) {
       setCurrentPage(1);
       setConfigToActivate(null);
       setShowConfirmModal(false);
+      // Refetch history when modal opens to get latest data
+      refetch();
     }
-  }, [isOpen]);
+  }, [isOpen, refetch]);
+
+  // Refetch when refreshTrigger changes (e.g., when new config is created)
+  useEffect(() => {
+    if (isOpen && refreshTrigger !== undefined && refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, isOpen, refetch]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -107,8 +118,8 @@ export const PricingConfigHistoryModal: React.FC<PricingConfigHistoryModalProps>
 
     if (result) {
       toast.success('Pricing configuration activated successfully');
-      await refetch();
-      await refetchActive();
+      // Refetch both history and active config to ensure UI is updated
+      await Promise.all([refetch(), refetchActive()]);
       setShowConfirmModal(false);
       setConfigToActivate(null);
     } else {
