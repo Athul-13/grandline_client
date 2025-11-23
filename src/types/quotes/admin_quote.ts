@@ -42,6 +42,9 @@ export interface AdminQuoteListParams {
   limit?: number;
   includeDeleted?: boolean;
   search?: string;
+  status?: string[]; // Array of status values for filtering
+  sortBy?: 'createdAt' | 'updatedAt';
+  sortOrder?: 'asc' | 'desc';
 }
 
 /**

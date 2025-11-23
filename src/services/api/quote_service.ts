@@ -153,8 +153,8 @@ export const quoteService = {
   },
 
   /**
-   * Get admin quotes list (with optional pagination, search, and includeDeleted)
-   * GET /api/v1/admin/quotes?page=1&limit=20&includeDeleted=false&search=...
+   * Get admin quotes list (with optional pagination, search, filters, and sorting)
+   * GET /api/v1/admin/quotes?page=1&limit=20&includeDeleted=false&search=...&status=draft&status=submitted&sortBy=createdAt&sortOrder=desc
    */
   getAdminQuotes: async (params?: AdminQuoteListParams): Promise<AdminQuoteListResponse> => {
     const queryParams = new URLSearchParams();
@@ -162,9 +162,12 @@ export const quoteService = {
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          if (typeof value === 'boolean') {
+          // Handle array values (status filter)
+          if (Array.isArray(value) && value.length > 0) {
+            value.forEach((v) => queryParams.append(key, String(v)));
+          } else if (typeof value === 'boolean') {
             queryParams.append(key, String(value));
-          } else {
+          } else if (typeof value === 'string' || typeof value === 'number') {
             queryParams.append(key, String(value));
           }
         }

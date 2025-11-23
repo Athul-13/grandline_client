@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { quoteService } from '../../services/api/quote_service';
-import type { AdminQuoteListItem, AdminQuoteListParams, PaginationMeta } from '../../types/quotes/admin_quote';
+import type { AdminQuoteListItem, AdminQuoteListParams } from '../../types/quotes/admin_quote';
+import type { PaginationMeta } from '../../types/quotes/quote';
 
 interface UseAdminQuotesListParams {
   page?: number;
   limit?: number;
   includeDeleted?: boolean;
   search?: string;
+  status?: string[];
+  sortBy?: 'createdAt' | 'updatedAt';
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface UseAdminQuotesListReturn {
@@ -42,6 +46,19 @@ export const useAdminQuotesList = (params?: UseAdminQuotesListParams): UseAdminQ
         requestParams.search = params.search.trim();
       }
 
+      // Add status filter if provided
+      if (params?.status && params.status.length > 0) {
+        requestParams.status = params.status;
+      }
+
+      // Add sorting parameters if provided
+      if (params?.sortBy) {
+        requestParams.sortBy = params.sortBy;
+      }
+      if (params?.sortOrder) {
+        requestParams.sortOrder = params.sortOrder;
+      }
+
       const response = await quoteService.getAdminQuotes(requestParams);
       
       setQuotes(response.quotes);
@@ -54,7 +71,15 @@ export const useAdminQuotesList = (params?: UseAdminQuotesListParams): UseAdminQ
     } finally {
       setIsLoading(false);
     }
-  }, [params?.page, params?.limit, params?.includeDeleted, params?.search]);
+  }, [
+    params?.page,
+    params?.limit,
+    params?.includeDeleted,
+    params?.search,
+    params?.status,
+    params?.sortBy,
+    params?.sortOrder,
+  ]);
 
   useEffect(() => {
     fetchQuotes();
