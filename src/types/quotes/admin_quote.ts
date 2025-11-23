@@ -4,6 +4,7 @@
  */
 
 import type { QuoteStatusType, TripTypeType, PaginationMeta } from './quote';
+import type { ItineraryStopDto } from './itinerary';
 
 /**
  * Admin Quote List Item
@@ -90,8 +91,19 @@ export interface AdminQuoteDetailsResponse {
     };
   };
   itinerary?: {
-    outbound: unknown[];
-    return?: unknown[];
+    outbound: ItineraryStopDto[];
+    return?: ItineraryStopDto[];
+  };
+  passengers?: Array<{
+    fullName: string;
+    phoneNumber?: string;
+    age?: number;
+  }>;
+  user?: {
+    userId: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
   };
   createdAt: Date | string;
   updatedAt: Date | string;
