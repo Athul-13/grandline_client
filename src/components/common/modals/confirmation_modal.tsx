@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from './button';
+import { Button } from '../ui/button';
 import { X, AlertTriangle } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface ConfirmationModalProps {
   isOpen: boolean;

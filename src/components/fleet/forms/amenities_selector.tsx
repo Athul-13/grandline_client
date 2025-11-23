@@ -1,6 +1,6 @@
 import React from 'react';
-import { cn } from '../../utils/cn';
-import type { Amenity } from '../../types/fleet/amenity';
+import { cn } from '../../../utils/cn';
+import type { Amenity } from '../../../types/fleet/amenity';
 
 interface AmenitiesSelectorProps {
   amenities: Amenity[];

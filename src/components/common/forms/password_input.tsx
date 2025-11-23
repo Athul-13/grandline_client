@@ -1,6 +1,6 @@
 import { useState, type InputHTMLAttributes, forwardRef } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'className'> {
   label: string;

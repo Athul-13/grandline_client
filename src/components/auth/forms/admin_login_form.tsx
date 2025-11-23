@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { useLanguage } from '../../hooks/use_language';
-import { loginAsync } from '../../store/slices/auth_slice';
-import { loginSchema, type LoginFormData } from '../../types/auth/login';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { useLanguage } from '../../../hooks/use_language';
+import { loginAsync } from '../../../store/slices/auth_slice';
+import { loginSchema, type LoginFormData } from '../../../types/auth/login';
 import toast from 'react-hot-toast';
 import { PasswordInput } from '../../common/forms/password_input';
 import { rateLimiter, resetRateLimit } from '../../../utils/rate_limiter';

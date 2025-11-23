@@ -1,13 +1,13 @@
 import React from 'react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 import { VehicleTypeCard } from '../cards/vehicle_type_card';
 import { VehicleTypeListCard } from '../cards/vehicle_type_list_card';
 import { AmenityCard } from '../cards/amenity_card';
 import { VehicleCard } from '../cards/vehicle_card';
 import { VehicleListCard } from '../cards/vehicle_list_card';
-import type { VehicleType } from '../../types/fleet/vehicle_type';
-import type { Vehicle } from '../../types/fleet/vehicle';
-import type { Amenity } from '../../types/fleet/amenity';
+import type { VehicleType } from '../../../types/fleet/vehicle_type';
+import type { Vehicle } from '../../../types/fleet/vehicle';
+import type { Amenity } from '../../../types/fleet/amenity';
 
 type ViewMode = 'grid' | 'list';
 

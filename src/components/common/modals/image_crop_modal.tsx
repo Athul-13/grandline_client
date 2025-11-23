@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
-import { Button } from './button';
-import { getCroppedImg } from '../../utils/image_crop';
-import { useLanguage } from '../../hooks/use_language';
+import { Button } from '../ui/button';
+import { getCroppedImg } from '../../../utils/image_crop';
+import { useLanguage } from '../../../hooks/use_language';
 
 interface ImageCropModalProps {
   imageSrc: string;

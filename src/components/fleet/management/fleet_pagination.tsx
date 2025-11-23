@@ -1,10 +1,10 @@
 import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Pagination } from '../../common/ui/pagination';
-import { fleetQueryKeys } from '../../utils/fleet_query_keys';
-import { vehicleService } from '../../services/api/vehicle_service';
-import { vehicleTypeService } from '../../services/api/vehicle_type_service';
-import { amenityService } from '../../services/api/amenity_service';
+import { fleetQueryKeys } from '../../../utils/fleet_query_keys';
+import { vehicleService } from '../../../services/api/vehicle_service';
+import { vehicleTypeService } from '../../../services/api/vehicle_type_service';
+import { amenityService } from '../../../services/api/amenity_service';
 
 interface FleetPaginationProps {
   view: 'vehicles' | 'categories' | 'amenities';

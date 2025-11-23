@@ -28,7 +28,6 @@ interface UseFleetFiltersProps {
 export const useFleetFilters = ({
   sortField,
   sortDirection,
-  isCategoriesView,
   onPageReset,
 }: UseFleetFiltersProps) => {
   // Filter Options from API

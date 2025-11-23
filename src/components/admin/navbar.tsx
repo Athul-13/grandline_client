@@ -8,7 +8,7 @@ import { cn } from '../../utils/cn';
 import toast from 'react-hot-toast';
 import { ChevronDown, LogOut } from 'lucide-react';
 import { useLanguage } from '../../hooks/use_language';
-import { SearchBar } from '../common/search_bar';
+import { SearchBar } from '../common/ui/search_bar';
 
 export const AdminNavbar: React.FC = () => {
   const navigate = useNavigate();

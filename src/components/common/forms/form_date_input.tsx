@@ -2,7 +2,7 @@ import { type InputHTMLAttributes } from 'react';
 import { DatePicker } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface FormDateInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'className' | 'value' | 'onChange'> {
   label: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit, Trash2 } from 'lucide-react';
-import type { Amenity } from '../../types/fleet/amenity';
+import type { Amenity } from '../../../types/fleet/amenity';
 
 interface AmenityCardProps {
   amenity: Amenity;

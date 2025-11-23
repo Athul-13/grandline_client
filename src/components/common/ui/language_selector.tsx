@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import ReactCountryFlag from 'react-country-flag';
-import { useLanguage } from '../../hooks/use_language';
-import { SUPPORTED_LANGUAGES, getLanguageByCode } from '../../constants/languages';
-import { cn } from '../../utils/cn';
+import { useLanguage } from '../../../hooks/use_language';
+import { SUPPORTED_LANGUAGES, getLanguageByCode } from '../../../constants/languages';
+import { cn } from '../../../utils/cn';
 
 export const LanguageSelector: React.FC = () => {
   const { language, setLanguage } = useLanguage();

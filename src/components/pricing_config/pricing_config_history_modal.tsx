@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Button } from '../common/button';
-import { Pagination } from '../common/pagination';
-import { ConfirmationModal } from '../common/confirmation_modal';
+import { Button } from '../common/ui/button';
+import { Pagination } from '../common/ui/pagination';
+import { ConfirmationModal } from '../common/modals/confirmation_modal';
 import { usePricingConfigHistory } from '../../hooks/pricing_config/use_pricing_config_history';
 import { useActivatePricingConfig } from '../../hooks/pricing_config/use_activate_pricing_config';
 import { useActivePricingConfig } from '../../hooks/pricing_config/use_active_pricing_config';

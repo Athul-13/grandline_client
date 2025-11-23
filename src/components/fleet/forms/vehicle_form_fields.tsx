@@ -1,14 +1,14 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { FormInput } from '../../common/forms/form_input';
-import { VehicleStatus } from '../../types/fleet/vehicle';
+import { VehicleStatus } from '../../../types/fleet/vehicle';
 import { AmenitiesSelector } from './amenities_selector';
 import { VehicleImageUpload } from './vehicle_image_upload';
-import { cn } from '../../utils/cn';
-import type { VehicleFormData } from '../../types/fleet/vehicle_form';
-import type { VehicleType } from '../../types/fleet/vehicle_type';
-import type { Amenity } from '../../types/fleet/amenity';
-import type { ImageUploadState } from '../../hooks/fleet/use_vehicle_image_upload';
+import { cn } from '../../../utils/cn';
+import type { VehicleFormData } from '../../../types/fleet/vehicle_form';
+import type { VehicleType } from '../../../types/fleet/vehicle_type';
+import type { Amenity } from '../../../types/fleet/amenity';
+import type { ImageUploadState } from '../../../hooks/fleet/use_vehicle_image_upload';
 
 interface VehicleFormFieldsProps {
   vehicleTypes: VehicleType[];

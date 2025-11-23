@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useLanguage } from '../../hooks/use_language';
-import { authService } from '../../services/api/auth_service';
-import { cn } from '../../utils/cn';
+import { useLanguage } from '../../../hooks/use_language';
+import { authService } from '../../../services/api/auth_service';
+import { cn } from '../../../utils/cn';
 import toast from 'react-hot-toast';
-import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
-import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
-import { ROUTES } from '../../constants/routes';
+import { rateLimiter, resetRateLimit } from '../../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
+import { ROUTES } from '../../../constants/routes';
 import { AuthFormCard } from '../auth_form_card';
 import { Button } from '../../common/ui/button';
 

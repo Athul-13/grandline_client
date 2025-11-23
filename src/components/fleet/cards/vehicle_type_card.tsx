@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
-import type { VehicleType } from '../../types/fleet/vehicle_type';
+import type { VehicleType } from '../../../types/fleet/vehicle_type';
 
 interface VehicleTypeCardProps {
   vehicleType: VehicleType;

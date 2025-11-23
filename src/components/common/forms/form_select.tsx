@@ -1,5 +1,5 @@
 import { type SelectHTMLAttributes, forwardRef } from 'react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface FormSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
   label: string;

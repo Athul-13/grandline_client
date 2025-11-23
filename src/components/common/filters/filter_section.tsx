@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface FilterSectionProps {
   title: string;

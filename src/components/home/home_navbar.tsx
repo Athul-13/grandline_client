@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import { useTheme } from '../../hooks/use_theme';
 import { useLanguage } from '../../hooks/use_language';
-import { LanguageSelector } from '../common/language_selector';
+import { LanguageSelector } from '../common/ui/language_selector';
 import { cn } from '../../utils/cn';
 import logoImg from '../../assets/logo.png';
 

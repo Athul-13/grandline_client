@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '../../common/ui/button';
 import { Grid, List, Plus, LayoutGrid, Filter } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 type SortField = 'status' | 'vehicleTypeId' | 'year' | 'capacity' | 'vehicleModel' | 'maintenance' | 'fuelConsumption';
 type SortDirection = 'asc' | 'desc';

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Trash2, Upload, Loader2 } from 'lucide-react';
-import { cn } from '../../utils/cn';
-import type { ImageUploadState } from '../../hooks/fleet/use_vehicle_image_upload';
+import { cn } from '../../../utils/cn';
+import type { ImageUploadState } from '../../../hooks/fleet/use_vehicle_image_upload';
 
 interface VehicleImageUploadProps {
   existingImages: string[];

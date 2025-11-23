@@ -5,10 +5,10 @@ import { Button } from '../../common/ui/button';
 import { FormInput } from '../../common/forms/form_input';
 import { ConfirmationModal } from '../../common/modals/confirmation_modal';
 import { X } from 'lucide-react';
-import { useVehicleTypeMutations } from '../../hooks/fleet/use_vehicle_type_mutations';
-import type { VehicleType } from '../../types/fleet/vehicle_type';
-import { vehicleTypeFormSchema, type VehicleTypeFormData } from '../../types/fleet/vehicle_type_form';
-import { cn } from '../../utils/cn';
+import { useVehicleTypeMutations } from '../../../hooks/fleet/use_vehicle_type_mutations';
+import type { VehicleType } from '../../../types/fleet/vehicle_type';
+import { vehicleTypeFormSchema, type VehicleTypeFormData } from '../../../types/fleet/vehicle_type_form';
+import { cn } from '../../../utils/cn';
 import toast from 'react-hot-toast';
 
 interface VehicleTypeFormModalProps {

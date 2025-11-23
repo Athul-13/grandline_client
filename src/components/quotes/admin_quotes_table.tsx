@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Pagination } from '../common/pagination';
-import { FilterSection } from '../common/filter_section';
+import { Pagination } from '../common/ui/pagination';
+import { FilterSection } from '../common/filters/filter_section';
 import type { AdminQuoteListItem } from '../../types/quotes/admin_quote';
 import { QuoteStatus } from '../../types/quotes/quote';
 import type { QuoteStatusType } from '../../types/quotes/quote';
@@ -402,95 +402,98 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
     <div className="flex flex-col h-full min-h-0">
       {/* Desktop Table View - Hidden on mobile */}
       <div className="hidden md:flex flex-1 flex-col min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-        <div className="overflow-hidden flex-shrink-0">
-          <table className="w-full table-fixed">
-            <thead className="bg-[var(--color-bg-secondary)] block">
-              <tr className="flex">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%]">
-                  Quote ID
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%]">
-                  Trip Name
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_8%]">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_10%]">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%]">
-                  User
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_18%]">
-                  Email
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%]">
-                  Total Price
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_10%]">
-                  Created Date
-                </th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <table className="w-full table-fixed">
-            <tbody className="block">
-              {quotes.map((quote) => (
-                <tr
-                  key={quote.quoteId}
-                  className="flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
-                  onClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}
-                >
-                  <td 
-                    className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group"
-                  >
-                    <div className="flex items-center">
-                      <span>{highlightSearchTerm(quote.quoteId.slice(0, 8) + '...', searchQuery)}</span>
-                      <button
-                        onClick={(e) => handleCopyQuoteId(quote.quoteId, e)}
-                        className={cn(
-                          'opacity-0 group-hover:opacity-100 transition-opacity',
-                          'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
-                          'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
-                          'flex-shrink-0'
-                        )}
-                        title="Copy quote ID"
-                      >
-                        {copiedQuoteId === quote.quoteId ? (
-                          <Check className="w-3.5 h-3.5 text-green-500" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%]">
-                    {quote.tripName ? highlightSearchTerm(quote.tripName, searchQuery) : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_8%]">
-                    {getTripTypeLabel(quote.tripType)}
-                  </td>
-                  <td className="px-4 py-3 flex-[0_0_10%]">
-                    <StatusBadge status={quote.status} />
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%]">
-                    {highlightSearchTerm(quote.user.fullName, searchQuery)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_18%]">
-                    {highlightSearchTerm(quote.user.email, searchQuery)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium flex-[0_0_12%]">
-                    {formatPrice(quote.totalPrice)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
-                    {formatDate(quote.createdAt)}
-                  </td>
+        {/* Scrollable container for both header and body */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <div className="flex-shrink-0">
+            <table className="w-full table-fixed min-w-[800px]">
+              <thead className="bg-[var(--color-bg-secondary)] block sticky top-0 z-10">
+                <tr className="flex">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%]">
+                    Quote ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%]">
+                    Trip Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_8%]">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_10%]">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%]">
+                    User
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_18%]">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%]">
+                    Total Price
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_10%]">
+                    Created Date
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+            </table>
+          </div>
+          <div className="flex-1 min-h-0">
+            <table className="w-full table-fixed min-w-[800px]">
+              <tbody className="block">
+                {quotes.map((quote) => (
+                  <tr
+                    key={quote.quoteId}
+                    className="flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+                    onClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}
+                  >
+                    <td 
+                      className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group"
+                    >
+                      <div className="flex items-center">
+                        <span>{highlightSearchTerm(quote.quoteId.slice(0, 8) + '...', searchQuery)}</span>
+                        <button
+                          onClick={(e) => handleCopyQuoteId(quote.quoteId, e)}
+                          className={cn(
+                            'opacity-0 group-hover:opacity-100 transition-opacity',
+                            'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
+                            'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
+                            'flex-shrink-0'
+                          )}
+                          title="Copy quote ID"
+                        >
+                          {copiedQuoteId === quote.quoteId ? (
+                            <Check className="w-3.5 h-3.5 text-green-500" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%]">
+                      {quote.tripName ? highlightSearchTerm(quote.tripName, searchQuery) : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_8%]">
+                      {getTripTypeLabel(quote.tripType)}
+                    </td>
+                    <td className="px-4 py-3 flex-[0_0_10%]">
+                      <StatusBadge status={quote.status} />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%]">
+                      {highlightSearchTerm(quote.user.fullName, searchQuery)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_18%]">
+                      {highlightSearchTerm(quote.user.email, searchQuery)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium flex-[0_0_12%]">
+                      {formatPrice(quote.totalPrice)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
+                      {formatDate(quote.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

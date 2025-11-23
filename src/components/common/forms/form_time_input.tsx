@@ -2,7 +2,7 @@ import { type InputHTMLAttributes, useMemo } from 'react';
 import { TimePicker } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { cn } from '../../utils/cn';
+import { cn } from '../../../utils/cn';
 
 interface FormTimeInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'className' | 'value' | 'onChange'> {
   label: string;

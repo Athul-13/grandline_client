@@ -5,9 +5,9 @@ import { Button } from '../../common/ui/button';
 import { FormInput } from '../../common/forms/form_input';
 import { ConfirmationModal } from '../../common/modals/confirmation_modal';
 import { X } from 'lucide-react';
-import { useAmenityMutations } from '../../hooks/fleet/use_amenity_mutations';
-import type { Amenity } from '../../types/fleet/amenity';
-import { amenityFormSchema, type AmenityFormData } from '../../types/fleet/amenity_form';
+import { useAmenityMutations } from '../../../hooks/fleet/use_amenity_mutations';
+import type { Amenity } from '../../../types/fleet/amenity';
+import { amenityFormSchema, type AmenityFormData } from '../../../types/fleet/amenity_form';
 import toast from 'react-hot-toast';
 
 interface AmenityFormModalProps {

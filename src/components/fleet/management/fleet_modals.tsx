@@ -3,9 +3,9 @@ import { VehicleTypeFormModal } from '../forms/vehicle_type_form_modal';
 import { AmenityFormModal } from '../forms/amenity_form_modal';
 import { VehicleFormModal } from '../forms/vehicle_form_modal';
 import { ConfirmationModal } from '../../common/modals/confirmation_modal';
-import type { VehicleType } from '../../types/fleet/vehicle_type';
-import type { Vehicle } from '../../types/fleet/vehicle';
-import type { Amenity } from '../../types/fleet/amenity';
+import type { VehicleType } from '../../../types/fleet/vehicle_type';
+import type { Vehicle } from '../../../types/fleet/vehicle';
+import type { Amenity } from '../../../types/fleet/amenity';
 
 interface FleetModalsProps {
   // Vehicle Type Modal

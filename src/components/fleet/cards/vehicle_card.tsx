@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, ChevronDown, ChevronUp, Users, IndianRupee } from 'lucide-react';
-import type { Vehicle } from '../../types/fleet/vehicle';
-import { VehicleStatus } from '../../types/fleet/vehicle';
+import type { Vehicle } from '../../../types/fleet/vehicle';
+import { VehicleStatus } from '../../../types/fleet/vehicle';
 import { ImageGalleryModal } from '../../common/modals/image_gallery_modal';
-import { cn } from '../../utils/cn';
-import { useSearchContext } from '../../hooks/use_search_context';
-import { highlightSearchTerm, matchesSearch } from '../../utils/highlight_search';
+import { cn } from '../../../utils/cn';
+import { useSearchContext } from '../../../hooks/use_search_context';
+import { highlightSearchTerm, matchesSearch } from '../../../utils/highlight_search';
 
 interface VehicleCardProps {
   vehicle: Vehicle;

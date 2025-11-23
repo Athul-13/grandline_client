@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../common/button';
-import { Pagination } from '../common/pagination';
-import { ConfirmationModal } from '../common/confirmation_modal';
+import { Button } from '../common/ui/button';
+import { Pagination } from '../common/ui/pagination';
+import { ConfirmationModal } from '../common/modals/confirmation_modal';
 import { quoteService } from '../../services/api/quote_service';
 import toast from 'react-hot-toast';
 import type { QuoteListItem, QuoteStatusType } from '../../types/quotes/quote';

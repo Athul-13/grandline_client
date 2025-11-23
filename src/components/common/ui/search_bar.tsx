@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import { useSearchContext } from '../../hooks/use_search_context';
-import { useLanguage } from '../../hooks/use_language';
+import { useSearchContext } from '../../../hooks/use_search_context';
+import { useLanguage } from '../../../hooks/use_language';
 
 interface SearchBarProps {
   placeholder?: string;
