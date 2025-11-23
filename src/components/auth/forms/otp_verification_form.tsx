@@ -7,8 +7,8 @@ import toast from 'react-hot-toast';
 import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
 import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
 import { ROUTES } from '../../constants/routes';
-import { AuthFormCard } from './auth_form_card';
-import { Button } from '../common/button';
+import { AuthFormCard } from '../auth_form_card';
+import { Button } from '../../common/ui/button';
 
 interface LocationState {
   email?: string;

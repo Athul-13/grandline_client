@@ -9,6 +9,7 @@ interface PaginationProps {
   showPageNumbers?: boolean;
   maxPageNumbers?: number;
   className?: string;
+  onPageHover?: (page: number) => void;
 }
 
 /**
@@ -22,6 +23,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   showPageNumbers = true,
   maxPageNumbers = 7,
   className,
+  onPageHover,
 }) => {
   // Always render, even if there's only one page
 
@@ -130,6 +132,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
+                  onMouseEnter={() => onPageHover?.(page)}
                   className={cn(
                     'min-w-[2.5rem] px-3 py-2 rounded-lg border transition-colors',
                     'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]',
@@ -149,6 +152,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         {/* Next Page */}
         <button
           onClick={() => handlePageChange(currentPage + 1)}
+          onMouseEnter={() => onPageHover?.(currentPage + 1)}
           disabled={currentPage === totalPages}
           className={cn(
             'p-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)]',

@@ -5,12 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authService } from '../../services/api/auth_service';
 import toast from 'react-hot-toast';
-import { PasswordInput } from '../common/password_input';
-import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
-import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
-import { ROUTES } from '../../constants/routes';
-import { AuthFormCard } from './auth_form_card';
-import { Button } from '../common/button';
+import { PasswordInput } from '../../common/forms/password_input';
+import { rateLimiter, resetRateLimit } from '../../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
+import { ROUTES } from '../../../constants/routes';
+import { AuthFormCard } from '../auth_form_card';
+import { Button } from '../../common/ui/button';
 import { useLanguage } from '../../hooks/use_language';
 
 const resetPasswordSchema = z

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useSearchContext } from '../../hooks/use_search_context';
 import { AdminQuotesTable } from '../../components/quotes/admin_quotes_table';
 import { useAdminQuotesList } from '../../hooks/quotes/use_admin_quotes_list';
-import { Pagination } from '../../components/common/pagination';
+import { Pagination } from '../../components/common/ui/pagination';
 
 export const AdminQuotesPage: React.FC = () => {
   const { id: quoteId } = useParams<{ id?: string }>();

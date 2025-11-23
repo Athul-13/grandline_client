@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Button } from '../../../../components/common/button';
+import { Button } from '../../../../components/common/ui/button';
 import { usePaidAmenities } from '../../../../hooks/quotes/use_paid_amenities';
 import { useVehicleRecommendations } from '../../../../hooks/quotes/use_vehicle_recommendations';
 import { Check } from 'lucide-react';

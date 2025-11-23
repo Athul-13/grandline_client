@@ -1,5 +1,5 @@
 import { Check, Users, Sparkles } from 'lucide-react';
-import { Button } from '../../../../components/common/button';
+import { Button } from '../../../../components/common/ui/button';
 import type { VehicleRecommendationOption } from '../../../../types/quotes/vehicle_recommendation';
 import { cn } from '../../../../utils/cn';
 

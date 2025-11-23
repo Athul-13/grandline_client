@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from '../../../../components/common/button';
-import { FormInput } from '../../../../components/common/form_input';
-import { FormSelect } from '../../../../components/common/form_select';
+import { Button } from '../../../../components/common/ui/button';
+import { FormInput } from '../../../../components/common/forms/form_input';
+import { FormSelect } from '../../../../components/common/forms/form_select';
 import { eventTypeService } from '../../../../services/api/event_type_service';
 import { PassengerForm } from './passenger_form';
-import { ConfirmationModal } from '../../../../components/common/confirmation_modal';
+import { ConfirmationModal } from '../../../../components/common/modals/confirmation_modal';
 import { Edit2, Trash2, User } from 'lucide-react';
 import type { PassengerDto } from '../../../../types/quotes/passenger';
 import type { EventTypeResponse } from '../../../../types/quotes/event_type';

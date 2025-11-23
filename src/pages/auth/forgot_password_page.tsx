@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import { ForgotPasswordForm } from '../../components/auth/forgot_password_form';
+import { ForgotPasswordForm } from '../../components/auth/forms/forgot_password_form';
 import { ROUTES } from '../../constants/routes';
 
 export const ForgotPasswordPage: React.FC = () => {

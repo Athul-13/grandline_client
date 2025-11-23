@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { Button } from '../../../../components/common/button';
+import { Button } from '../../../../components/common/ui/button';
 import { MapContainer } from './map_container';
 import { ItineraryFloatingPanel } from './itinerary_floating_panel';
 import { RouteInfoBox } from './route_info_box';

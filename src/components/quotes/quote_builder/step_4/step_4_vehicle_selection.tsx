@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from '../../../../components/common/button';
+import { Button } from '../../../../components/common/ui/button';
 import { useVehicleRecommendations } from '../../../../hooks/quotes/use_vehicle_recommendations';
 import { VehicleCard } from './vehicle_card';
 import { convertRecommendationToSelectedVehicles, findMatchingRecommendationOptionId } from '../../../../utils/vehicle_conversion';

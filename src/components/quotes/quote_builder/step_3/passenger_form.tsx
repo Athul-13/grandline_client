@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../../../../components/common/button';
-import { FormInput } from '../../../../components/common/form_input';
+import { Button } from '../../../../components/common/ui/button';
+import { FormInput } from '../../../../components/common/forms/form_input';
 import { X } from 'lucide-react';
 import type { PassengerDto } from '../../../../types/quotes/passenger';
 

@@ -3,7 +3,7 @@ import { useLanguage } from '../../hooks/use_language';
 import { useTheme } from '../../hooks/use_theme';
 import { getSettings, saveSettings } from '../../utils/settings';
 import type { Language } from '../../constants/languages';
-import { Button } from '../../components/common/button';
+import { Button } from '../../components/common/ui/button';
 import { PricingConfigSection } from '../../components/pricing_config/pricing_config_section';
 import { PricingConfigHistoryModal } from '../../components/pricing_config/pricing_config_history_modal';
 import toast from 'react-hot-toast';

@@ -4,8 +4,8 @@ import { cn } from '../../../../utils/cn';
 import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
 import { formatDate, formatTime, parseDate } from '../../../../utils/date_utils';
 import { AddressAutocomplete } from './address_autocomplete';
-import { FormDateInput } from '../../../../components/common/form_date_input';
-import { FormTimeInput } from '../../../../components/common/form_time_input';
+import { FormDateInput } from '../../../../components/common/forms/form_date_input';
+import { FormTimeInput } from '../../../../components/common/forms/form_time_input';
 import type { Map } from 'mapbox-gl';
 
 interface StopItemV2Props {

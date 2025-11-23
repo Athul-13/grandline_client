@@ -1,4 +1,4 @@
-import { RegisterForm } from '../../components/auth/register_form';
+import { RegisterForm } from '../../components/auth/forms/register_form';
 
 export const RegisterPage: React.FC = () => {
   return (

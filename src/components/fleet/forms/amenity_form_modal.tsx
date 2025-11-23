@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../common/button';
-import { FormInput } from '../common/form_input';
-import { ConfirmationModal } from '../common/confirmation_modal';
+import { Button } from '../../common/ui/button';
+import { FormInput } from '../../common/forms/form_input';
+import { ConfirmationModal } from '../../common/modals/confirmation_modal';
 import { X } from 'lucide-react';
 import { useAmenityMutations } from '../../hooks/fleet/use_amenity_mutations';
 import type { Amenity } from '../../types/fleet/amenity';

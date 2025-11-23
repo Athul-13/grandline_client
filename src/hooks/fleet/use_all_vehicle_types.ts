@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { vehicleTypeService } from '../../services/api/vehicle_type_service';
+import { fleetQueryKeys } from '../../utils/fleet_query_keys';
 import type { VehicleType } from '../../types/fleet/vehicle_type';
 
 /**
@@ -14,7 +15,7 @@ import type { VehicleType } from '../../types/fleet/vehicle_type';
 export const useAllVehicleTypes = () => {
   return useQuery<VehicleType[]>({
     // Query key - unique for all vehicle types (no pagination)
-    queryKey: ['allVehicleTypes'],
+    queryKey: fleetQueryKeys.vehicleTypes.allList(),
 
     // Query function - fetches all vehicle types
     queryFn: async () => {

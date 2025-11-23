@@ -1,32 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { vehicleService } from '../../services/api/vehicle_service';
+import { fleetQueryKeys } from '../../utils/fleet_query_keys';
 import type { Vehicle, PaginationParams, PaginationMeta } from '../../types/fleet/vehicle';
-
-/**
- * Serialize query params to a stable string for use in query keys
- * Ensures consistent cache keys regardless of object key order
- */
-const serializeParams = (params?: PaginationParams & Record<string, unknown>): string => {
-  if (!params) return '';
-  
-  // Sort keys to ensure consistent serialization
-  const sortedKeys = Object.keys(params).sort();
-  const serialized = sortedKeys
-    .map((key) => {
-      const value = params[key];
-      if (value === undefined || value === null || value === '') {
-        return null;
-      }
-      if (Array.isArray(value)) {
-        return `${key}=${value.sort().join(',')}`;
-      }
-      return `${key}=${String(value)}`;
-    })
-    .filter((item) => item !== null)
-    .join('&');
-  
-  return serialized;
-};
 
 /**
  * Custom hook to fetch vehicles with pagination and filters
@@ -44,8 +19,8 @@ export const useVehicles = (params?: PaginationParams & Record<string, unknown>)
     pagination: PaginationMeta;
   }>({
     // Query key - includes pagination and filter params for proper caching
-    // Use serialized params to ensure stable cache keys
-    queryKey: ['vehicles', serializeParams(params)],
+    // Use query key factory for consistent keys
+    queryKey: fleetQueryKeys.vehicles.list(params),
     
     // Query function - fetches the data
     queryFn: async () => {

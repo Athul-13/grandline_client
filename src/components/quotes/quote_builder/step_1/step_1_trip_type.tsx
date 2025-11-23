@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '../../../../components/common/button';
+import { Button } from '../../../../components/common/ui/button';
 import { TripType } from '../../../../types/quotes/quote';
 import type { TripTypeType } from '../../../../types/quotes/quote';
 import { cn } from '../../../../utils/cn';

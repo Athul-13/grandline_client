@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { vehicleService } from '../../services/api/vehicle_service';
+import { fleetQueryKeys } from '../../utils/fleet_query_keys';
 import type { FilterOptionsResponse } from '../../types/fleet/filter';
 
 /**
@@ -15,7 +16,7 @@ import type { FilterOptionsResponse } from '../../types/fleet/filter';
 export const useFilterOptions = () => {
   return useQuery<FilterOptionsResponse>({
     // Query key - unique identifier for this query
-    queryKey: ['vehicleFilterOptions'],
+    queryKey: fleetQueryKeys.filterOptions(),
 
     // Query function - fetches the data
     queryFn: async () => {

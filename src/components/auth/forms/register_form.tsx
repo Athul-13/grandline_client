@@ -7,14 +7,14 @@ import { useLanguage } from '../../hooks/use_language';
 import { registerAsync, googleAuthAsync, clearAuth } from '../../store/slices/auth_slice';
 import { registerSchema, type RegisterFormData } from '../../types/auth/register';
 import toast from 'react-hot-toast';
-import { PasswordInput } from '../common/password_input';
-import { rateLimiter, resetRateLimit } from '../../utils/rate_limiter';
-import { sanitizeErrorMessage, logErrorForDev } from '../../utils/error_sanitizer';
-import { ROUTES } from '../../constants/routes';
-import { FormInput } from '../common/form_input';
-import { AuthFormCard } from './auth_form_card';
-import { ErrorMessage } from '../common/error_message';
-import { Button } from '../common/button';
+import { PasswordInput } from '../../common/forms/password_input';
+import { rateLimiter, resetRateLimit } from '../../../utils/rate_limiter';
+import { sanitizeErrorMessage, logErrorForDev } from '../../../utils/error_sanitizer';
+import { ROUTES } from '../../../constants/routes';
+import { FormInput } from '../../common/forms/form_input';
+import { AuthFormCard } from '../auth_form_card';
+import { ErrorMessage } from '../../common/ui/error_message';
+import { Button } from '../../common/ui/button';
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate();

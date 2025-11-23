@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { amenityService } from '../../services/api/amenity_service';
+import { fleetQueryKeys } from '../../utils/fleet_query_keys';
 import type { Amenity, PaginationParams, PaginationMeta } from '../../types/fleet/amenity';
 
 /**
@@ -18,7 +19,7 @@ export const useAmenities = (params?: PaginationParams) => {
     pagination: PaginationMeta;
   }>({
     // Query key - includes pagination params for proper caching
-    queryKey: ['amenities', params?.page, params?.limit],
+    queryKey: fleetQueryKeys.amenities.list(params),
 
     // Query function - fetches the data
     queryFn: async () => {
