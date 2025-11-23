@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import { ResetPasswordForm } from '../../components/auth/reset_password_form';
+import { ResetPasswordForm } from '../../components/auth/forms/reset_password_form';
 import { ROUTES } from '../../constants/routes';
 
 export const ResetPasswordPage: React.FC = () => {

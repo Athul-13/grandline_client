@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import { OtpVerificationForm } from '../../components/auth/otp_verification_form';
+import { OtpVerificationForm } from '../../components/auth/forms/otp_verification_form';
 import { ROUTES } from '../../constants/routes';
 
 export const OtpVerificationPage: React.FC = () => {

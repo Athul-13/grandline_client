@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { amenityService } from '../../services/api/amenity_service';
+import { fleetQueryKeys } from '../../utils/fleet_query_keys';
 import type { Amenity } from '../../types/fleet/amenity';
 
 /**
@@ -14,7 +15,7 @@ import type { Amenity } from '../../types/fleet/amenity';
 export const useAllAmenities = () => {
   return useQuery<Amenity[]>({
     // Query key - unique for all amenities (no pagination)
-    queryKey: ['allAmenities'],
+    queryKey: fleetQueryKeys.amenities.allList(),
 
     // Query function - fetches all amenities
     queryFn: async () => {

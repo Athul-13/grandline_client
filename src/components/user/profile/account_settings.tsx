@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../../../components/common/button';
+import { Button } from '../../../components/common/ui/button';
 import { useLanguage } from '../../../hooks/use_language';
 import { useTheme } from '../../../hooks/use_theme';
 import { getSettings, saveSettings } from '../../../utils/settings';

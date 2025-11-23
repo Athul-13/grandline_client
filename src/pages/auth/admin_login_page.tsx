@@ -1,4 +1,4 @@
-import { AdminLoginForm } from '../../components/auth/admin_login_form';
+import { AdminLoginForm } from '../../components/auth/forms/admin_login_form';
 
 export const AdminLoginPage: React.FC = () => {
   return (

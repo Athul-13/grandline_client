@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '../../../components/common/button';
+import { Button } from '../../../components/common/ui/button';
 import { useLanguage } from '../../../hooks/use_language';
 
 /**

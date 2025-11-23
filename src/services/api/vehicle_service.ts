@@ -2,6 +2,7 @@ import grandlineAxiosClient from './axios_client';
 import { API_ENDPOINTS } from '../../constants/api';
 import type { FilterOptionsResponse } from '../../types/fleet/filter';
 import type {
+  Vehicle,
   PaginationParams,
   PaginatedVehiclesResponse,
   CreateVehicleRequest,
@@ -11,6 +12,7 @@ import type {
   VehicleUploadSignatureResponse,
   DeleteVehicleImagesRequest,
   DeleteVehicleImagesResponse,
+  GetVehicleResponse,
 } from '../../types/fleet/vehicle';
 
 /**
@@ -42,6 +44,21 @@ export const vehicleService = {
     
     const response = await grandlineAxiosClient.get<PaginatedVehiclesResponse>(url);
     return response.data;
+  },
+
+  /**
+   * Get vehicle by ID
+   * GET /api/v1/vehicles/:id
+   */
+  getVehicleById: async (id: string): Promise<Vehicle> => {
+    const response = await grandlineAxiosClient.get<GetVehicleResponse | Vehicle>(
+      API_ENDPOINTS.fleet.vehiclesById(id)
+    );
+    // Handle both wrapped response { success, vehicle } and direct Vehicle response
+    if ('vehicle' in response.data) {
+      return (response.data as GetVehicleResponse).vehicle;
+    }
+    return response.data as Vehicle;
   },
 
   /**

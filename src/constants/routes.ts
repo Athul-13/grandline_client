@@ -32,6 +32,7 @@ export const ROUTES = {
     dashboard: '/admin/dashboard',
     tripManagement: '/admin/trip-management',
     quotes: '/admin/quotes',
+    quoteDetails: (id: string) => `/admin/quotes/${id}`,
     reservations: '/admin/reservations',
     fleetManagement: '/admin/fleet-management',
     userManagement: '/admin/user-management',

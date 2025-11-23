@@ -161,3 +161,12 @@ export interface DeleteVehicleImagesResponse {
   message: string; // "Vehicle images deleted successfully"
 }
 
+/**
+ * Get Vehicle by ID Response
+ * GET /api/v1/vehicles/:id
+ */
+export interface GetVehicleResponse {
+  success: boolean;
+  vehicle: Vehicle;
+}
+

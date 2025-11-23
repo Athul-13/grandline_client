@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../hooks/use_language';
 import { useTheme } from '../../hooks/use_theme';
 import { getSettings, saveSettings } from '../../utils/settings';
 import type { Language } from '../../constants/languages';
+import { Button } from '../../components/common/ui/button';
+import { PricingConfigSection } from '../../components/pricing_config/pricing_config_section';
+import { PricingConfigHistoryModal } from '../../components/pricing_config/pricing_config_history_modal';
 import toast from 'react-hot-toast';
 
 export const AdminSettingsPage: React.FC = () => {
@@ -18,6 +21,10 @@ export const AdminSettingsPage: React.FC = () => {
   
   const [language, setLanguage] = useState<Language>(contextLanguage);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(getValidTheme(contextTheme));
+  const [initialLanguage, setInitialLanguage] = useState<Language>(contextLanguage);
+  const [initialTheme, setInitialTheme] = useState<'light' | 'dark' | 'system'>(getValidTheme(contextTheme));
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -30,26 +37,60 @@ export const AdminSettingsPage: React.FC = () => {
       
       setLanguage(validLanguage);
       setTheme(validTheme);
+      setInitialLanguage(validLanguage);
+      setInitialTheme(validTheme);
     } else {
       setLanguage(contextLanguage);
       setTheme(getValidTheme(contextTheme));
+      setInitialLanguage(contextLanguage);
+      setInitialTheme(getValidTheme(contextTheme));
     }
   }, [contextLanguage, contextTheme]);
 
-  // Apply language changes immediately
+  // Check if language has changes
+  const hasLanguageChanges = useMemo(() => {
+    return language !== initialLanguage;
+  }, [language, initialLanguage]);
+
+  // Check if theme has changes
+  const hasThemeChanges = useMemo(() => {
+    return theme !== initialTheme;
+  }, [theme, initialTheme]);
+
+  // Handle language change (without saving)
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
-    saveSettings({ language: newLanguage, theme });
-    setContextLanguage(newLanguage);
+  };
+
+  // Handle theme change (without saving)
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+  };
+
+  // Save language changes
+  const handleSaveLanguage = () => {
+    saveSettings({ language, theme });
+    setContextLanguage(language);
+    setInitialLanguage(language);
     toast.success(t('profile.accountSettings.saveSuccess') || 'Language updated successfully');
   };
 
-  // Apply theme changes immediately
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    setTheme(newTheme);
-    saveSettings({ language, theme: newTheme });
-    setContextTheme(newTheme);
+  // Cancel language changes
+  const handleCancelLanguage = () => {
+    setLanguage(initialLanguage);
+  };
+
+  // Save theme changes
+  const handleSaveTheme = () => {
+    saveSettings({ language, theme });
+    setContextTheme(theme);
+    setInitialTheme(theme);
     toast.success(t('profile.accountSettings.saveSuccess') || 'Theme updated successfully');
+  };
+
+  // Cancel theme changes
+  const handleCancelTheme = () => {
+    setTheme(initialTheme);
   };
 
   return (
@@ -90,10 +131,28 @@ export const AdminSettingsPage: React.FC = () => {
                   <option value="ar">{t('profile.accountSettings.languages.arabic') || 'Arabic'}</option>
                 </select>
               </div>
+              {/* Save/Cancel Buttons */}
+              <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[var(--color-border)]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancelLanguage}
+                  disabled={!hasLanguageChanges}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveLanguage}
+                  disabled={!hasLanguageChanges}
+                >
+                  Save
+                </Button>
+              </div>
             </div>
 
             {/* Theme Selection */}
-            <div>
+            <div className="border-b border-[var(--color-border)] pb-6">
               <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
                 {t('profile.accountSettings.theme') || 'Theme'}
               </h2>
@@ -155,10 +214,46 @@ export const AdminSettingsPage: React.FC = () => {
                   </label>
                 </div>
               </div>
+              {/* Save/Cancel Buttons */}
+              <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[var(--color-border)]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancelTheme}
+                  disabled={!hasThemeChanges}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveTheme}
+                  disabled={!hasThemeChanges}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+
+            {/* Pricing Configuration */}
+            <div>
+              <PricingConfigSection
+                onHistoryClick={() => setShowHistoryModal(true)}
+                onConfigCreated={() => {
+                  // Trigger history modal to refetch when new config is created
+                  setHistoryRefreshTrigger((prev) => prev + 1);
+                }}
+              />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Pricing Configuration History Modal */}
+      <PricingConfigHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        refreshTrigger={historyRefreshTrigger}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ export interface SearchContextType {
   clearSearch: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 interface SearchProviderProps {
