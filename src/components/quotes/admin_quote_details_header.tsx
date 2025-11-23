@@ -1,6 +1,6 @@
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { AdminQuoteDetails } from '../../types/quotes/admin_quote';
-import type { QuoteStatusType } from '../../types/quotes/quote';
 
 interface AdminQuoteDetailsHeaderProps {
   quoteDetails: AdminQuoteDetails;

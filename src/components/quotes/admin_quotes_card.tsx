@@ -10,6 +10,8 @@ interface AdminQuotesCardProps {
   searchQuery: string;
   copiedQuoteId: string | null;
   onCopyQuoteId: (quoteId: string, e: React.MouseEvent) => void;
+  isSelected: boolean;
+  onSelectChange: (isSelected: boolean) => void;
   onCardClick: () => void;
 }
 
@@ -22,18 +24,34 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
   searchQuery,
   copiedQuoteId,
   onCopyQuoteId,
+  isSelected,
+  onSelectChange,
   onCardClick,
 }) => {
   return (
     <div
-      className="bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors"
+      className={cn(
+        "bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors",
+        isSelected && "bg-[var(--color-bg-secondary)] border-[var(--color-primary)]"
+      )}
       onClick={onCardClick}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate mb-1">
-            {quote.tripName ? highlightSearchTerm(quote.tripName, searchQuery) : 'Untitled Trip'}
-          </h3>
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onSelectChange(e.target.checked);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-4 h-4 cursor-pointer mt-1 flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-base text-[var(--color-text-primary)] truncate mb-1">
+              {quote.tripName ? highlightSearchTerm(quote.tripName, searchQuery) : 'Untitled Trip'}
+            </h3>
           <div className="flex items-center gap-2 mb-2">
             <StatusBadge status={quote.status} />
             <span className="text-xs text-[var(--color-text-secondary)]">
@@ -63,6 +81,7 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
               )}
             </button>
           </div>
+        </div>
         </div>
       </div>
       

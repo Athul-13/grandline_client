@@ -139,3 +139,9 @@ export interface UpdateQuoteStatusResponse {
   updatedAt: Date | string;
 }
 
+/**
+ * Admin Quote Details (alias for AdminQuoteDetailsResponse)
+ * Used in components for cleaner type names
+ */
+export type AdminQuoteDetails = AdminQuoteDetailsResponse;
+

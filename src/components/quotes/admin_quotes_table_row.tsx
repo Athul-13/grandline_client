@@ -10,6 +10,8 @@ interface AdminQuotesTableRowProps {
   searchQuery: string;
   copiedQuoteId: string | null;
   onCopyQuoteId: (quoteId: string, e: React.MouseEvent) => void;
+  isSelected: boolean;
+  onSelectChange: (isSelected: boolean) => void;
   onRowClick: () => void;
 }
 
@@ -22,13 +24,33 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
   searchQuery,
   copiedQuoteId,
   onCopyQuoteId,
+  isSelected,
+  onSelectChange,
   onRowClick,
 }) => {
   return (
     <tr
-      className="flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+      className={cn(
+        "flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer",
+        isSelected && "bg-[var(--color-bg-secondary)]"
+      )}
       onClick={onRowClick}
     >
+      <td 
+        className="px-4 py-3 flex-[0_0_40px] flex items-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onSelectChange(e.target.checked);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-4 h-4 cursor-pointer"
+        />
+      </td>
       <td 
         className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group"
       >

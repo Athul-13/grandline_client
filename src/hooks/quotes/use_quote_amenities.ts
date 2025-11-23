@@ -39,7 +39,6 @@ export const useQuoteAmenities = (selectedAmenityIds?: string[]) => {
     };
 
     fetchAmenities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAmenityIds]);
 
   return { amenities, isLoading };

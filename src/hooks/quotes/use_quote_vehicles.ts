@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { vehicleService } from '../../services/api/vehicle_service';
 import type { Vehicle } from '../../types/fleet/vehicle';
-import type { SelectedVehicle } from '../../types/quotes/admin_quote';
+import type { SelectedVehicle } from '../../types/quotes/quote';
 
 /**
  * Hook to fetch vehicle details for selected vehicles in a quote
@@ -40,7 +40,6 @@ export const useQuoteVehicles = (selectedVehicles?: SelectedVehicle[]) => {
     };
 
     fetchVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVehicles]);
 
   return { vehicles, isLoading };
