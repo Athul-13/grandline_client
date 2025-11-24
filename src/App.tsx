@@ -5,6 +5,7 @@ import { useAppDispatch } from './store/hooks';
 import { checkAuthAsync } from './store/slices/auth_slice';
 import { UserRoutes } from './routes/user_routes';
 import { AdminRoutes } from './routes/admin_routes';
+import { NotificationToastHandler } from './components/common/notifications/notification_toast_handler';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -39,6 +40,7 @@ function App() {
           },
         }}
       />
+      <NotificationToastHandler />
       <Routes>
         {/* Admin routes */}
         <Route path="/admin/*" element={<AdminRoutes />} />

@@ -44,6 +44,15 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     }
   }, [isOpen, fetchNotifications]);
 
+  // Auto-refresh notifications list when new notifications arrive (if dropdown is open)
+  useEffect(() => {
+    if (isOpen && notifications.length > 0) {
+      // Refresh the list to show new notifications at the top
+      // The context already updates notifications via socket, so we just need to ensure we're showing the latest
+      fetchNotifications({ page: 1, limit });
+    }
+  }, [notifications.length, isOpen, fetchNotifications, limit]);
+
   const handleLoadMore = async () => {
     if (isLoading || !hasMore) return;
 
