@@ -8,8 +8,11 @@ import { VehiclesSection } from './details/vehicles_section';
 import { AmenitiesSection } from './details/amenities_section';
 import { PricingSection } from './details/pricing_section';
 import { RouteSection } from './details/route_section';
+import { AdminChatView } from '../chat/admin/admin_chat_view';
 import { useQuoteVehicles } from '../../hooks/quotes/use_quote_vehicles';
 import { useQuoteAmenities } from '../../hooks/quotes/use_quote_amenities';
+import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
+import { useUnreadCount } from '../../hooks/chat/use_unread_count';
 import type { AdminQuoteDetails } from '../../types/quotes/admin_quote';
 import { QuoteStatus } from '../../types/quotes/quote';
 
@@ -40,9 +43,19 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
     pricing: false,
     route: false,
   });
+  const [showChat, setShowChat] = useState(false);
 
   const { vehicles, isLoading: isLoadingVehicles } = useQuoteVehicles(quoteDetails.selectedVehicles);
   const { amenities, isLoading: isLoadingAmenities } = useQuoteAmenities(quoteDetails.selectedAmenities);
+
+  // Get chat for quote
+  const { chat } = useChatForQuote({
+    quoteId: quoteDetails.quoteId,
+    userId: quoteDetails.user?.userId || '',
+  });
+
+  // Get unread count for chat
+  const { unreadCount } = useUnreadCount({ chatId: chat?.chatId });
 
   // Toggle accordion section
   const toggleSection = (section: string) => {
@@ -68,15 +81,40 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
 
   const availableStatuses = getAvailableStatuses();
 
+  const handleChatClick = () => {
+    setShowChat(true);
+  };
+
+  const handleBackFromChat = () => {
+    setShowChat(false);
+  };
+
+  const handleBackToQuotes = () => {
+    if (showChat) {
+      setShowChat(false);
+    } else {
+      onBack();
+    }
+  };
+
+  // Show chat view if chat is active
+  if (showChat) {
+    return (
+      <AdminChatView quoteDetails={quoteDetails} onBack={handleBackFromChat} />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-      {/* Header with Back Button and Status Control */}
+      {/* Header with Back Button, Chat Icon, and Status Control */}
       <AdminQuoteDetailsHeader
         quoteDetails={quoteDetails}
         availableStatuses={availableStatuses}
         isUpdatingStatus={isUpdatingStatus}
-        onBack={onBack}
+        onBack={handleBackToQuotes}
         onStatusChange={onStatusChange}
+        onChatClick={handleChatClick}
+        unreadCount={unreadCount}
       />
 
       {/* Scrollable Content Area with Accordions */}
