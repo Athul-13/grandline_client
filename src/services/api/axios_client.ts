@@ -5,6 +5,12 @@ import { store } from '../../store/store';
 import { clearAuth, refreshTokenAsync } from '../../store/slices/auth_slice';
 
 /**
+ * Shared refresh token promise to prevent multiple simultaneous refresh attempts
+ * When multiple requests fail with 401, they all wait for a single refresh
+ */
+let refreshTokenPromise: Promise<{ success: boolean }> | null = null;
+
+/**
  * Create and configure Axios instance
  * Handles authentication, error handling, and request/response interceptors
  */
@@ -33,14 +39,22 @@ grandlineAxiosClient.interceptors.request.use(
       const url = config.url;
       
       // Check if URL matches admin endpoints
-      const isAdminEndpoint = Object.values(API_ENDPOINTS.admin).some(endpoint =>
-        url.includes(endpoint)
-      );
+      // Check base admin paths (functions and nested objects are handled by checking base paths)
+      const adminBasePaths = [
+        API_ENDPOINTS.admin.users,
+        API_ENDPOINTS.admin.bookings,
+        API_ENDPOINTS.admin.buses,
+        API_ENDPOINTS.admin.routes,
+        API_ENDPOINTS.admin.quotes,
+        API_ENDPOINTS.admin.pricingConfig.active,
+        API_ENDPOINTS.admin.pricingConfig.create,
+        API_ENDPOINTS.admin.pricingConfig.history,
+      ];
+      const isAdminEndpoint = adminBasePaths.some(endpoint => url.includes(endpoint));
       
       // Check if URL matches user endpoints
-      const isUserEndpoint = Object.values(API_ENDPOINTS.users).some(endpoint =>
-        url.includes(endpoint)
-      );
+      const userEndpoints = Object.values(API_ENDPOINTS.users);
+      const isUserEndpoint = userEndpoints.some(endpoint => url.includes(endpoint));
 
       // Block admin users from accessing user-specific endpoints
       if (user.role === 'admin' && isUserEndpoint) {
@@ -158,28 +172,60 @@ grandlineAxiosClient.interceptors.response.use(
         });
       }
 
-      // Try to refresh the token
-      try {
-        const refreshResult = await store.dispatch(refreshTokenAsync()).unwrap();
-        
-        if (refreshResult.success) {
-          // Refresh successful - retry the original request
+      // If a refresh is already in progress, wait for it and retry this request
+      if (refreshTokenPromise) {
+        try {
+          await refreshTokenPromise;
+          // Refresh completed - retry the original request
           return grandlineAxiosClient(originalRequest);
+        } catch {
+          // Refresh failed - reject this request
+          return Promise.reject({
+            message: 'Your session has expired. Please login again.',
+            code: 'UNAUTHORIZED',
+          });
         }
-      } catch {
-        // Refresh failed - clear auth and redirect based on role
-        const currentState = store.getState();
-        const userRole = currentState.auth.user?.role;
-        store.dispatch(clearAuth());
-        
-        if (typeof window !== 'undefined') {
-          // Role-based redirect
-          const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = redirectPath;
+      }
+
+      // Start a new refresh attempt
+      refreshTokenPromise = (async () => {
+        try {
+          const refreshResult = await store.dispatch(refreshTokenAsync()).unwrap();
+          
+          if (refreshResult.success) {
+            return { success: true };
+          } else {
+            throw new Error('Token refresh failed');
           }
+        } catch (refreshError) {
+          // Refresh failed - clear auth and redirect based on role
+          const currentState = store.getState();
+          const userRole = currentState.auth.user?.role;
+          
+          store.dispatch(clearAuth());
+          
+          if (typeof window !== 'undefined') {
+            // Role-based redirect
+            const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = redirectPath;
+            }
+          }
+          
+          throw refreshError;
+        } finally {
+          // Clear the refresh promise so new 401s can trigger a new refresh
+          refreshTokenPromise = null;
         }
-        
+      })();
+
+      // Wait for refresh and retry this request
+      try {
+        await refreshTokenPromise;
+        // Refresh successful - retry the original request
+        return grandlineAxiosClient(originalRequest);
+      } catch {
+        // Refresh failed - reject this request
         return Promise.reject({
           message: 'Your session has expired. Please login again.',
           code: 'UNAUTHORIZED',

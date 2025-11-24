@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { quoteService } from '../../services/api/quote_service';
 import type { AdminQuoteListItem, AdminQuoteListParams } from '../../types/quotes/admin_quote';
 import type { PaginationMeta } from '../../types/quotes/quote';
@@ -29,6 +29,15 @@ export const useAdminQuotesList = (params?: UseAdminQuotesListParams): UseAdminQ
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Memoize status array to prevent infinite loops from reference changes
+  // Sort and stringify to create a stable comparison value
+  const statusKey = useMemo(() => {
+    if (!params?.status || params.status.length === 0) {
+      return '';
+    }
+    return [...params.status].sort().join(',');
+  }, [params?.status]);
 
   const fetchQuotes = useCallback(async () => {
     setIsLoading(true);
@@ -76,7 +85,7 @@ export const useAdminQuotesList = (params?: UseAdminQuotesListParams): UseAdminQ
     params?.limit,
     params?.includeDeleted,
     params?.search,
-    params?.status,
+    statusKey, // Use memoized statusKey instead of params?.status
     params?.sortBy,
     params?.sortOrder,
   ]);
