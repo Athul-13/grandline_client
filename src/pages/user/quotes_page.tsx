@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../hooks/use_language';
 import { QuotesTable } from '../../components/quotes/quotes_table';
 import { useQuotesList } from '../../hooks/quotes/use_quotes_list';
@@ -9,6 +10,8 @@ import { useQuotesList } from '../../hooks/quotes/use_quotes_list';
  */
 export const QuotesPage: React.FC = () => {
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const quoteId = searchParams.get('quoteId');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
@@ -27,14 +30,17 @@ export const QuotesPage: React.FC = () => {
 
   return (
     <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10 space-y-4 sm:space-y-6 h-full flex flex-col">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
-          {t('dashboard.quotes.title')}
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-[var(--color-text-secondary)]">
-          {t('dashboard.quotes.subtitle')}
-        </p>
-      </div>
+      {/* Hide title when viewing quote details */}
+      {!quoteId && (
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
+            {t('dashboard.quotes.title')}
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-[var(--color-text-secondary)]">
+            {t('dashboard.quotes.subtitle')}
+          </p>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col min-h-0">
         {error ? (
