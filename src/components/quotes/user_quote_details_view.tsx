@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useQuoteVehicles } from '../../hooks/quotes/use_quote_vehicles';
 import { useQuoteAmenities } from '../../hooks/quotes/use_quote_amenities';
 import { UserQuoteDetailsHeader } from './user_quote_details_header';
+import { UserChatView } from '../chat/user/user_chat_view';
 import { BasicInfoBentoCard } from './details/bento/basic_info_bento_card';
 import { PassengersBentoCard } from './details/bento/passengers_bento_card';
 import { ItineraryBentoCard } from './details/bento/itinerary_bento_card';
@@ -8,6 +10,8 @@ import { VehiclesBentoCard } from './details/bento/vehicles_bento_card';
 import { AmenitiesBentoCard } from './details/bento/amenities_bento_card';
 import { PricingBentoCard } from './details/bento/pricing_bento_card';
 import { RouteBentoCard } from './details/bento/route_bento_card';
+import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
+import { useUnreadCount } from '../../hooks/chat/use_unread_count';
 import type { QuoteResponse } from '../../types/quotes/quote';
 
 interface UserQuoteDetailsViewProps {
@@ -27,17 +31,53 @@ export const UserQuoteDetailsView: React.FC<UserQuoteDetailsViewProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const [showChat, setShowChat] = useState(false);
+
   const { vehicles, isLoading: isLoadingVehicles } = useQuoteVehicles(quoteDetails.selectedVehicles);
   const { amenities, isLoading: isLoadingAmenities } = useQuoteAmenities(quoteDetails.selectedAmenities);
 
+  // Get chat for quote
+  const { chat } = useChatForQuote({
+    quoteId: quoteDetails.quoteId,
+    userId: quoteDetails.userId,
+  });
+
+  // Get unread count for chat
+  const { unreadCount } = useUnreadCount({ chatId: chat?.chatId });
+
+  const handleChatClick = () => {
+    setShowChat(true);
+  };
+
+  const handleBackFromChat = () => {
+    setShowChat(false);
+  };
+
+  const handleBackToQuotes = () => {
+    if (showChat) {
+      setShowChat(false);
+    } else {
+      onBack();
+    }
+  };
+
+  // Show chat view if chat is active
+  if (showChat) {
+    return (
+      <UserChatView quoteDetails={quoteDetails} onBack={handleBackFromChat} />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-      {/* Header with Trip Name and Actions */}
+      {/* Header with Trip Name, Chat Icon, and Actions */}
       <UserQuoteDetailsHeader
         quoteDetails={quoteDetails}
-        onBack={onBack}
+        onBack={handleBackToQuotes}
         onEdit={onEdit}
         onDelete={onDelete}
+        onChatClick={handleChatClick}
+        unreadCount={unreadCount}
       />
 
       {/* Scrollable Content Area with Bento Grid */}
