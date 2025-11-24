@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './contexts/theme_provider';
 import { LanguageProvider } from './contexts/language_provider';
+import { NotificationProvider } from './contexts/notification_context';
 import { store } from './store/store';
 import { getSettings } from './utils/settings';
 import './index.css';
@@ -27,7 +28,9 @@ createRoot(document.getElementById('root')!).render(
           <BrowserRouter>
             <ThemeProvider defaultTheme={defaultTheme} enableSystem>
               <LanguageProvider defaultLanguage={defaultLanguage}>
-                <App />
+                <NotificationProvider>
+                  <App />
+                </NotificationProvider>
               </LanguageProvider>
             </ThemeProvider>
           </BrowserRouter>

@@ -1,8 +1,6 @@
-import { createContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type {
-  Notification,
-  GetUserNotificationsParams,
-} from '../types/notifications/notification';
+import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import type { Notification } from '../types/notifications/notification';
+import type { GetUserNotificationsParams } from '../types/notifications/notification';
 import { notificationService } from '../services/api/notification_service';
 import { notificationSocketService } from '../services/socket/notification_socket_service';
 import { useSocketConnection } from '../hooks/chat/use_socket_connection';
@@ -10,19 +8,8 @@ import type {
   NotificationReceivedEvent,
   UnreadCountUpdatedEvent,
 } from '../types/notifications/notification_socket_events';
-
-interface NotificationContextValue {
-  notifications: Notification[];
-  unreadCount: number;
-  isLoading: boolean;
-  error: string | null;
-  fetchNotifications: (params?: GetUserNotificationsParams) => Promise<void>;
-  markAsRead: (notificationId: string) => Promise<void>;
-  markAllAsRead: () => Promise<void>;
-  refetchUnreadCount: () => Promise<void>;
-}
-
-const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
+import type { NotificationContextValue } from './notification_context_value';
+import { NotificationContext } from './notification_context_instance';
 
 interface NotificationProviderProps {
   children: ReactNode;
