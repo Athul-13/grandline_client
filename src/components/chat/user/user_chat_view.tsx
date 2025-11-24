@@ -1,32 +1,54 @@
+import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useAppSelector } from '../../../store/hooks';
+import { useSocketConnection } from '../../../hooks/chat/use_socket_connection';
+import { useChatForQuote } from '../../../hooks/chat/use_chat_for_quote';
+import { useChatMessages } from '../../../hooks/chat/use_chat_messages';
 import { AdminChatBody } from '../admin/admin_chat_body';
 import { AdminChatInput } from '../admin/admin_chat_input';
 import type { QuoteResponse } from '../../../types/quotes/quote';
-import type { Message } from '../../../types/chat/message';
 
 interface UserChatViewProps {
   quoteDetails: QuoteResponse;
-  messages: Message[];
-  currentUserId: string;
-  isTyping?: boolean;
-  isLoading?: boolean;
   onBack: () => void;
-  onSendMessage: (content: string) => void;
 }
 
 /**
  * User Chat View Component
  * Main chat view for users (similar structure to admin)
+ * Integrated with Socket.io for real-time functionality
  */
-export const UserChatView: React.FC<UserChatViewProps> = ({
-  quoteDetails,
-  messages,
-  currentUserId,
-  isTyping = false,
-  isLoading = false,
-  onBack,
-  onSendMessage,
-}) => {
+export const UserChatView: React.FC<UserChatViewProps> = ({ quoteDetails, onBack }) => {
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const currentUserId = currentUser?.userId || '';
+
+  // Socket connection
+  const { isConnected } = useSocketConnection();
+
+  // Get or create chat for quote
+  const { chat, isLoading: isLoadingChat, isJoined } = useChatForQuote({
+    quoteId: quoteDetails.quoteId,
+    userId: quoteDetails.userId,
+  });
+
+  // Fetch and manage messages
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    sendMessage,
+    markAsRead,
+  } = useChatMessages({
+    chatId: chat?.chatId || null,
+    autoFetch: true,
+  });
+
+  // Mark messages as read when viewing chat
+  useEffect(() => {
+    if (chat?.chatId && isJoined && messages.length > 0) {
+      markAsRead();
+    }
+  }, [chat?.chatId, isJoined, messages.length, markAsRead]);
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
       {/* Chat Header */}
@@ -57,12 +79,16 @@ export const UserChatView: React.FC<UserChatViewProps> = ({
         messages={messages}
         currentUserId={currentUserId}
         otherUserName="Admin"
-        isTyping={isTyping}
-        isLoading={isLoading}
+        chatId={chat?.chatId || null}
+        isLoading={isLoadingChat || isLoadingMessages}
       />
 
       {/* Chat Input */}
-      <AdminChatInput onSendMessage={onSendMessage} disabled={isLoading} />
+      <AdminChatInput
+        onSendMessage={sendMessage}
+        chatId={chat?.chatId || null}
+        disabled={isLoadingChat || isLoadingMessages || !isConnected || !chat?.chatId}
+      />
     </div>
   );
 };

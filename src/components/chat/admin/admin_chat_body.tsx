@@ -1,32 +1,77 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { chatSocketService } from '../../../services/socket/chat_socket_service';
 import { MessageBubble } from '../common/message_bubble';
 import { TypingIndicator } from '../common/typing_indicator';
 import type { Message } from '../../../types/chat/message';
+import type { TypingEvent, TypingStoppedEvent } from '../../../types/chat/chat_socket_events';
 import { cn } from '../../../utils/cn';
 
 interface AdminChatBodyProps {
   messages: Message[];
   currentUserId: string;
   otherUserName?: string;
-  isTyping?: boolean;
+  chatId: string | null;
   isLoading?: boolean;
   className?: string;
 }
 
 /**
  * Admin Chat Body Component
- * Displays messages list with auto-scroll to bottom
+ * Displays messages list with auto-scroll to bottom and real-time typing indicator
  */
 export const AdminChatBody: React.FC<AdminChatBodyProps> = ({
   messages,
   currentUserId,
   otherUserName,
-  isTyping = false,
+  chatId,
   isLoading = false,
   className,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Listen for typing indicators
+  useEffect(() => {
+    if (!chatId) return;
+
+    const handleTyping = (data: TypingEvent) => {
+      if (data.chatId === chatId && data.userId !== currentUserId) {
+        setIsTyping(true);
+
+        // Clear existing timeout
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+
+        // Auto-hide typing indicator after 3 seconds
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+        }, 3000);
+      }
+    };
+
+    const handleTypingStopped = (data: TypingStoppedEvent) => {
+      if (data.chatId === chatId && data.userId !== currentUserId) {
+        setIsTyping(false);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+      }
+    };
+
+    const cleanupTyping = chatSocketService.onTyping(handleTyping);
+    const cleanupTypingStopped = chatSocketService.onTypingStopped(handleTypingStopped);
+
+    return () => {
+      cleanupTyping();
+      cleanupTypingStopped();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [chatId, currentUserId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

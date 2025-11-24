@@ -1,9 +1,12 @@
-import { useState, KeyboardEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
+import { chatSocketService } from '../../../services/socket/chat_socket_service';
 import { cn } from '../../../utils/cn';
 
 interface AdminChatInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<void>;
+  chatId: string | null;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
@@ -11,20 +14,77 @@ interface AdminChatInputProps {
 
 /**
  * Admin Chat Input Component
- * Message input field with send button
+ * Message input field with send button and typing indicator
  */
 export const AdminChatInput: React.FC<AdminChatInputProps> = ({
   onSendMessage,
+  chatId,
   disabled = false,
   placeholder = 'Type a message...',
   className,
 }) => {
   const [message, setMessage] = useState('');
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
-  const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
-      setMessage('');
+  // Handle typing indicator with debounce
+  useEffect(() => {
+    if (!chatId) return;
+
+    if (message.trim() && !isTypingRef.current) {
+      isTypingRef.current = true;
+      chatSocketService.startTyping(chatId);
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTypingRef.current && chatId) {
+        chatSocketService.stopTyping(chatId);
+        isTypingRef.current = false;
+      }
+    }, 3000);
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [message, chatId]);
+
+  // Cleanup typing indicator on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (isTypingRef.current && chatId) {
+        chatSocketService.stopTyping(chatId);
+      }
+    };
+  }, [chatId]);
+
+  const handleSend = async () => {
+    if (message.trim() && !disabled && chatId) {
+      // Stop typing indicator
+      if (isTypingRef.current) {
+        chatSocketService.stopTyping(chatId);
+        isTypingRef.current = false;
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      try {
+        await onSendMessage(message.trim());
+        setMessage('');
+      } catch (error) {
+        console.error('Failed to send message:', error);
+      }
     }
   };
 
@@ -55,7 +115,7 @@ export const AdminChatInput: React.FC<AdminChatInputProps> = ({
         />
         <button
           onClick={handleSend}
-          disabled={disabled || !message.trim()}
+          disabled={disabled || !message.trim() || !chatId}
           className="p-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Send message"
         >
