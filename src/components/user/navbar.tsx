@@ -11,6 +11,7 @@ import logo from '../../assets/logo.png';
 import logoNavbar from '../../assets/logo_navbar.png';
 import { useLanguage } from '../../hooks/use_language';
 import { useNotificationContext } from '../../hooks/notifications/use_notification_context';
+import { NotificationDropdown } from '../common/notifications/notification_dropdown';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -176,14 +177,11 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </button>
-              {/* Notification dropdown placeholder - will be implemented in next commit */}
-              {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-[var(--color-bg-card)] rounded-md shadow-lg border border-[var(--color-border)] z-50">
-                  <div className="p-4 text-sm text-[var(--color-text-secondary)]">
-                    Notifications will be displayed here
-                  </div>
-                </div>
-              )}
+              {/* Notification Dropdown */}
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+              />
             </div>
 
             {/* User Dropdown */}
