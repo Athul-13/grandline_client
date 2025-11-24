@@ -6,6 +6,15 @@
 import type { Notification } from './notification';
 
 /**
+ * Socket Error
+ * Error structure for socket events
+ */
+export interface SocketError {
+  message: string;
+  code?: string;
+}
+
+/**
  * Get Unread Count Request
  * Client → Server: get-unread-count
  */
