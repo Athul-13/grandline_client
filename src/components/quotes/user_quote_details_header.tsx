@@ -1,5 +1,7 @@
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../common/ui/button';
+import { ChatIcon } from '../chat/common/chat_icon';
+import { QuoteStatus } from '../../types/quotes/quote';
 import type { QuoteResponse } from '../../types/quotes/quote';
 
 interface UserQuoteDetailsHeaderProps {
@@ -7,6 +9,8 @@ interface UserQuoteDetailsHeaderProps {
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onChatClick?: () => void;
+  unreadCount?: number;
 }
 
 /**
@@ -18,7 +22,15 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
   onBack,
   onEdit,
   onDelete,
+  onChatClick,
+  unreadCount = 0,
 }) => {
+  // Chat is available when status is SUBMITTED or later
+  const isChatAvailable =
+    quoteDetails.status === QuoteStatus.SUBMITTED ||
+    quoteDetails.status === QuoteStatus.NEGOTIATING ||
+    quoteDetails.status === QuoteStatus.ACCEPTED ||
+    quoteDetails.status === QuoteStatus.PAID;
   return (
     <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
       <div className="flex items-center justify-between px-4 py-3">
@@ -38,6 +50,16 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Chat Icon with Label */}
+          {isChatAvailable && onChatClick && (
+            <ChatIcon
+              unreadCount={unreadCount}
+              onClick={onChatClick}
+              showLabel
+              label="Chat with Admin"
+            />
+          )}
+
           <Button
             variant="outline"
             size="sm"
