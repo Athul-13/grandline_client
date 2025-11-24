@@ -83,8 +83,25 @@ export const API_ENDPOINTS = {
   },
   // Chat endpoints
   chat: {
-    getMessages: (id: string) => `/quotes/${id}/chat`,
-    sendMessage: (id: string) => `/quotes/${id}/chat`,
+    list: '/chats',
+    byContext: '/chats/by-context',
+    create: '/chats',
+  },
+  // Message endpoints
+  messages: {
+    send: '/messages',
+    getByChat: (chatId: string) => `/messages/chat/${chatId}`,
+    markRead: (chatId: string) => `/messages/chat/${chatId}/mark-read`,
+    unreadCount: (chatId: string) => `/messages/chat/${chatId}/unread-count`,
+    totalUnreadCount: '/messages/unread-count',
+  },
+  // Notification endpoints
+  notifications: {
+    list: '/notifications',
+    create: '/notifications',
+    markRead: (notificationId: string) => `/notifications/${notificationId}/mark-read`,
+    markAllRead: '/notifications/mark-all-read',
+    unreadCount: '/notifications/unread-count',
   },
 } as const;
 
