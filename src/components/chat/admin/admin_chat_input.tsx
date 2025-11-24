@@ -84,6 +84,8 @@ export const AdminChatInput: React.FC<AdminChatInputProps> = ({
         setMessage('');
       } catch (error) {
         console.error('Failed to send message:', error);
+        // Message will remain in input so user can retry
+        // Error will be shown via toast or error state in parent component
       }
     }
   };

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Bell, CheckCheck, X } from 'lucide-react';
+import { Bell, CheckCheck, X, RefreshCw } from 'lucide-react';
 import { useNotificationContext } from '../../../hooks/notifications/use_notification_context';
 import { NotificationList } from './notification_list';
+import { ErrorMessage } from '../../common/ui/error_message';
 import { cn } from '../../../utils/cn';
 import type { Notification } from '../../../types/notifications/notification';
 
@@ -26,6 +27,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     notifications,
     unreadCount,
     isLoading,
+    error,
     fetchNotifications,
     markAsRead,
     markAllAsRead,
@@ -106,6 +108,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           )}
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => fetchNotifications({ page: 1, limit })}
+            disabled={isLoading}
+            className="p-1.5 rounded hover:bg-[var(--color-bg-hover)] transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh"
+          >
+            <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
+          </button>
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
@@ -124,6 +134,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="px-4 pt-2">
+          <ErrorMessage message={error} />
+        </div>
+      )}
 
       {/* Notification List */}
       <NotificationList

@@ -83,7 +83,10 @@ export const AdminChatBody: React.FC<AdminChatBodyProps> = ({
   if (isLoading && messages.length === 0) {
     return (
       <div className={cn('flex-1 flex items-center justify-center', className)}>
-        <div className="text-sm text-[var(--color-text-secondary)]">Loading messages...</div>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+          <div className="text-sm text-[var(--color-text-secondary)]">Loading messages...</div>
+        </div>
       </div>
     );
   }

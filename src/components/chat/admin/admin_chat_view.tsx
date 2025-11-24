@@ -6,6 +6,8 @@ import { useChatMessages } from '../../../hooks/chat/use_chat_messages';
 import { AdminChatHeader } from './admin_chat_header';
 import { AdminChatBody } from './admin_chat_body';
 import { AdminChatInput } from './admin_chat_input';
+import { ConnectionStatus } from '../common/connection_status';
+import { ErrorMessage } from '../../common/ui/error_message';
 import type { AdminQuoteDetails } from '../../../types/quotes/admin_quote';
 
 interface AdminChatViewProps {
@@ -23,10 +25,10 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
   const currentUserId = currentUser?.userId || '';
 
   // Socket connection
-  const { isConnected } = useSocketConnection();
+  const { isConnected, isConnecting, error: socketError, reconnect } = useSocketConnection();
 
   // Get or create chat for quote
-  const { chat, isLoading: isLoadingChat, isJoined } = useChatForQuote({
+  const { chat, isLoading: isLoadingChat, error: chatError, isJoined } = useChatForQuote({
     quoteId: quoteDetails.quoteId,
     userId: quoteDetails.user?.userId || '',
   });
@@ -35,6 +37,7 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
   const {
     messages,
     isLoading: isLoadingMessages,
+    error: messagesError,
     sendMessage,
     markAsRead,
   } = useChatMessages({
@@ -52,10 +55,45 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
   // Get other user name (user from quote)
   const otherUserName = quoteDetails.user?.fullName || 'User';
 
+  // Show error if chat failed to load
+  if (chatError && !isLoadingChat) {
+    return (
+      <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+        <AdminChatHeader quoteDetails={quoteDetails} onBack={onBack} />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <ErrorMessage message={chatError} />
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)]/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
       {/* Chat Header */}
       <AdminChatHeader quoteDetails={quoteDetails} onBack={onBack} />
+
+      {/* Connection Status */}
+      <ConnectionStatus
+        isConnected={isConnected}
+        isConnecting={isConnecting}
+        error={socketError}
+        onReconnect={reconnect}
+      />
+
+      {/* Error Message for Messages */}
+      {messagesError && (
+        <div className="px-4 pt-2">
+          <ErrorMessage message={messagesError} />
+        </div>
+      )}
 
       {/* Chat Body - Messages */}
       <AdminChatBody
