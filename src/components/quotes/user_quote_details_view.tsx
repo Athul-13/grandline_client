@@ -81,52 +81,56 @@ export const UserQuoteDetailsView: React.FC<UserQuoteDetailsViewProps> = ({
         unreadCount={unreadCount}
       />
 
-      {/* Scrollable Content Area with Bento Grid */}
+      {/* Content Area with Two Column Layout */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-5 gap-4 items-start auto-rows-min">
-          {/* Basic Info - Col 1, Row 1, 1 row span */}
-          <div className="md:col-start-1 md:row-start-1">
-            <BasicInfoBentoCard quoteDetails={quoteDetails} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
+          {/* Left Column: Basic Info, Itinerary, Amenities, Pricing */}
+          <div className="flex flex-col gap-4">
+            {/* Basic Info */}
+            <div>
+              <BasicInfoBentoCard quoteDetails={quoteDetails} />
+            </div>
+
+            {/* Itinerary - Scrollable */}
+            <div className="min-h-[250px] max-h-[400px] overflow-hidden">
+              <ItineraryBentoCard quoteDetails={quoteDetails} />
+            </div>
+
+            {/* Amenities - Scrollable */}
+            <div className="min-h-[150px] max-h-[300px] overflow-hidden">
+              <AmenitiesBentoCard
+                quoteDetails={quoteDetails}
+                amenities={amenities}
+                isLoading={isLoadingAmenities}
+              />
+            </div>
+
+            {/* Pricing */}
+            <div className="max-h-[500px]">
+              <PricingBentoCard quoteDetails={quoteDetails} />
+            </div>
           </div>
 
-          {/* Itinerary - Col 1, Row 2, 1 row span (right below Basic Info) */}
-          <div className="md:col-start-1 md:row-start-2 -mt-20">
-            <ItineraryBentoCard quoteDetails={quoteDetails} />
-          </div>
+          {/* Right Column: Passengers, Vehicles, Route */}
+          <div className="flex flex-col gap-4">
+            {/* Passengers - Scrollable */}
+            <div className="min-h-[400px] max-h-[600px] overflow-hidden">
+              <PassengersBentoCard quoteDetails={quoteDetails} />
+            </div>
 
-          {/* Amenities - Col 1, Row 3, 1 row span (below Itinerary) */}
-          <div className="md:col-start-1 md:row-start-3 -mt-4">
-            <AmenitiesBentoCard
-              quoteDetails={quoteDetails}
-              amenities={amenities}
-              isLoading={isLoadingAmenities}
-            />
-          </div>
-          
-          {/* Passengers - Col 2, Row 1, 3 row span (tall, scrollable, spans Basic Info + Itinerary + Amenity) */}
-          <div className="md:col-start-2 md:row-start-1 md:row-span-3">
-            <PassengersBentoCard quoteDetails={quoteDetails} />
-          </div>
+            {/* Vehicles - Scrollable */}
+            <div className="min-h-[150px] max-h-[250px] overflow-hidden">
+              <VehiclesBentoCard
+                quoteDetails={quoteDetails}
+                vehicles={vehicles}
+                isLoading={isLoadingVehicles}
+              />
+            </div>
 
-
-
-          {/* Pricing - Col 1, Row 4, 2 row span (spans 2 rows on left) */}
-          <div className="md:col-start-1 md:row-start-4 md:row-span-2">
-            <PricingBentoCard quoteDetails={quoteDetails} />
-          </div>
-
-          {/* Vehicles - Col 2, Row 4, 1 row span (top right box) */}
-          <div className="md:col-start-2 md:row-start-4">
-            <VehiclesBentoCard
-              quoteDetails={quoteDetails}
-              vehicles={vehicles}
-              isLoading={isLoadingVehicles}
-            />
-          </div>
-
-          {/* Route - Col 2, Row 5, 1 row span (bottom right box) */}
-          <div className="md:col-start-2 md:row-start-5 -mt-5">
-            <RouteBentoCard quoteDetails={quoteDetails} />
+            {/* Route */}
+            <div className="max-h-[200px]">
+              <RouteBentoCard quoteDetails={quoteDetails} />
+            </div>
           </div>
         </div>
       </div>
