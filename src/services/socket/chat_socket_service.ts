@@ -19,6 +19,7 @@ import type {
   TypingStoppedEvent,
   MarkAsReadSocketRequest,
   UserOnlineEvent,
+  UnreadCountUpdatedEvent,
   SocketError,
 } from '../../types/chat/chat_socket_events';
 
@@ -39,7 +40,6 @@ export const chatSocketService = {
   ): void => {
     const socket = getSocketClient();
 
-    // Set up one-time listeners
     const handleJoined = (data: JoinChatResponse) => {
       socket.off('chat-joined', handleJoined);
       socket.off('error', handleError);
@@ -92,14 +92,25 @@ export const chatSocketService = {
    * Send a message via socket
    * Client → Server: send-message
    * Server → Client: message-sent
+   * Supports both existing chats (chatId) and new chats (contextType + contextId)
    */
   sendMessage: (
-    chatId: string,
-    content: string,
+    data: {
+      chatId?: string;
+      contextType?: string;
+      contextId?: string;
+      content: string;
+    },
     onSent?: (message: MessageSentEvent) => void,
     onError?: (error: SocketError) => void
   ): void => {
     const socket = getSocketClient();
+
+    if (!socket.connected) {
+      console.error('[ChatSocketService] Cannot send message: socket not connected');
+      onError?.({ message: 'Socket not connected', code: 'NOT_CONNECTED' });
+      return;
+    }
 
     const handleSent = (message: MessageSentEvent) => {
       socket.off('message-sent', handleSent);
@@ -108,6 +119,7 @@ export const chatSocketService = {
     };
 
     const handleError = (error: SocketError) => {
+      console.error('[ChatSocketService] Error sending message:', error);
       socket.off('message-sent', handleSent);
       socket.off('error', handleError);
       onError?.(error);
@@ -116,7 +128,7 @@ export const chatSocketService = {
     socket.once('message-sent', handleSent);
     socket.once('error', handleError);
 
-    socket.emit('send-message', { chatId, content } as SendMessageSocketRequest);
+    socket.emit('send-message', data as SendMessageSocketRequest);
   },
 
   /**
@@ -140,7 +152,7 @@ export const chatSocketService = {
   /**
    * Mark messages as read via socket
    * Client → Server: mark-as-read
-   * Server → Client: message-read
+   * Server → Client: message-read (emitted for all messages in chat)
    */
   markAsRead: (
     chatId: string,
@@ -150,9 +162,9 @@ export const chatSocketService = {
     const socket = getSocketClient();
 
     const handleRead = (data: MessageReadEvent) => {
-      socket.off('message-read', handleRead);
-      socket.off('error', handleError);
-      onRead?.(data);
+      if (data.chatId === chatId) {
+        onRead?.(data);
+      }
     };
 
     const handleError = (error: SocketError) => {
@@ -161,10 +173,17 @@ export const chatSocketService = {
       onError?.(error);
     };
 
-    socket.once('message-read', handleRead);
+    // Keep listener active (not once) since multiple messages may be marked as read
+    socket.on('message-read', handleRead);
     socket.once('error', handleError);
 
     socket.emit('mark-as-read', { chatId } as MarkAsReadSocketRequest);
+
+    // Clean up listener after a short delay (messages should be marked quickly)
+    setTimeout(() => {
+      socket.off('message-read', handleRead);
+      socket.off('error', handleError);
+    }, 2000);
   },
 
   /**
@@ -173,8 +192,21 @@ export const chatSocketService = {
    */
   onMessageSent: (callback: (message: MessageSentEvent) => void): (() => void) => {
     const socket = getSocketClient();
-    socket.on('message-sent', callback);
-    return () => socket.off('message-sent', callback);
+    
+    if (!socket.connected) {
+      console.warn('[ChatSocketService] Socket not connected when setting up message-sent listener');
+    }
+    
+    // Store the actual listener function so we can properly remove it
+    const listener = (message: MessageSentEvent) => {
+      callback(message);
+    };
+    
+    socket.on('message-sent', listener);
+    
+    return () => {
+      socket.off('message-sent', listener);
+    };
   },
 
   /**
@@ -183,8 +215,21 @@ export const chatSocketService = {
    */
   onMessageDelivered: (callback: (data: MessageDeliveredEvent) => void): (() => void) => {
     const socket = getSocketClient();
-    socket.on('message-delivered', callback);
-    return () => socket.off('message-delivered', callback);
+    
+    if (!socket.connected) {
+      console.warn('[ChatSocketService] Socket not connected when setting up message-delivered listener');
+    }
+    
+    // Store the actual listener function so we can properly remove it
+    const listener = (data: MessageDeliveredEvent) => {
+      callback(data);
+    };
+    
+    socket.on('message-delivered', listener);
+    
+    return () => {
+      socket.off('message-delivered', listener);
+    };
   },
 
   /**
@@ -193,8 +238,21 @@ export const chatSocketService = {
    */
   onMessageRead: (callback: (data: MessageReadEvent) => void): (() => void) => {
     const socket = getSocketClient();
-    socket.on('message-read', callback);
-    return () => socket.off('message-read', callback);
+    
+    if (!socket.connected) {
+      console.warn('[ChatSocketService] Socket not connected when setting up message-read listener');
+    }
+    
+    // Store the actual listener function so we can properly remove it
+    const listener = (data: MessageReadEvent) => {
+      callback(data);
+    };
+    
+    socket.on('message-read', listener);
+    
+    return () => {
+      socket.off('message-read', listener);
+    };
   },
 
   /**
@@ -223,8 +281,39 @@ export const chatSocketService = {
    */
   onUserOnline: (callback: (data: UserOnlineEvent) => void): (() => void) => {
     const socket = getSocketClient();
-    socket.on('user-online', callback);
-    return () => socket.off('user-online', callback);
+    
+    if (!socket.connected) {
+      console.warn('[ChatSocketService] Socket not connected when setting up user-online listener');
+    }
+    
+    // Store the actual listener function so we can properly remove it
+    const listener = (data: UserOnlineEvent) => {
+      callback(data);
+    };
+    
+    socket.on('user-online', listener);
+    
+    return () => {
+      socket.off('user-online', listener);
+    };
+  },
+
+  /**
+   * Listen for unread count updates
+   * Server → Client: unread-count-updated
+   */
+  onUnreadCountUpdated: (callback: (data: UnreadCountUpdatedEvent) => void): (() => void) => {
+    const socket = getSocketClient();
+    
+    if (!socket.connected) {
+      console.warn('[ChatSocketService] Socket not connected when setting up unread-count-updated listener');
+    }
+    
+    socket.on('unread-count-updated', callback);
+    
+    return () => {
+      socket.off('unread-count-updated', callback);
+    };
   },
 
   /**

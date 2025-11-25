@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, CheckCheck, X, RefreshCw } from 'lucide-react';
 import { useNotificationContext } from '../../../hooks/notifications/use_notification_context';
 import { NotificationList } from './notification_list';
 import { ErrorMessage } from '../../common/ui/error_message';
 import { cn } from '../../../utils/cn';
 import type { Notification } from '../../../types/notifications/notification';
+import { notificationService } from '../../../services/api/notification_service';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -24,50 +25,78 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   className,
 }) => {
   const {
-    notifications,
     unreadCount,
-    isLoading,
-    error,
-    fetchNotifications,
     markAsRead,
     markAllAsRead,
   } = useNotificationContext();
 
+  // Local state for dropdown-specific notifications (to avoid conflicts with global context)
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 20;
+  const initialLoadRef = useRef(false);
 
   // Fetch notifications when dropdown opens
   useEffect(() => {
-    if (isOpen) {
-      fetchNotifications({ page: 1, limit });
+    if (isOpen && !initialLoadRef.current) {
+      initialLoadRef.current = true;
+      handleFetchNotifications(1, true);
+    } else if (!isOpen) {
+      // Reset when dropdown closes
+      initialLoadRef.current = false;
       setPage(1);
       setHasMore(true);
     }
-  }, [isOpen, fetchNotifications]);
+  }, [isOpen]);
 
-  // Auto-refresh notifications list when new notifications arrive (if dropdown is open)
-  useEffect(() => {
-    if (isOpen && notifications.length > 0) {
-      // Refresh the list to show new notifications at the top
-      // The context already updates notifications via socket, so we just need to ensure we're showing the latest
-      fetchNotifications({ page: 1, limit });
+  const handleFetchNotifications = async (pageNum: number, replace: boolean = false) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await notificationService.getNotifications({ page: pageNum, limit });
+      
+      if (replace || pageNum === 1) {
+        setNotifications(response.notifications);
+      } else {
+        // Append for pagination, avoiding duplicates
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.notificationId));
+          const newNotifications = response.notifications.filter(
+            (n) => !existingIds.has(n.notificationId)
+          );
+          return [...prev, ...newNotifications];
+        });
+      }
+      
+      setHasMore(response.hasMore);
+      setPage(pageNum);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch notifications';
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || errorMessage.includes('session')) {
+        setNotifications([]);
+        setError(null);
+      } else {
+        console.error('Failed to fetch notifications:', err);
+        setError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, [notifications.length, isOpen, fetchNotifications, limit]);
+  };
+
+  const handleRefresh = () => {
+    handleFetchNotifications(1, true);
+  };
 
   const handleLoadMore = async () => {
     if (isLoading || !hasMore) return;
 
     const nextPage = page + 1;
-    try {
-      await fetchNotifications({ page: nextPage, limit });
-      setPage(nextPage);
-      // Note: The API response should indicate if there are more notifications
-      // For now, we'll assume hasMore based on the number of notifications returned
-      // This should be updated based on actual API response structure
-    } catch (error) {
-      console.error('Failed to load more notifications:', error);
-    }
+    await handleFetchNotifications(nextPage, false);
   };
 
   const handleMarkAllAsRead = async () => {
@@ -109,7 +138,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => fetchNotifications({ page: 1, limit })}
+            onClick={handleRefresh}
             disabled={isLoading}
             className="p-1.5 rounded hover:bg-[var(--color-bg-hover)] transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh"

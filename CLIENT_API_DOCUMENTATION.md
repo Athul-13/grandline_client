@@ -531,41 +531,6 @@ socket.emit('leave-chat', { chatId: 'chat_789' });
 
 ---
 
-##### `create-chat`
-Create a new chat via socket (alternative to REST API).
-
-**Payload:**
-```typescript
-{
-  contextType: string;        // e.g., "quote"
-  contextId: string;          // e.g., quote ID
-  participantType: ParticipantType;
-  participants: Array<{
-    userId: string;
-    participantType: ParticipantType;
-  }>;
-}
-```
-
-**Example:**
-```typescript
-socket.emit('create-chat', {
-  contextType: 'quote',
-  contextId: 'quote_123',
-  participantType: 'admin_user',
-  participants: [
-    { userId: 'user_123', participantType: 'admin_user' },
-    { userId: 'admin_456', participantType: 'admin_user' }
-  ]
-});
-```
-
-**Server Response Events:**
-- `chat-created` - Chat created successfully
-- `error` - Failed to create chat
-
----
-
 #### Server → Client Events
 
 ##### `chat-joined`
@@ -677,32 +642,9 @@ socket.on('error', (error: { message: string; code?: string }) => {
 
 ### Message Socket Events
 
-#### Client → Server Events
+> **Note**: Message mutations (send, mark as read) are now handled via REST API. Socket events are automatically emitted by the server after successful REST operations for real-time notifications. Socket events are only used for real-time-only features like typing indicators.
 
-##### `send-message`
-Send a message in real-time (alternative to REST API).
-
-**Payload:**
-```typescript
-{
-  chatId: string;
-  content: string;  // Max 5000 characters
-}
-```
-
-**Example:**
-```typescript
-socket.emit('send-message', {
-  chatId: 'chat_789',
-  content: 'Hello, this is a real-time message!'
-});
-```
-
-**Server Response Events:**
-- `message-sent` - Message sent successfully
-- `error` - Failed to send message
-
----
+#### Client → Server Events (Real-time Only)
 
 ##### `typing-start`
 Indicate that the user is typing in a chat.
@@ -740,28 +682,9 @@ socket.emit('typing-stop', { chatId: 'chat_789' });
 
 ---
 
-##### `mark-as-read`
-Mark messages in a chat as read (alternative to REST API).
-
-**Payload:**
-```typescript
-{
-  chatId: string;
-}
-```
-
-**Example:**
-```typescript
-socket.emit('mark-as-read', { chatId: 'chat_789' });
-```
-
-**Server Response Events:**
-- `message-read` - Messages marked as read
-- `error` - Failed to mark as read
-
----
-
 #### Server → Client Events
+
+> **Note**: These events are automatically emitted by the server after successful REST API operations (POST /messages, POST /messages/chat/:chatId/mark-read, POST /chats). You don't need to send these events from the client.
 
 ##### `message-sent`
 Emitted when a message is successfully sent.
@@ -1103,7 +1026,10 @@ socket.on('message-delivered', ({ messageId }) => {
 });
 
 // 3. Recipient views chat and marks as read
-socket.emit('mark-as-read', { chatId: 'chat_789' });
+fetch('/api/v1/messages/chat/chat_789/mark-read', {
+  method: 'POST',
+  credentials: 'include'
+});
 // Status: READ (double blue tick)
 ```
 
@@ -1111,10 +1037,18 @@ socket.emit('mark-as-read', { chatId: 'chat_789' });
 
 ## Integration Notes
 
+### Architecture Overview
+- **REST API**: All mutations (send message, mark as read, create chat) are handled via REST endpoints
+- **Socket.io**: Used only for real-time notifications and features:
+  - Real-time message notifications (emitted automatically after REST operations)
+  - Typing indicators
+  - Presence management (join/leave chat)
+- **Real-time Updates**: After successful REST operations, the server automatically emits socket events to connected clients for real-time UI updates
+
 ### Quote Integration
 - Chat becomes available when quote status is `SUBMITTED` or later
 - Check `chatAvailable` and `chatId` fields in quote response
-- Use `contextType: 'quote'` and `contextId: <quoteId>` when creating chats
+- Use `contextType: 'quote'` and `contextId: <quoteId>` when creating chats via REST API
 
 ### CORS Configuration
 - Ensure `credentials: true` is set in Socket.io client options

@@ -8,6 +8,7 @@ interface UseChatForQuoteParams {
   userId?: string; // User ID from the quote (for future use when creating chats)
   currentUserId?: string; // Current authenticated user ID (for future use)
   currentUserRole?: 'user' | 'admin'; // Current user role (for future use)
+  autoJoin?: boolean; // Whether to automatically join chat room when chat is available (default: false)
 }
 
 interface UseChatForQuoteReturn {
@@ -25,7 +26,7 @@ interface UseChatForQuoteReturn {
  * Gets or creates chat, manages socket room joining/leaving
  */
 export const useChatForQuote = (params: UseChatForQuoteParams): UseChatForQuoteReturn => {
-  const { quoteId } = params;
+  const { quoteId, autoJoin = false } = params;
   // userId, currentUserId, currentUserRole reserved for future use when creating chats
 
   const [chat, setChat] = useState<Chat | null>(null);
@@ -90,12 +91,12 @@ export const useChatForQuote = (params: UseChatForQuoteParams): UseChatForQuoteR
     fetchChat();
   }, [fetchChat]);
 
-  // Auto-join chat when it's available
+  // Auto-join chat when it's available (only if autoJoin is true)
   useEffect(() => {
-    if (chat?.chatId && !isJoined) {
+    if (autoJoin && chat?.chatId && !isJoined) {
       joinChat();
     }
-  }, [chat?.chatId, isJoined, joinChat]);
+  }, [autoJoin, chat?.chatId, isJoined, joinChat]);
 
   // Cleanup: leave chat on unmount
   useEffect(() => {

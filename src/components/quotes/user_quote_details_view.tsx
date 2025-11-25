@@ -36,10 +36,11 @@ export const UserQuoteDetailsView: React.FC<UserQuoteDetailsViewProps> = ({
   const { vehicles, isLoading: isLoadingVehicles } = useQuoteVehicles(quoteDetails.selectedVehicles);
   const { amenities, isLoading: isLoadingAmenities } = useQuoteAmenities(quoteDetails.selectedAmenities);
 
-  // Get chat for quote
+  // Get chat for quote (autoJoin: false - only fetch chat data, don't join room)
   const { chat } = useChatForQuote({
     quoteId: quoteDetails.quoteId,
     userId: quoteDetails.userId,
+    autoJoin: false,
   });
 
   // Get unread count for chat

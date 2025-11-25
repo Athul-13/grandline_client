@@ -29,14 +29,24 @@ export const NotificationList: React.FC<NotificationListProps> = ({
   const listRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const hasInitializedRef = useRef(false);
 
   // Infinite scroll: observe the load more trigger
+  // Add a small delay to prevent immediate triggering when component mounts
   useEffect(() => {
     if (!hasMore || isLoading || !onLoadMore) return;
 
+    // Prevent observer from triggering immediately on mount
+    if (!hasInitializedRef.current) {
+      const timer = setTimeout(() => {
+        hasInitializedRef.current = true;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
+        if (entries[0]?.isIntersecting && hasInitializedRef.current) {
           onLoadMore();
         }
       },
@@ -55,6 +65,13 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       }
     };
   }, [hasMore, isLoading, onLoadMore]);
+
+  // Reset initialization flag when notifications change significantly
+  useEffect(() => {
+    if (notifications.length === 0) {
+      hasInitializedRef.current = false;
+    }
+  }, [notifications.length]);
 
   if (isLoading && notifications.length === 0) {
     return (

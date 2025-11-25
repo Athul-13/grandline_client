@@ -27,11 +27,19 @@ export const UserChatView: React.FC<UserChatViewProps> = ({ quoteDetails, onBack
   // Socket connection
   const { isConnected, isConnecting, error: socketError, reconnect } = useSocketConnection();
 
-  // Get or create chat for quote
-  const { chat, isLoading: isLoadingChat, error: chatError, isJoined } = useChatForQuote({
+  // Get or create chat for quote (autoJoin: false - we'll join explicitly when view opens)
+  const { chat, isLoading: isLoadingChat, error: chatError, isJoined, joinChat, refetch: refetchChat } = useChatForQuote({
     quoteId: quoteDetails.quoteId,
     userId: quoteDetails.userId,
+    autoJoin: false,
   });
+
+  // Explicitly join chat room when chat view opens and chat is available
+  useEffect(() => {
+    if (chat?.chatId && !isJoined && isConnected) {
+      joinChat();
+    }
+  }, [chat?.chatId, isJoined, isConnected, joinChat]);
 
   // Fetch and manage messages
   const {
@@ -39,18 +47,17 @@ export const UserChatView: React.FC<UserChatViewProps> = ({ quoteDetails, onBack
     isLoading: isLoadingMessages,
     error: messagesError,
     sendMessage,
-    markAsRead,
   } = useChatMessages({
     chatId: chat?.chatId || null,
+    quoteId: quoteDetails.quoteId,
+    contextType: 'quote',
+    isJoined,
+    onChatCreated: () => {
+      // Refetch chat after first message creates it
+      refetchChat();
+    },
     autoFetch: true,
   });
-
-  // Mark messages as read when viewing chat
-  useEffect(() => {
-    if (chat?.chatId && isJoined && messages.length > 0) {
-      markAsRead();
-    }
-  }, [chat?.chatId, isJoined, messages.length, markAsRead]);
 
   // Show error if chat failed to load
   if (chatError && !isLoadingChat) {
@@ -145,7 +152,7 @@ export const UserChatView: React.FC<UserChatViewProps> = ({ quoteDetails, onBack
       <AdminChatInput
         onSendMessage={sendMessage}
         chatId={chat?.chatId || null}
-        disabled={isLoadingChat || isLoadingMessages || !isConnected || !chat?.chatId}
+        disabled={isLoadingChat || isLoadingMessages || !isConnected}
       />
     </div>
   );

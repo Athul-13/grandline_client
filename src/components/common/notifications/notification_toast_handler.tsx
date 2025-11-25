@@ -53,7 +53,7 @@ export const NotificationToastHandler: React.FC = () => {
           ),
           {
             id: `notification-${notification.notificationId}`,
-            duration: 5000,
+            duration: 3000,
             position: 'top-right',
             icon: getNotificationIcon(),
           }

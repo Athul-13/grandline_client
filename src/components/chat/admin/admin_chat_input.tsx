@@ -69,9 +69,9 @@ export const AdminChatInput: React.FC<AdminChatInputProps> = ({
   }, [chatId]);
 
   const handleSend = async () => {
-    if (message.trim() && !disabled && chatId) {
-      // Stop typing indicator
-      if (isTypingRef.current) {
+    if (message.trim() && !disabled) {
+      // Stop typing indicator (only if chatId exists)
+      if (chatId && isTypingRef.current) {
         chatSocketService.stopTyping(chatId);
         isTypingRef.current = false;
       }
@@ -117,7 +117,7 @@ export const AdminChatInput: React.FC<AdminChatInputProps> = ({
         />
         <button
           onClick={handleSend}
-          disabled={disabled || !message.trim() || !chatId}
+          disabled={disabled || !message.trim()}
           className="p-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Send message"
         >

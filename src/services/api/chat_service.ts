@@ -8,11 +8,8 @@ import type {
   CreateChatResponse,
 } from '../../types/chat/chat';
 import type {
-  SendMessageRequest,
-  SendMessageResponse,
   GetChatMessagesParams,
   GetChatMessagesResponse,
-  MarkMessagesAsReadResponse,
   ChatUnreadCountResponse,
   TotalUnreadCountResponse,
 } from '../../types/chat/message';
@@ -59,19 +56,6 @@ export const chatService = {
   },
 
   /**
-   * Send a message in a chat
-   * POST /messages
-   * Note: Server auto-creates chat if it doesn't exist
-   */
-  sendMessage: async (data: SendMessageRequest): Promise<SendMessageResponse> => {
-    const response = await grandlineAxiosClient.post<SendMessageResponse>(
-      API_ENDPOINTS.messages.send,
-      data
-    );
-    return response.data;
-  },
-
-  /**
    * Get messages for a specific chat with pagination
    * GET /messages/chat/:chatId?page=1&limit=20
    */
@@ -96,17 +80,6 @@ export const chatService = {
       : API_ENDPOINTS.messages.getByChat(chatId);
 
     const response = await grandlineAxiosClient.get<GetChatMessagesResponse>(url);
-    return response.data;
-  },
-
-  /**
-   * Mark all unread messages in a chat as read
-   * POST /messages/chat/:chatId/mark-read
-   */
-  markMessagesAsRead: async (chatId: string): Promise<MarkMessagesAsReadResponse> => {
-    const response = await grandlineAxiosClient.post<MarkMessagesAsReadResponse>(
-      API_ENDPOINTS.messages.markRead(chatId)
-    );
     return response.data;
   },
 

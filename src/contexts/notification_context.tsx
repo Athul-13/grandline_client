@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useAppSelector } from '../store/hooks';
 import type { Notification } from '../types/notifications/notification';
 import type { GetUserNotificationsParams } from '../types/notifications/notification';
 import { notificationService } from '../services/api/notification_service';
@@ -25,27 +26,58 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check authentication status
+  const { isAuthenticated, isLoading: isAuthLoading } = useAppSelector((state) => state.auth);
   const { isConnected } = useSocketConnection();
 
   // Fetch notifications
   const fetchNotifications = useCallback(async (params?: GetUserNotificationsParams) => {
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await notificationService.getNotifications(params);
-      setNotifications(response.notifications);
+      // For page 1, replace the array. For subsequent pages, append (handled by caller if needed)
+      const page = params?.page || 1;
+      if (page === 1) {
+        setNotifications(response.notifications);
+      } else {
+        // For pagination, append new notifications (avoiding duplicates)
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.notificationId));
+          const newNotifications = response.notifications.filter(
+            (n) => !existingIds.has(n.notificationId)
+          );
+          return [...prev, ...newNotifications];
+        });
+      }
       setUnreadCount(response.unreadCount);
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch notifications');
+      // Don't show error if it's a 401 (user not authenticated)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch notifications';
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || errorMessage.includes('session')) {
+        setNotifications([]);
+        setUnreadCount(0);
+        setError(null);
+      } else {
+        console.error('Failed to fetch notifications:', err);
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Mark notification as read
   const markAsRead = useCallback(async (notificationId: string) => {
+    if (!isAuthenticated) return;
+
     try {
       await notificationService.markNotificationAsRead(notificationId);
       setNotifications((prev) =>
@@ -55,34 +87,54 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      console.error('Failed to mark notification as read:', err);
+      // Don't log 401 errors
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (!errorMessage.includes('401') && !errorMessage.includes('Unauthorized')) {
+        console.error('Failed to mark notification as read:', err);
+      }
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
+    if (!isAuthenticated) return;
+
     try {
       await notificationService.markAllNotificationsAsRead();
       setNotifications((prev) => prev.map((notif) => ({ ...notif, isRead: true })));
       setUnreadCount(0);
     } catch (err) {
-      console.error('Failed to mark all notifications as read:', err);
+      // Don't log 401 errors
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (!errorMessage.includes('401') && !errorMessage.includes('Unauthorized')) {
+        console.error('Failed to mark all notifications as read:', err);
+      }
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch unread count
   const refetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
+
     try {
       const response = await notificationService.getUnreadCount();
       setUnreadCount(response.unreadCount);
     } catch (err) {
-      console.error('Failed to fetch unread count:', err);
+      // Don't show error or log if it's a 401 (user not authenticated)
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (!errorMessage.includes('401') && !errorMessage.includes('Unauthorized') && !errorMessage.includes('session')) {
+        console.error('Failed to fetch unread count:', err);
+      }
+      setUnreadCount(0);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Set up socket listeners for real-time notifications
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isAuthenticated || !isConnected) return;
 
     // Listen for new notifications
     const cleanupNotificationReceived = notificationSocketService.onNotificationReceived(
@@ -121,12 +173,19 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       cleanupNotificationReceived();
       cleanupUnreadCountUpdated();
     };
-  }, [isConnected]);
+  }, [isAuthenticated, isConnected]);
 
-  // Fetch initial unread count on mount
+  // Fetch initial unread count on mount (only when authenticated)
   useEffect(() => {
-    refetchUnreadCount();
-  }, [refetchUnreadCount]);
+    if (!isAuthLoading && isAuthenticated) {
+      refetchUnreadCount();
+    } else if (!isAuthLoading && !isAuthenticated) {
+      // Clear notifications and unread count when not authenticated
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(null);
+    }
+  }, [isAuthenticated, isAuthLoading, refetchUnreadCount]);
 
   const value: NotificationContextValue = {
     notifications,

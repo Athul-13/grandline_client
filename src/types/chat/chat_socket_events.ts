@@ -83,9 +83,12 @@ export interface UserOnlineEvent {
 /**
  * Send Message via Socket Request
  * Client → Server: send-message
+ * Either chatId OR (contextType + contextId) must be provided
  */
 export interface SendMessageSocketRequest {
-  chatId: string;
+  chatId?: string;  // Required if chat exists
+  contextType?: string;  // Required for first message (e.g., "quote", "admin", "direct")
+  contextId?: string;  // Required for first message (e.g., quote ID or user ID)
   content: string;  // Max 5000 characters
 }
 
@@ -154,5 +157,15 @@ export interface TypingStoppedEvent {
  */
 export interface MarkAsReadSocketRequest {
   chatId: string;
+}
+
+/**
+ * Unread Count Updated Event
+ * Server → Client: unread-count-updated
+ */
+export interface UnreadCountUpdatedEvent {
+  chatId: string;
+  unreadCount: number;
+  totalUnreadCount: number;
 }
 

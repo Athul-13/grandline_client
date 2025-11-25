@@ -33,9 +33,17 @@ export interface Message {
 /**
  * Send Message Request
  * POST /messages
+ * 
+ * For first message (chat doesn't exist yet):
+ * - Send contextType, contextId, and content (server auto-creates chat)
+ * 
+ * For subsequent messages (chat exists):
+ * - Send chatId and content
  */
 export interface SendMessageRequest {
-  chatId: string;
+  chatId?: string;  // Required if chat exists
+  contextType?: string;  // Required for first message (e.g., "quote")
+  contextId?: string;  // Required for first message (e.g., quote ID)
   content: string;  // Max 5000 characters
 }
 

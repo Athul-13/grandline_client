@@ -27,11 +27,19 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
   // Socket connection
   const { isConnected, isConnecting, error: socketError, reconnect } = useSocketConnection();
 
-  // Get or create chat for quote
-  const { chat, isLoading: isLoadingChat, error: chatError, isJoined } = useChatForQuote({
+  // Get or create chat for quote (autoJoin: false - we'll join explicitly when view opens)
+  const { chat, isLoading: isLoadingChat, error: chatError, isJoined, joinChat, refetch: refetchChat } = useChatForQuote({
     quoteId: quoteDetails.quoteId,
     userId: quoteDetails.user?.userId || '',
+    autoJoin: false,
   });
+
+  // Explicitly join chat room when chat view opens and chat is available
+  useEffect(() => {
+    if (chat?.chatId && !isJoined && isConnected) {
+      joinChat();
+    }
+  }, [chat?.chatId, isJoined, isConnected, joinChat]);
 
   // Fetch and manage messages
   const {
@@ -42,15 +50,33 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
     markAsRead,
   } = useChatMessages({
     chatId: chat?.chatId || null,
+    quoteId: quoteDetails.quoteId,
+    contextType: 'quote',
+    isJoined,
+    onChatCreated: () => {
+      // Refetch chat after first message creates it
+      refetchChat();
+    },
     autoFetch: true,
   });
 
-  // Mark messages as read when viewing chat
+  // Debug: Check input disabled state
   useEffect(() => {
-    if (chat?.chatId && isJoined && messages.length > 0) {
-      markAsRead();
-    }
-  }, [chat?.chatId, isJoined, messages.length, markAsRead]);
+    const disabled = isLoadingChat || isLoadingMessages || !isConnected;
+    console.log('🔍 Chat Input Debug (Admin):', {
+      isLoadingChat,
+      isLoadingMessages,
+      isConnected,
+      chatId: chat?.chatId,
+      chat: chat,
+      disabled,
+      reasons: {
+        'Loading Chat': isLoadingChat,
+        'Loading Messages': isLoadingMessages,
+        'Not Connected': !isConnected,
+      },
+    });
+  }, [isLoadingChat, isLoadingMessages, isConnected, chat]);
 
   // Get other user name (user from quote)
   const otherUserName = quoteDetails.user?.fullName || 'User';
@@ -108,7 +134,7 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
       <AdminChatInput
         onSendMessage={sendMessage}
         chatId={chat?.chatId || null}
-        disabled={isLoadingChat || isLoadingMessages || !isConnected || !chat?.chatId}
+        disabled={isLoadingChat || isLoadingMessages || !isConnected}
       />
     </div>
   );

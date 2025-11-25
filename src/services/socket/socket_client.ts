@@ -4,8 +4,7 @@
  */
 
 import { io, type Socket } from 'socket.io-client';
-import { API_BASE_URL } from '../../constants/api';
-
+import { SOCKET_BASE_URL } from '../../constants/api';
 /**
  * Socket.io Client Instance
  * Singleton instance for the application
@@ -21,8 +20,12 @@ export const getSocketClient = (): Socket => {
     return socketInstance;
   }
 
-  // Create new socket connection
-  socketInstance = io(API_BASE_URL, {
+  // If socket exists but not connected, return it (listeners will work once it connects)
+  if (socketInstance) {
+    return socketInstance;
+  }
+
+  socketInstance = io(SOCKET_BASE_URL, {
     withCredentials: true,
     transports: ['websocket', 'polling'],
     reconnection: true,
@@ -32,33 +35,16 @@ export const getSocketClient = (): Socket => {
     timeout: 20000,
   });
 
-  // Connection event handlers
-  socketInstance.on('connect', () => {
-    console.log('Socket.io connected:', socketInstance?.id);
-  });
-
-  socketInstance.on('disconnect', (reason) => {
-    console.log('Socket.io disconnected:', reason);
-  });
-
   socketInstance.on('connect_error', (error) => {
-    console.error('Socket.io connection error:', error);
-  });
-
-  socketInstance.on('reconnect', (attemptNumber) => {
-    console.log('Socket.io reconnected after', attemptNumber, 'attempts');
-  });
-
-  socketInstance.on('reconnect_attempt', (attemptNumber) => {
-    console.log('Socket.io reconnection attempt:', attemptNumber);
+    console.error('[SocketClient] Socket.io connection error:', error);
   });
 
   socketInstance.on('reconnect_error', (error) => {
-    console.error('Socket.io reconnection error:', error);
+    console.error('[SocketClient] Socket.io reconnection error:', error);
   });
 
   socketInstance.on('reconnect_failed', () => {
-    console.error('Socket.io reconnection failed');
+    console.error('[SocketClient] Socket.io reconnection failed');
   });
 
   return socketInstance;
@@ -66,9 +52,12 @@ export const getSocketClient = (): Socket => {
 
 /**
  * Disconnect Socket.io client
+ * Properly cleans up all event listeners and disconnects the socket
  */
 export const disconnectSocket = (): void => {
   if (socketInstance) {
+    // Remove all event listeners to prevent "disconnected port object" errors
+    socketInstance.removeAllListeners();
     socketInstance.disconnect();
     socketInstance = null;
   }
