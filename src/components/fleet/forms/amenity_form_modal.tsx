@@ -9,6 +9,7 @@ import { useAmenityMutations } from '../../../hooks/fleet/use_amenity_mutations'
 import type { Amenity } from '../../../types/fleet/amenity';
 import { amenityFormSchema, type AmenityFormData } from '../../../types/fleet/amenity_form';
 import toast from 'react-hot-toast';
+import { sanitizeErrorMessage } from '../../../utils/error_sanitizer';
 
 interface AmenityFormModalProps {
   isOpen: boolean;
@@ -129,7 +130,8 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
       
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save amenity');
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 

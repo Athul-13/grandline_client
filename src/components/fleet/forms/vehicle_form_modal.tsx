@@ -20,6 +20,7 @@ import { vehicleTypeService } from '../../../services/api/vehicle_type_service';
 import { amenityService } from '../../../services/api/amenity_service';
 import { VehicleFormFields } from './vehicle_form_fields';
 import toast from 'react-hot-toast';
+import { sanitizeErrorMessage } from '../../../utils/error_sanitizer';
 
 interface VehicleFormModalProps {
   isOpen: boolean;
@@ -247,7 +248,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       await handleAddImages(files);
       toast.success(`${files.length} image(s) added. Uploading...`);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add images';
+      const errorMessage = sanitizeErrorMessage(error);
       toast.error(errorMessage);
       setImagesError(errorMessage);
     }
@@ -262,8 +263,9 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       await vehicleService.deleteImages({ urls: [url] });
       setExistingImages((prev) => prev.filter((img) => img !== url));
       toast.success('Image removed');
-    } catch {
-      toast.error('Failed to remove image');
+    } catch (error) {
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 
@@ -336,7 +338,8 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       }
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : `Failed to ${mode === 'add' ? 'create' : 'update'} vehicle`);
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 

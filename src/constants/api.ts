@@ -6,6 +6,13 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 /**
+ * Socket.io Base URL
+ * Used for socket.io connection
+ */
+export const SOCKET_BASE_URL =
+  import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+
+/**
  * API Endpoints
  * Organized by feature/resource
  */
@@ -83,8 +90,23 @@ export const API_ENDPOINTS = {
   },
   // Chat endpoints
   chat: {
-    getMessages: (id: string) => `/quotes/${id}/chat`,
-    sendMessage: (id: string) => `/quotes/${id}/chat`,
+    list: '/chats',
+    byContext: '/chats/by-context',
+    create: '/chats',
+  },
+  // Message endpoints
+  messages: {
+    getByChat: (chatId: string) => `/messages/chat/${chatId}`,
+    unreadCount: (chatId: string) => `/messages/chat/${chatId}/unread-count`,
+    totalUnreadCount: '/messages/unread-count',
+  },
+  // Notification endpoints
+  notifications: {
+    list: '/notifications',
+    create: '/notifications',
+    markRead: (notificationId: string) => `/notifications/${notificationId}/mark-read`,
+    markAllRead: '/notifications/mark-all-read',
+    unreadCount: '/notifications/unread-count',
   },
 } as const;
 

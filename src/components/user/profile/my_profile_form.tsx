@@ -148,7 +148,8 @@ export const MyProfileForm: React.FC = () => {
         toast.success(t('profile.myProfile.imageUploaded') || 'Profile picture uploaded successfully');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('profile.myProfile.uploadError') || 'Failed to upload image');
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
     
     setCropModalOpen(false);
@@ -190,7 +191,8 @@ export const MyProfileForm: React.FC = () => {
       
       toast.success(t('profile.myProfile.updateSuccess') || 'Profile updated successfully');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('profile.myProfile.updateError') || 'Failed to update profile');
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 

@@ -153,21 +153,24 @@ export const AdminQuotesPage: React.FC = () => {
           <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
               {/* Include Deleted Toggle */}
-              <div className="flex items-center gap-2">
+              <button
+                onClick={() => updateFilters({ includeDeleted: !includeDeleted })}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border transition-colors',
+                  includeDeleted
+                    ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-primary)]'
+                    : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]'
+                )}
+              >
                 <input
                   type="checkbox"
-                  id="includeDeleted"
                   checked={includeDeleted}
-                  onChange={(e) => updateFilters({ includeDeleted: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  onChange={() => {}} // Handled by button onClick
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-4 h-4 cursor-pointer"
                 />
-                <label
-                  htmlFor="includeDeleted"
-                  className="text-sm text-[var(--color-text-primary)] cursor-pointer"
-                >
-                  Include Deleted
-                </label>
-              </div>
+                <span>Include Deleted</span>
+              </button>
 
               {/* Status Filter */}
               <div className="relative" ref={statusFilterRef}>

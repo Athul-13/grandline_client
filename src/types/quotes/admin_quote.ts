@@ -18,6 +18,7 @@ export interface AdminQuoteListItem {
   currentStep: number;
   totalPrice: number | null | undefined;
   createdAt: Date | string;
+  isDeleted?: boolean;
   user: {
     fullName: string;
     email: string;
