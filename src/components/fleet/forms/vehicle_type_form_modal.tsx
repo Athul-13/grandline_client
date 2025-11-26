@@ -10,6 +10,7 @@ import type { VehicleType } from '../../../types/fleet/vehicle_type';
 import { vehicleTypeFormSchema, type VehicleTypeFormData } from '../../../types/fleet/vehicle_type_form';
 import { cn } from '../../../utils/cn';
 import toast from 'react-hot-toast';
+import { sanitizeErrorMessage } from '../../../utils/error_sanitizer';
 
 interface VehicleTypeFormModalProps {
   isOpen: boolean;
@@ -130,7 +131,8 @@ export const VehicleTypeFormModal: React.FC<VehicleTypeFormModalProps> = ({
       
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save category');
+      const errorMessage = sanitizeErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 

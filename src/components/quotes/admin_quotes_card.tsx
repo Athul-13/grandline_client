@@ -28,12 +28,15 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
   onSelectChange,
   onCardClick,
 }) => {
+  const isDeleted = quote.isDeleted === true;
+
   return (
     <div
       className={cn(
-        "bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors",
+        "bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors relative",
         isSelected && "bg-[var(--color-bg-secondary)] border-[var(--color-primary)]"
       )}
+      style={isDeleted ? { boxShadow: 'inset 0 0 0 1px rgba(239, 68, 68, 0.3)' } : undefined}
       onClick={onCardClick}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
