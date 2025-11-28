@@ -88,9 +88,17 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* User Management */}
+      {/* User Management - handles both list and details */}
       <Route
         path="user-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminUserManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+      <Route
+        path="user-management/:id"
         element={
           <ProtectedAdminLayoutRoute>
             <AdminUserManagementPage />

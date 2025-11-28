@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
   // Admin endpoints
   admin: {
     users: '/admin/users',
+    userDetails: (id: string) => `/admin/users/${id}`,
     bookings: '/admin/bookings',
     buses: '/admin/buses',
     routes: '/admin/routes',

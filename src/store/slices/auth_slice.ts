@@ -93,7 +93,22 @@ export const checkAuthAsync = createAsyncThunk(
       if (!user) {
         throw new Error('No user data found');
       }
-      return user;
+
+      // If user data exists, attempt to refresh the token to validate it
+      // This ensures the token in httpOnly cookies is still valid
+      try {
+        await authService.refreshToken(); // Just validate token, don't use response
+        // Refresh successful - token is valid, return the localStorage user
+        return user;
+      } catch (refreshError) {
+        // Token refresh failed - token is expired or invalid
+        // Clear localStorage and reject
+        removeEncryptedItem('user');
+        const errorMessage =
+          (refreshError as { message?: string })?.message ||
+          (refreshError instanceof Error ? refreshError.message : 'Token refresh failed');
+        return rejectWithValue(errorMessage);
+      }
     } catch (error: unknown) {
       const errorMessage =
         (error as { message?: string })?.message ||
@@ -252,11 +267,15 @@ const authSlice = createSlice({
         // Don't set loading state for refresh to avoid UI flicker
       })
       .addCase(refreshTokenAsync.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        // Refresh token endpoint only validates/refreshes tokens, doesn't return user data
+        // Preserve existing user data if refresh response has no user
+        if (action.payload.user) {
+          state.user = action.payload.user;
+          setEncryptedItem('user', action.payload.user);
+        }
+        // If no user in response, keep existing state.user (don't clear it)
         state.isAuthenticated = true;
         state.error = null;
-        // Store encrypted user data in localStorage after successful refresh
-        setEncryptedItem('user', action.payload.user);
       })
       .addCase(refreshTokenAsync.rejected, (state) => {
         // Refresh failed - don't update state here, let axios interceptor handle it

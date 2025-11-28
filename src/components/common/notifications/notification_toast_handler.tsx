@@ -32,7 +32,7 @@ export const NotificationToastHandler: React.FC = () => {
           switch (notification.type) {
             case NotificationType.CHAT_MESSAGE:
               return <MessageSquare className="w-5 h-5" />;
-            default:
+            default:  
               return <Bell className="w-5 h-5" />;
           }
         };
@@ -55,7 +55,6 @@ export const NotificationToastHandler: React.FC = () => {
             id: `notification-${notification.notificationId}`,
             duration: 3000,
             position: 'top-right',
-            icon: getNotificationIcon(),
           }
         );
       }

@@ -47,7 +47,6 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
     isLoading: isLoadingMessages,
     error: messagesError,
     sendMessage,
-    markAsRead,
   } = useChatMessages({
     chatId: chat?.chatId || null,
     quoteId: quoteDetails.quoteId,

@@ -150,7 +150,9 @@ grandlineAxiosClient.interceptors.response.use(
         if (typeof window !== 'undefined') {
           // Role-based redirect
           const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
-          if (!window.location.pathname.includes('/login')) {
+          const currentPath = window.location.pathname;
+          // Prevent redirect loop - only redirect if not already on login page
+          if (!currentPath.includes('/login') && !currentPath.includes('/admin/login')) {
             window.location.href = redirectPath;
           }
         }
@@ -207,7 +209,9 @@ grandlineAxiosClient.interceptors.response.use(
           if (typeof window !== 'undefined') {
             // Role-based redirect
             const redirectPath = userRole === 'admin' ? ROUTES.admin.login : ROUTES.login;
-            if (!window.location.pathname.includes('/login')) {
+            const currentPath = window.location.pathname;
+            // Prevent redirect loop - only redirect if not already on login page
+            if (!currentPath.includes('/login') && !currentPath.includes('/admin/login')) {
               window.location.href = redirectPath;
             }
           }

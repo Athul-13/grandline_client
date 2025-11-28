@@ -137,7 +137,8 @@ export const useSocketConnection = (): UseSocketConnectionReturn => {
         socketRef.current = null;
       }
     };
-  }, [isAuthenticated, isAuthLoading, initializeSocket, removeEventListeners]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isAuthLoading]); // initializeSocket and removeEventListeners are stable callbacks
 
   return {
     socket,

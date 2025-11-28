@@ -36,6 +36,7 @@ export const ROUTES = {
     reservations: '/admin/reservations',
     fleetManagement: '/admin/fleet-management',
     userManagement: '/admin/user-management',
+    userDetails: (id: string) => `/admin/user-management/${id}`,
     driverManagement: '/admin/driver-management',
     supportConcerns: '/admin/support-concerns',
     settings: '/admin/settings',
