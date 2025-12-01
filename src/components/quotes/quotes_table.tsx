@@ -12,6 +12,7 @@ import { QuotesCard } from './quotes_card';
 import { QuotesTableActionHeader } from './quotes_table_action_header';
 import { UserQuoteDetailsView } from './user_quote_details_view';
 import { useQuoteDetails } from '../../hooks/quotes/use_quote_details';
+import { TableSkeleton, QuoteDetailsSkeleton } from '../common/ui/loaders';
 import { Edit, Trash2 } from 'lucide-react';
 
 interface QuotesTableProps {
@@ -164,13 +165,7 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
   // Quote Details View
   if (quoteId) {
     if (isLoadingDetails) {
-      return (
-        <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-          </div>
-        </div>
-      );
+      return <QuoteDetailsSkeleton variant="user" />;
     }
 
     if (detailsError || !quoteDetails) {
@@ -217,9 +212,18 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-[var(--color-text-secondary)]">Loading quotes...</p>
-      </div>
+      <TableSkeleton
+        hasCheckbox
+        columns={[
+          {}, // Trip Name - auto width
+          {}, // Type - auto width
+          {}, // Status - auto width
+          {}, // Created Date - auto width
+          {}, // Start Location - auto width
+          {}, // End Location - auto width
+        ]}
+        rowCount={5}
+      />
     );
   }
 

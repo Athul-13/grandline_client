@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import { useAppSelector } from '../../store/hooks';
 import { ROUTES } from '../../constants/routes';
 
@@ -13,12 +16,22 @@ interface ProtectedRouteProps {
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAppSelector((state) => state.auth);
+  const [minDelayPassed, setMinDelayPassed] = useState(false);
 
-  // Show loading state while checking authentication
-  if (isLoading) {
+  // Ensure spinner shows for at least 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinDelayPassed(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show loading state while checking authentication or during minimum delay
+  if (isLoading || !minDelayPassed) {
     return (
       <div className="min-h-screen bg-(--color-bg-primary) flex items-center justify-center">
-        <div className="text-(--color-text-primary)">Loading...</div>
+        <Spin indicator={<LoadingOutlined spin />} size="large" />
       </div>
     );
   }
