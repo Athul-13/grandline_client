@@ -185,7 +185,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       setUnreadCount(0);
       setError(null);
     }
-  }, [isAuthenticated, isAuthLoading, refetchUnreadCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isAuthLoading]); // refetchUnreadCount is stable and only depends on isAuthenticated
 
   const value: NotificationContextValue = {
     notifications,

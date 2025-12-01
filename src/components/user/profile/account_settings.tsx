@@ -5,6 +5,12 @@ import { useTheme } from '../../../hooks/use_theme';
 import { getSettings, saveSettings } from '../../../utils/settings';
 import type { Language } from '../../../constants/languages';
 import toast from 'react-hot-toast';
+import { useDeleteAccount } from '../../../hooks/user/use_delete_account';
+import { DeleteAccountModal } from './delete_account_modal';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../../constants/routes';
+import { useAppDispatch } from '../../../store/hooks';
+import { logoutAsync } from '../../../store/slices/auth_slice';
 
 /**
  * Account Settings Component
@@ -24,6 +30,10 @@ export const AccountSettings: React.FC = () => {
   const [language, setLanguage] = useState<Language>(contextLanguage);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(getValidTheme(contextTheme));
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { deleteAccount, isLoading: isDeleting } = useDeleteAccount();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -57,6 +67,19 @@ export const AccountSettings: React.FC = () => {
       toast.error(t('profile.accountSettings.saveError'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async (password: string) => {
+    const response = await deleteAccount(password);
+    if (response) {
+      toast.success(response.message || 'Account deleted successfully');
+      // Logout and redirect to home
+      await dispatch(logoutAsync()).unwrap();
+      navigate(ROUTES.home);
+    } else {
+      // Error is handled by the hook and will be shown in the modal
+      throw new Error('Failed to delete account');
     }
   };
 
@@ -169,6 +192,36 @@ export const AccountSettings: React.FC = () => {
           {isSaving ? t('profile.accountSettings.saving') : t('profile.accountSettings.saveSettings')}
         </Button>
       </div>
+
+      {/* Delete Account Section */}
+      <div className="border-t border-[var(--color-border)] pt-4 sm:pt-6 mt-4 sm:mt-6">
+        <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] mb-3 sm:mb-4">
+          Danger Zone
+        </h2>
+        <div className="p-4 border border-amber-300 dark:border-amber-800 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+          <p className="text-sm text-[var(--color-text-primary)] mb-2">
+            Deactivate your account. You will be logged out immediately.
+          </p>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            You can reactivate your account later by registering again with the same email address.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => setShowDeleteModal(true)}
+            className="border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+            disabled={isDeleting}
+          >
+            Deactivate Account
+          </Button>
+        </div>
+      </div>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteAccount}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

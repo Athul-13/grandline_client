@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAppDispatch } from './store/hooks';
@@ -9,10 +9,14 @@ import { NotificationToastHandler } from './components/common/notifications/noti
 
 function App() {
   const dispatch = useAppDispatch();
+  const hasCheckedAuth = useRef(false);
 
-  // Check authentication status on app load
+  // Check authentication status on app load (only once)
   useEffect(() => {
-    dispatch(checkAuthAsync());
+    if (!hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+      dispatch(checkAuthAsync());
+    }
   }, [dispatch]);
 
   return (
