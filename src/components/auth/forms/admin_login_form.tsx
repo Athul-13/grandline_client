@@ -72,6 +72,32 @@ export const AdminLoginForm: React.FC = () => {
       // Sanitize error message
       const sanitizedMessage = sanitizeErrorMessage(err);
       logErrorForDev(err, sanitizedMessage);
+
+      // Check for account status errors
+      const errorLower = sanitizedMessage.toLowerCase();
+      const errorData = err && typeof err === 'object' && 'data' in err ? (err as { data?: unknown }).data : null;
+      
+      // Check if error contains account inactive message
+      if (
+        errorLower.includes('account is inactive') ||
+        errorLower.includes('inactive') ||
+        (errorData && typeof errorData === 'object' && 'code' in errorData && errorData.code === 'ACCOUNT_INACTIVE')
+      ) {
+        toast.error('Your account is inactive. Please contact support.');
+        return;
+      }
+
+      // Check if error contains account blocked message
+      if (
+        errorLower.includes('account has been blocked') ||
+        errorLower.includes('account is blocked') ||
+        errorLower.includes('blocked') ||
+        (errorData && typeof errorData === 'object' && 'code' in errorData && errorData.code === 'ACCOUNT_BLOCKED')
+      ) {
+        toast.error('Your account has been blocked. Please contact support.');
+        return;
+      }
+
       toast.error(sanitizedMessage);
     }
   };

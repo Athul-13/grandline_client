@@ -5,6 +5,7 @@ import { AuthenticationBentoCard } from './details/authentication_bento_card';
 
 interface AdminUserDetailsViewProps {
   userDetails: AdminUserDetails;
+  onStatusChange?: () => void; // Callback to refetch user details after status change
 }
 
 /**
@@ -14,6 +15,7 @@ interface AdminUserDetailsViewProps {
  */
 export const AdminUserDetailsView: React.FC<AdminUserDetailsViewProps> = ({
   userDetails,
+  onStatusChange,
 }) => {
   if (!userDetails) {
     return (
@@ -36,7 +38,7 @@ export const AdminUserDetailsView: React.FC<AdminUserDetailsViewProps> = ({
         {/* Right Column: Account Info and Authentication */}
         <div className="flex flex-col gap-4">
           <div>
-            <AccountInfoBentoCard userDetails={userDetails} />
+            <AccountInfoBentoCard userDetails={userDetails} onStatusChange={onStatusChange} />
           </div>
           <div>
             <AuthenticationBentoCard userDetails={userDetails} />

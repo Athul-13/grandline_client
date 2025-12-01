@@ -88,7 +88,7 @@ export const AdminUsersTable: React.FC<AdminUsersTableProps> = ({
   }, [selectedUserIds]);
   
   // User details state
-  const { userDetails, isLoading: isLoadingDetails, error: detailsError } = useAdminUserDetails(userId || '');
+  const { userDetails, isLoading: isLoadingDetails, error: detailsError, refetch: refetchUserDetails } = useAdminUserDetails(userId || '');
 
   // Selection handlers
   const handleSelectUser = useCallback((userId: string, isSelected: boolean) => {
@@ -297,6 +297,7 @@ export const AdminUsersTable: React.FC<AdminUsersTableProps> = ({
         <div className="flex-1 min-h-0 overflow-y-auto">
           <AdminUserDetailsView
             userDetails={userDetails}
+            onStatusChange={refetchUserDetails}
           />
         </div>
       );

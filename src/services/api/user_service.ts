@@ -103,5 +103,32 @@ export const userService = {
     );
     return response.data;
   },
+
+  /**
+   * Change user status (admin only)
+   * PATCH /api/v1/admin/users/:userId/status
+   */
+  changeUserStatus: async (
+    userId: string,
+    data: { status: string }
+  ): Promise<{ success: boolean; message: string; user: AdminUserDetailsResponse['user'] }> => {
+    const response = await grandlineAxiosClient.patch<{ success: boolean; message: string; user: AdminUserDetailsResponse['user'] }>(
+      API_ENDPOINTS.admin.changeUserStatus(userId),
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Delete user account (self-service)
+   * DELETE /api/v1/user/account
+   */
+  deleteAccount: async (password: string): Promise<{ message: string }> => {
+    const response = await grandlineAxiosClient.delete<{ message: string }>(
+      API_ENDPOINTS.users.deleteAccount,
+      { data: { password } }
+    );
+    return response.data;
+  },
 };
 

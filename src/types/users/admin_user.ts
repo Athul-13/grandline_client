@@ -86,3 +86,32 @@ export interface AdminUserDetailsResponse {
  */
 export type AdminUserDetails = AdminUserDetailsResponse['user'];
 
+/**
+ * Change User Status Request
+ * PATCH /api/v1/admin/users/:userId/status
+ */
+export interface ChangeUserStatusRequest {
+  status: UserStatusType;
+}
+
+/**
+ * Change User Status Response
+ * PATCH /api/v1/admin/users/:userId/status
+ * Backend response structure: { success: true, message: string, user: {...} }
+ */
+export interface ChangeUserStatusResponse {
+  success: boolean;
+  message: string;
+  user: {
+    userId: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    profilePicture: string;
+    role: 'user' | 'admin';
+    status: UserStatusType;
+    isVerified: boolean;
+    updatedAt: Date | string;
+  };
+}
+

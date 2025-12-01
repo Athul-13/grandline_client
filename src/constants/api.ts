@@ -41,11 +41,13 @@ export const API_ENDPOINTS = {
     updateProfile: '/user/profile',
     changePassword: '/user/change-password',
     uploadProfileUrl: '/user/profile/upload-url',
+    deleteAccount: '/user/account',
   },
   // Admin endpoints
   admin: {
     users: '/admin/users',
     userDetails: (id: string) => `/admin/users/${id}`,
+    changeUserStatus: (id: string) => `/admin/users/${id}/status`,
     bookings: '/admin/bookings',
     buses: '/admin/buses',
     routes: '/admin/routes',
