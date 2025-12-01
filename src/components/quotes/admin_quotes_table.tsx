@@ -11,6 +11,7 @@ import { ROUTES } from '../../constants/routes';
 import { useSearchContext } from '../../hooks/use_search_context';
 import { ConfirmationModal } from '../common/modals/confirmation_modal';
 import { Button } from '../common/ui/button';
+import { TableSkeleton, QuoteDetailsSkeleton } from '../common/ui/loaders';
 import type { AdminQuoteListItem } from '../../types/quotes/admin_quote';
 
 interface AdminQuotesTableProps {
@@ -193,13 +194,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   // Quote Details View
   if (quoteId) {
     if (isLoadingDetails) {
-      return (
-        <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-          </div>
-        </div>
-      );
+      return <QuoteDetailsSkeleton variant="admin" />;
     }
 
     if (detailsError || !quoteDetails) {
@@ -234,9 +229,22 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-      </div>
+      <TableSkeleton
+        hasCheckbox
+        isTableFixed
+        minWidth="800px"
+        columns={[
+          { width: '12%' },
+          { width: '15%' },
+          { width: '8%' },
+          { width: '10%' },
+          { width: '15%' },
+          { width: '18%' },
+          { width: '12%' },
+          { width: '12%' },
+        ]}
+        rowCount={5}
+      />
     );
   }
 

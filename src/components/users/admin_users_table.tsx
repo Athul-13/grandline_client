@@ -8,6 +8,7 @@ import { AdminUsersCard } from './admin_users_card';
 import { useAdminUserDetails } from '../../hooks/users/use_admin_user_details';
 import { ROUTES } from '../../constants/routes';
 import { useSearchContext } from '../../hooks/use_search_context';
+import { TableSkeleton, UserDetailsSkeleton } from '../common/ui/loaders';
 import type { AdminUserListItem } from '../../types/users/admin_user';
 
 interface AdminUsersTableProps {
@@ -144,9 +145,20 @@ export const AdminUsersTable: React.FC<AdminUsersTableProps> = ({
   // Loading state (no header when loading)
   if (isLoading && !userId) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-      </div>
+      <TableSkeleton
+        hasCheckbox
+        isTableFixed
+        minWidth="800px"
+        columns={[
+          { width: '18%' },
+          { width: '20%' },
+          { width: '15%' },
+          { width: '12%' },
+          { width: '10%' },
+          { width: '15%' },
+        ]}
+        rowCount={5}
+      />
     );
   }
 
@@ -267,9 +279,7 @@ export const AdminUsersTable: React.FC<AdminUsersTableProps> = ({
       if (isLoadingDetails) {
         return (
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-            </div>
+            <UserDetailsSkeleton />
           </div>
         );
       }
