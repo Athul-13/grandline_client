@@ -5,6 +5,7 @@ import { VehicleTypeListCard } from '../cards/vehicle_type_list_card';
 import { AmenityCard } from '../cards/amenity_card';
 import { VehicleCard } from '../cards/vehicle_card';
 import { VehicleListCard } from '../cards/vehicle_list_card';
+import { FleetCardSkeleton, FleetListCardSkeleton } from '../../common/ui/loaders';
 import type { VehicleType } from '../../../types/fleet/vehicle_type';
 import type { Vehicle } from '../../../types/fleet/vehicle';
 import type { Amenity } from '../../../types/fleet/amenity';
@@ -63,9 +64,15 @@ export const FleetViewContent: React.FC<FleetViewContentProps> = ({
       {view === 'categories' ? (
         // Categories View
         isLoadingVehicleTypes ? (
-          <div className="col-span-full flex items-center justify-center py-12">
-            <p className="text-[var(--color-text-secondary)]">Loading categories...</p>
-          </div>
+          viewMode === 'grid' ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <FleetCardSkeleton key={i} variant="vehicleType" />
+            ))
+          ) : (
+            Array.from({ length: 5 }).map((_, i) => (
+              <FleetListCardSkeleton key={i} />
+            ))
+          )
         ) : vehicleTypes.length === 0 ? (
           <div className="col-span-full flex items-center justify-center py-12">
             <p className="text-[var(--color-text-secondary)]">No categories yet.</p>
@@ -94,9 +101,9 @@ export const FleetViewContent: React.FC<FleetViewContentProps> = ({
       ) : view === 'amenities' ? (
         // Amenities View (grid only)
         isLoadingAmenities ? (
-          <div className="col-span-full flex items-center justify-center py-12">
-            <p className="text-[var(--color-text-secondary)]">Loading amenities...</p>
-          </div>
+          Array.from({ length: 6 }).map((_, i) => (
+            <FleetCardSkeleton key={i} variant="amenity" />
+          ))
         ) : amenities.length === 0 ? (
           <div className="col-span-full flex items-center justify-center py-12">
             <p className="text-[var(--color-text-secondary)]">No amenities yet.</p>
@@ -114,14 +121,15 @@ export const FleetViewContent: React.FC<FleetViewContentProps> = ({
       ) : (
         // Vehicles View
         isLoadingVehicles ? (
-          <div
-            className={cn(
-              viewMode === 'grid' ? 'col-span-full' : '',
-              'flex items-center justify-center py-12'
-            )}
-          >
-            <p className="text-[var(--color-text-secondary)]">Loading vehicles...</p>
-          </div>
+          viewMode === 'grid' ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <FleetCardSkeleton key={i} variant="vehicle" />
+            ))
+          ) : (
+            Array.from({ length: 5 }).map((_, i) => (
+              <FleetListCardSkeleton key={i} />
+            ))
+          )
         ) : vehicles.length === 0 ? (
           <div
             className={cn(
