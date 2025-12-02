@@ -184,3 +184,38 @@ export interface UpdateDriverStatusResponse {
   };
 }
 
+/**
+ * Driver Statistics Request
+ * GET /api/v1/admin/drivers/statistics
+ */
+export interface DriverStatisticsRequest {
+  timeRange?: 'all_time' | '7_days' | '30_days' | 'custom';
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string
+}
+
+/**
+ * Driver Statistics Response
+ * GET /api/v1/admin/drivers/statistics
+ */
+export interface DriverStatisticsResponse {
+  success: boolean;
+  statistics: {
+    totalDrivers: number;
+    availableDrivers: number;
+    offlineDrivers: number;
+    onTripDrivers: number;
+    suspendedDrivers: number;
+    blockedDrivers: number;
+    onboardedDrivers: number;
+    notOnboardedDrivers: number;
+    newDrivers: number;
+    driversByStatus: Record<string, number>;
+    timeRange: {
+      type: 'all_time' | '7_days' | '30_days' | 'custom';
+      startDate?: Date | string;
+      endDate?: Date | string;
+    };
+  };
+}
+

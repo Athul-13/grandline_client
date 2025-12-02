@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { RefreshCw, Calendar } from 'lucide-react';
+import { RefreshCw, Calendar, Users, Car } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { useLanguage } from '../../hooks/use_language';
 import { DashboardContent } from '../../components/dashboard/dashboard_content';
+import { DriverDashboardContent } from '../../components/dashboard/driver_dashboard_content';
 import { Button } from '../../components/common/ui/button';
 import { cn } from '../../utils/cn';
+
+type DashboardTab = 'users' | 'drivers';
 
 export const AdminDashboardPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<DashboardTab>('users');
   const [timeRange, setTimeRange] = useState<'all_time' | '7_days' | '30_days' | 'custom'>('all_time');
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
   const [endDate, setEndDate] = useState<string | undefined>(undefined);
@@ -74,13 +78,51 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="mb-4 flex items-center gap-2 border-b border-[var(--color-border)]">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]',
+              'flex items-center gap-2',
+              activeTab === 'users'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            )}
+          >
+            <Users className="w-4 h-4" />
+            <span>User Statistics</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('drivers')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]',
+              'flex items-center gap-2',
+              activeTab === 'drivers'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            )}
+          >
+            <Car className="w-4 h-4" />
+            <span>Driver Statistics</span>
+          </button>
+        </div>
+
         {/* Dashboard Content */}
         <div key={refreshKey}>
-          <DashboardContent
-            timeRange={timeRange}
-            startDate={startDate}
-            endDate={endDate}
-          />
+          {activeTab === 'users' ? (
+            <DashboardContent
+              timeRange={timeRange}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          ) : (
+            <DriverDashboardContent
+              timeRange={timeRange}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          )}
         </div>
       </div>
     </div>

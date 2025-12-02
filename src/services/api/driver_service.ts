@@ -10,6 +10,8 @@ import type {
   UpdateDriverResponse,
   UpdateDriverStatusRequest,
   UpdateDriverStatusResponse,
+  DriverStatisticsRequest,
+  DriverStatisticsResponse,
 } from '../../types/drivers/admin_driver';
 
 /**
@@ -100,6 +102,34 @@ export const driverService = {
     const response = await grandlineAxiosClient.delete<{ success: boolean; message: string }>(
       `${API_ENDPOINTS.admin.drivers}/${driverId}`
     );
+    return response.data;
+  },
+
+  /**
+   * Get driver statistics (admin only)
+   * GET /api/v1/admin/drivers/statistics?timeRange=7_days&startDate=...&endDate=...
+   */
+  getDriverStatistics: async (params?: DriverStatisticsRequest): Promise<DriverStatisticsResponse> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      if (params.timeRange) {
+        queryParams.append('timeRange', params.timeRange);
+      }
+      if (params.startDate) {
+        queryParams.append('startDate', params.startDate);
+      }
+      if (params.endDate) {
+        queryParams.append('endDate', params.endDate);
+      }
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString 
+      ? `${API_ENDPOINTS.admin.drivers}/statistics?${queryString}` 
+      : `${API_ENDPOINTS.admin.drivers}/statistics`;
+    
+    const response = await grandlineAxiosClient.get<DriverStatisticsResponse>(url);
     return response.data;
   },
 };
