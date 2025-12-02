@@ -1,6 +1,11 @@
 import grandlineAxiosClient from './axios_client';
 import { API_ENDPOINTS } from '../../constants/api';
-import type { CreateDriverRequest, CreateDriverResponse } from '../../types/drivers/admin_driver';
+import type {
+  CreateDriverRequest,
+  CreateDriverResponse,
+  AdminDriverListParams,
+  AdminDriverListResponse,
+} from '../../types/drivers/admin_driver';
 
 /**
  * Driver Service
@@ -15,6 +20,35 @@ export const driverService = {
       API_ENDPOINTS.admin.drivers,
       data
     );
+    return response.data;
+  },
+
+  /**
+   * Get admin drivers list (with optional pagination, search, filters, and sorting)
+   * GET /api/v1/admin/drivers?page=1&limit=20&status=available&status=offline&isOnboarded=true&search=john&sortBy=email&sortOrder=asc
+   */
+  getAdminDrivers: async (params?: AdminDriverListParams): Promise<AdminDriverListResponse> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          // Handle array values (status filter)
+          if (Array.isArray(value) && value.length > 0) {
+            value.forEach((v) => queryParams.append(key, String(v)));
+          } else if (typeof value === 'boolean') {
+            queryParams.append(key, String(value));
+          } else if (typeof value === 'string' || typeof value === 'number') {
+            queryParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ENDPOINTS.admin.drivers}?${queryString}` : API_ENDPOINTS.admin.drivers;
+    
+    const response = await grandlineAxiosClient.get<AdminDriverListResponse>(url);
     return response.data;
   },
 };
