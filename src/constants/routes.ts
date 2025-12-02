@@ -38,6 +38,7 @@ export const ROUTES = {
     userManagement: '/admin/user-management',
     userDetails: (id: string) => `/admin/user-management/${id}`,
     driverManagement: '/admin/driver-management',
+    driverDetails: (id: string) => `/admin/driver-management/${id}`,
     supportConcerns: '/admin/support-concerns',
     settings: '/admin/settings',
   },
