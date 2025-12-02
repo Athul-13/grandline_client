@@ -90,7 +90,7 @@ export const DriverStatusSection: React.FC<DriverStatusSectionProps> = ({
 
     try {
       await updateStatusMutation.mutateAsync({ status: pendingStatus });
-    } catch (error) {
+    } catch {
       // Error is handled by the hook
     } finally {
       setShowConfirmation(false);

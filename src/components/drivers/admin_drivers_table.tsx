@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Pagination } from '../common/ui/pagination';
 import { AdminDriversTableRow } from './admin_drivers_table_row';
 import { AdminDriverDetailsView } from './admin_driver_details_view';
 import { TableSkeleton, UserDetailsSkeleton } from '../common/ui/loaders';
 import { useAdminDriverDetails } from '../../hooks/drivers/use_admin_driver_details';
+import { useDeleteDriver } from '../../hooks/drivers/use_delete_driver';
+import { ConfirmationModal } from '../common/modals/confirmation_modal';
+import { Button } from '../common/ui/button';
 import { ROUTES } from '../../constants/routes';
 import type { AdminDriverListItem } from '../../types/drivers/admin_driver';
 
@@ -116,6 +119,21 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 
   // Driver details state
   const { driverDetails, isLoading: isLoadingDetails, error: detailsError, refetch: refetchDriverDetails } = useAdminDriverDetails(driverId || '');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  const deleteDriverMutation = useDeleteDriver({
+    driverId: driverId || '',
+    onSuccess: () => {
+      setShowDeleteModal(false);
+    },
+  });
+
+  // Only enable delete mutation when driverId is available
+  const handleDelete = () => {
+    if (driverId) {
+      deleteDriverMutation.mutate();
+    }
+  };
 
   // Handle back navigation
   const handleBack = () => {
@@ -181,18 +199,31 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
       return (
         <div 
           ref={headerScrollRef}
-          className="shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] h-[48px] flex items-center px-4"
+          className="shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] h-[48px] flex items-center justify-between px-4"
         >
-          <button
-            onClick={handleBack}
-            className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors mr-2"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
-          </button>
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            Driver Details
-          </h2>
+          <div className="flex items-center">
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors mr-2"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
+            </button>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              Driver Details
+            </h2>
+          </div>
+          {driverDetails && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Driver
+            </Button>
+          )}
         </div>
       );
     }
@@ -341,12 +372,30 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
-        {renderTableHeader()}
-        {renderBodyContent()}
+    <>
+      <div className="flex flex-col h-full min-h-0">
+        <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
+          {renderTableHeader()}
+          {renderBodyContent()}
+        </div>
       </div>
-    </div>
+
+      {/* Delete Confirmation Modal */}
+      {driverId && driverDetails && (
+        <ConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDelete}
+          title="Delete Driver"
+          message={`Are you sure you want to delete driver "${driverDetails.fullName}"? This action cannot be undone.`}
+          warning="The driver will be soft deleted and will no longer appear in the driver list. They will not be able to login or accept trips."
+          confirmText="Delete Driver"
+          cancelText="Cancel"
+          isLoading={deleteDriverMutation.isPending}
+          variant="danger"
+        />
+      )}
+    </>
   );
 };
 

@@ -91,5 +91,16 @@ export const driverService = {
     );
     return response.data;
   },
+
+  /**
+   * Delete driver (soft delete)
+   * DELETE /api/v1/admin/drivers/:driverId
+   */
+  deleteDriver: async (driverId: string): Promise<{ success: boolean; message: string }> => {
+    const response = await grandlineAxiosClient.delete<{ success: boolean; message: string }>(
+      `${API_ENDPOINTS.admin.drivers}/${driverId}`
+    );
+    return response.data;
+  },
 };
 
