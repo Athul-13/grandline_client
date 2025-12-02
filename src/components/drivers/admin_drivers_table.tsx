@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Pagination } from '../common/ui/pagination';
 import { AdminDriversTableRow } from './admin_drivers_table_row';
-import { TableSkeleton } from '../common/ui/loaders';
+import { AdminDriverDetailsView } from './admin_driver_details_view';
+import { TableSkeleton, UserDetailsSkeleton } from '../common/ui/loaders';
+import { useAdminDriverDetails } from '../../hooks/drivers/use_admin_driver_details';
+import { ROUTES } from '../../constants/routes';
 import type { AdminDriverListItem } from '../../types/drivers/admin_driver';
 
 interface AdminDriversTableProps {
@@ -110,6 +113,9 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 
   // Check if all drivers on current page are selected
   const allSelected = drivers.length > 0 && drivers.every((d) => selectedDriverIds.has(d.driverId));
+
+  // Driver details state
+  const { driverDetails, isLoading: isLoadingDetails, error: detailsError, refetch: refetchDriverDetails } = useAdminDriverDetails(driverId || '');
 
   // Handle back navigation
   const handleBack = () => {
@@ -269,13 +275,41 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 
   // Render body content
   const renderBodyContent = () => {
+    // Driver Details View
     if (driverId) {
-      // TODO: Driver details view will be added in next commit
-      return (
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="p-4">
-            <p className="text-[var(--color-text-secondary)]">Driver details view coming soon...</p>
+      if (isLoadingDetails) {
+        return (
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <UserDetailsSkeleton />
           </div>
+        );
+      }
+
+      if (detailsError || !driverDetails) {
+        return (
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+              <p className="text-lg font-medium text-[var(--color-text-primary)] mb-2">Error</p>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+                {detailsError || 'Driver not found'}
+              </p>
+              <button
+                onClick={handleBack}
+                className="px-4 py-2 text-sm border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex-1 min-h-0">
+          <AdminDriverDetailsView
+            driverDetails={driverDetails}
+            onStatusChange={refetchDriverDetails}
+          />
         </div>
       );
     }
@@ -296,10 +330,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
                 searchQuery="" // Will be passed from parent
                 isSelected={selectedDriverIds.has(driver.driverId)}
                 onSelectChange={(isSelected) => handleSelectDriver(driver.driverId, isSelected)}
-                onRowClick={() => {
-                  // TODO: Navigate to driver details when implemented
-                  console.log('Navigate to driver:', driver.driverId);
-                }}
+                onRowClick={() => navigate(ROUTES.admin.driverDetails(driver.driverId))}
               />
             ))}
           </tbody>
@@ -310,7 +341,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 flex-col min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
         {renderTableHeader()}
         {renderBodyContent()}
       </div>

@@ -66,7 +66,7 @@ export const AdminDriversTableRow: React.FC<AdminDriversTableRowProps> = ({
         <DriverOnboardingBadge isOnboarded={driver.isOnboarded} />
       </td>
       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
-        ${driver.salary.toFixed(2)}/hr
+        ₹{driver.salary.toFixed(2)}/hr
       </td>
       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_9%]">
         {formatDate(driver.createdAt)}

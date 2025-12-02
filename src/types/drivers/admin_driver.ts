@@ -97,3 +97,31 @@ export interface AdminDriverListParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+/**
+ * Admin Driver Details Response
+ * GET /api/v1/admin/drivers/:driverId
+ */
+export interface AdminDriverDetailsResponse {
+  success: boolean;
+  driver: {
+    driverId: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    profilePictureUrl: string;
+    licenseNumber: string;
+    licenseCardPhotoUrl: string;
+    status: DriverStatusType;
+    salary: number;
+    isOnboarded: boolean;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+  };
+}
+
+/**
+ * Admin Driver Details (alias for AdminDriverDetailsResponse['driver'])
+ * Used in components for cleaner type names
+ */
+export type AdminDriverDetails = AdminDriverDetailsResponse['driver'];
+

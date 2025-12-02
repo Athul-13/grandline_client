@@ -5,6 +5,7 @@ import type {
   CreateDriverResponse,
   AdminDriverListParams,
   AdminDriverListResponse,
+  AdminDriverDetailsResponse,
 } from '../../types/drivers/admin_driver';
 
 /**
@@ -49,6 +50,17 @@ export const driverService = {
     const url = queryString ? `${API_ENDPOINTS.admin.drivers}?${queryString}` : API_ENDPOINTS.admin.drivers;
     
     const response = await grandlineAxiosClient.get<AdminDriverListResponse>(url);
+    return response.data;
+  },
+
+  /**
+   * Get admin driver details by ID
+   * GET /api/v1/admin/drivers/:driverId
+   */
+  getAdminDriverDetails: async (driverId: string): Promise<AdminDriverDetailsResponse> => {
+    const response = await grandlineAxiosClient.get<AdminDriverDetailsResponse>(
+      `${API_ENDPOINTS.admin.drivers}/${driverId}`
+    );
     return response.data;
   },
 };
