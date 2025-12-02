@@ -309,6 +309,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
           <AdminDriverDetailsView
             driverDetails={driverDetails}
             onStatusChange={refetchDriverDetails}
+            onUpdate={refetchDriverDetails}
           />
         </div>
       );

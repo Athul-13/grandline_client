@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { userService } from '../../services/api/user_service';
-import type { AdminUserListItem, AdminUserListParams } from '../../types/users/admin_user';
-import type { PaginationMeta } from '../../types/quotes/quote';
+import type { AdminUserListParams, AdminUserListResponse } from '../../types/users/admin_user';
+import { sanitizeErrorMessage } from '../../utils/error_sanitizer';
+import { useCallback, useMemo } from 'react';
 
 interface UseAdminUsersListParams {
   page?: number;
@@ -14,24 +15,19 @@ interface UseAdminUsersListParams {
 }
 
 interface UseAdminUsersListReturn {
-  users: AdminUserListItem[];
-  pagination: PaginationMeta | null;
+  users: AdminUserListResponse['users'];
+  pagination: AdminUserListResponse['pagination'] | null;
   isLoading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => void;
 }
 
 /**
  * Hook for fetching and managing admin users list
+ * Uses React Query for caching and automatic refetching
  */
 export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUsersListReturn => {
-  const [users, setUsers] = useState<AdminUserListItem[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   // Memoize status array to prevent infinite loops from reference changes
-  // Sort and stringify to create a stable comparison value
   const statusKey = useMemo(() => {
     if (!params?.status || params.status.length === 0) {
       return '';
@@ -39,11 +35,36 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
     return [...params.status].sort().join(',');
   }, [params?.status]);
 
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+  // Build query key for React Query
+  const queryKey = useMemo(() => {
+    return [
+      'adminUsers',
+      params?.page,
+      params?.limit,
+      params?.search,
+      statusKey,
+      params?.isVerified,
+      params?.sortBy,
+      params?.sortOrder,
+    ];
+  }, [
+    params?.page,
+    params?.limit,
+    params?.search,
+    statusKey,
+    params?.isVerified,
+    params?.sortBy,
+    params?.sortOrder,
+  ]);
+
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<AdminUserListResponse, Error>({
+    queryKey: queryKey,
+    queryFn: async () => {
       const requestParams: AdminUserListParams = {
         page: params?.page || 1,
         limit: params?.limit || 20,
@@ -73,52 +94,22 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
       }
 
       const response = await userService.getAdminUsers(requestParams);
-      
-      // Handle response structure - users and pagination are at top level
-      if (response && response.success) {
-        if (Array.isArray(response.users)) {
-          setUsers(response.users);
-          setPagination(response.pagination || null);
-        } else {
-          console.error('Unexpected response structure. Expected users array but got:', response);
-          setError('Unexpected response format from server');
-          setUsers([]);
-          setPagination(null);
-        }
-      } else {
-        console.error('Invalid response:', response);
-        setError('Invalid response from server');
-        setUsers([]);
-        setPagination(null);
-      }
-    } catch (err) {
-      console.error('Failed to fetch admin users:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
-      setUsers([]);
-      setPagination(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    params?.page,
-    params?.limit,
-    params?.search,
-    statusKey, // Use memoized statusKey instead of params?.status
-    params?.isVerified,
-    params?.sortBy,
-    params?.sortOrder,
-  ]);
+      return response;
+    },
+    placeholderData: (previousData) => previousData,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  const memoizedRefetch = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return {
-    users,
-    pagination,
+    users: (data as AdminUserListResponse | undefined)?.users || [],
+    pagination: (data as AdminUserListResponse | undefined)?.pagination || null,
     isLoading,
-    error,
-    refetch: fetchUsers,
+    error: error ? sanitizeErrorMessage(error) : null,
+    refetch: memoizedRefetch,
   };
 };
 

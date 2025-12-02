@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { driverService } from '../../services/api/driver_service';
-import type { AdminDriverListItem, AdminDriverListParams } from '../../types/drivers/admin_driver';
-import type { PaginationMeta } from '../../types/quotes/quote';
+import type { AdminDriverListParams, AdminDriverListResponse } from '../../types/drivers/admin_driver';
+import { sanitizeErrorMessage } from '../../utils/error_sanitizer';
+import { useCallback, useMemo } from 'react';
 
 interface UseAdminDriversListParams {
   page?: number;
@@ -9,27 +10,23 @@ interface UseAdminDriversListParams {
   status?: string[];
   isOnboarded?: boolean;
   search?: string;
-  sortBy?: 'email' | 'fullName' | 'licenseNumber' | 'createdAt';
+  sortBy?: 'email' | 'fullName' | 'licenseNumber' | 'createdAt' | 'salary';
   sortOrder?: 'asc' | 'desc';
 }
 
 interface UseAdminDriversListReturn {
-  drivers: AdminDriverListItem[];
-  pagination: PaginationMeta | null;
+  drivers: AdminDriverListResponse['drivers'];
+  pagination: AdminDriverListResponse['pagination'] | null;
   isLoading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => void;
 }
 
 /**
  * Hook for fetching and managing admin drivers list
+ * Uses React Query for caching and automatic refetching
  */
 export const useAdminDriversList = (params?: UseAdminDriversListParams): UseAdminDriversListReturn => {
-  const [drivers, setDrivers] = useState<AdminDriverListItem[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   // Memoize status array to prevent infinite loops from reference changes
   const statusKey = useMemo(() => {
     if (!params?.status || params.status.length === 0) {
@@ -38,11 +35,36 @@ export const useAdminDriversList = (params?: UseAdminDriversListParams): UseAdmi
     return [...params.status].sort().join(',');
   }, [params?.status]);
 
-  const fetchDrivers = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
+  // Build query key for React Query
+  const queryKey = useMemo(() => {
+    return [
+      'adminDrivers',
+      params?.page,
+      params?.limit,
+      params?.search,
+      statusKey,
+      params?.isOnboarded,
+      params?.sortBy,
+      params?.sortOrder,
+    ];
+  }, [
+    params?.page,
+    params?.limit,
+    params?.search,
+    statusKey,
+    params?.isOnboarded,
+    params?.sortBy,
+    params?.sortOrder,
+  ]);
+
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<AdminDriverListResponse, Error>({
+    queryKey: queryKey,
+    queryFn: async () => {
       const requestParams: AdminDriverListParams = {
         page: params?.page || 1,
         limit: params?.limit || 20,
@@ -72,52 +94,22 @@ export const useAdminDriversList = (params?: UseAdminDriversListParams): UseAdmi
       }
 
       const response = await driverService.getAdminDrivers(requestParams);
-      
-      // Handle response structure
-      if (response && response.success) {
-        if (Array.isArray(response.drivers)) {
-          setDrivers(response.drivers);
-          setPagination(response.pagination || null);
-        } else {
-          console.error('Unexpected response structure. Expected drivers array but got:', response);
-          setError('Unexpected response format from server');
-          setDrivers([]);
-          setPagination(null);
-        }
-      } else {
-        console.error('Invalid response:', response);
-        setError('Invalid response from server');
-        setDrivers([]);
-        setPagination(null);
-      }
-    } catch (err) {
-      console.error('Failed to fetch admin drivers:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch drivers');
-      setDrivers([]);
-      setPagination(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    params?.page,
-    params?.limit,
-    params?.search,
-    statusKey, // Use memoized statusKey instead of params?.status to prevent infinite loops
-    params?.isOnboarded,
-    params?.sortBy,
-    params?.sortOrder,
-  ]);
+      return response;
+    },
+    placeholderData: (previousData) => previousData,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  useEffect(() => {
-    fetchDrivers();
-  }, [fetchDrivers]);
+  const memoizedRefetch = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return {
-    drivers,
-    pagination,
+    drivers: (data as AdminDriverListResponse | undefined)?.drivers || [],
+    pagination: (data as AdminDriverListResponse | undefined)?.pagination || null,
     isLoading,
-    error,
-    refetch: fetchDrivers,
+    error: error ? sanitizeErrorMessage(error) : null,
+    refetch: memoizedRefetch,
   };
 };
 

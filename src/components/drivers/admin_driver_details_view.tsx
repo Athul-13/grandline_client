@@ -6,6 +6,7 @@ import { DriverOnboardingSection } from './details/driver_onboarding_section';
 interface AdminDriverDetailsViewProps {
   driverDetails: AdminDriverDetails;
   onStatusChange?: () => void; // Callback to refetch driver details after status change
+  onUpdate?: () => void; // Callback to refetch driver details after update
 }
 
 /**
@@ -16,6 +17,7 @@ interface AdminDriverDetailsViewProps {
 export const AdminDriverDetailsView: React.FC<AdminDriverDetailsViewProps> = ({
   driverDetails,
   onStatusChange,
+  onUpdate,
 }) => {
   if (!driverDetails) {
     return (
@@ -33,7 +35,7 @@ export const AdminDriverDetailsView: React.FC<AdminDriverDetailsViewProps> = ({
           {/* Left Column: Profile & Basic Info */}
           <div className="flex flex-col gap-4">
             <div>
-              <DriverBasicInfoSection driverDetails={driverDetails} />
+              <DriverBasicInfoSection driverDetails={driverDetails} onUpdate={onUpdate} />
             </div>
           </div>
 

@@ -93,7 +93,7 @@ export interface AdminDriverListParams {
   status?: string[]; // Array of status values for filtering
   isOnboarded?: boolean;
   search?: string; // Search in email, fullName, phoneNumber, licenseNumber
-  sortBy?: 'email' | 'fullName' | 'licenseNumber' | 'createdAt';
+  sortBy?: 'email' | 'fullName' | 'licenseNumber' | 'createdAt' | 'salary';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -124,4 +124,36 @@ export interface AdminDriverDetailsResponse {
  * Used in components for cleaner type names
  */
 export type AdminDriverDetails = AdminDriverDetailsResponse['driver'];
+
+/**
+ * Update Driver Request
+ * PATCH /api/v1/admin/drivers/:driverId
+ */
+export interface UpdateDriverRequest {
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  licenseNumber?: string;
+  salary?: number;
+}
+
+/**
+ * Update Driver Response
+ * PATCH /api/v1/admin/drivers/:driverId
+ */
+export interface UpdateDriverResponse {
+  success: boolean;
+  message: string;
+  driver: {
+    driverId: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    licenseNumber: string;
+    status: DriverStatusType;
+    salary: number;
+    isOnboarded: boolean;
+    updatedAt: Date | string;
+  };
+}
 
