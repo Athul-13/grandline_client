@@ -1,16 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, MoreVertical, ChevronDown, Activity, Clock, ShieldOff, Ban, XCircle } from 'lucide-react';
 import { Pagination } from '../common/ui/pagination';
 import { AdminDriversTableRow } from './admin_drivers_table_row';
 import { AdminDriverDetailsView } from './admin_driver_details_view';
 import { TableSkeleton, UserDetailsSkeleton } from '../common/ui/loaders';
 import { useAdminDriverDetails } from '../../hooks/drivers/use_admin_driver_details';
 import { useDeleteDriver } from '../../hooks/drivers/use_delete_driver';
+import { useBulkDriverActions } from '../../hooks/drivers/use_bulk_driver_actions';
 import { ConfirmationModal } from '../common/modals/confirmation_modal';
 import { Button } from '../common/ui/button';
 import { ROUTES } from '../../constants/routes';
-import type { AdminDriverListItem } from '../../types/drivers/admin_driver';
+import { DriverStatus } from '../../types/drivers/admin_driver';
+import { useLanguage } from '../../hooks/use_language';
+import type { AdminDriverListItem, DriverStatusType } from '../../types/drivers/admin_driver';
 
 interface AdminDriversTableProps {
   drivers: AdminDriverListItem[];
@@ -40,6 +43,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
   showPaginationOnly = false,
   driverId,
 }) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   // Refs for syncing horizontal scroll
@@ -120,6 +124,12 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
   // Driver details state
   const { driverDetails, isLoading: isLoadingDetails, error: detailsError, refetch: refetchDriverDetails } = useAdminDriverDetails(driverId || '');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [showBulkStatusModal, setShowBulkStatusModal] = useState(false);
+  const [pendingBulkStatus, setPendingBulkStatus] = useState<DriverStatusType | null>(null);
+  const [showBulkStatusDropdown, setShowBulkStatusDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; right: number } | null>(null);
+  const bulkStatusDropdownRef = useRef<HTMLDivElement>(null);
   
   const deleteDriverMutation = useDeleteDriver({
     driverId: driverId || '',
@@ -128,12 +138,83 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
     },
   });
 
+  const { bulkDelete, bulkUpdateStatus, isDeleting: isBulkDeleting, isUpdatingStatus: isBulkUpdatingStatus } = useBulkDriverActions();
+
   // Only enable delete mutation when driverId is available
   const handleDelete = () => {
     if (driverId) {
       deleteDriverMutation.mutate();
     }
   };
+
+  const handleBulkDelete = async () => {
+    const driverIds = Array.from(selectedDriverIds);
+    await bulkDelete(driverIds);
+    setShowBulkDeleteModal(false);
+    setSelectedDriverIds(new Set());
+  };
+
+  const handleBulkStatusChange = async () => {
+    if (!pendingBulkStatus) return;
+    const driverIds = Array.from(selectedDriverIds);
+    await bulkUpdateStatus(driverIds, pendingBulkStatus);
+    setShowBulkStatusModal(false);
+    setPendingBulkStatus(null);
+    setSelectedDriverIds(new Set());
+  };
+
+  const getStatusLabel = (status: DriverStatusType): string => {
+    return t(`driver.status.${status}`);
+  };
+
+  const getStatusIcon = (status: DriverStatusType) => {
+    switch (status) {
+      case DriverStatus.AVAILABLE:
+        return <Activity className="w-4 h-4 text-green-500" />;
+      case DriverStatus.ON_TRIP:
+        return <Clock className="w-4 h-4 text-blue-500" />;
+      case DriverStatus.OFFLINE:
+        return <ShieldOff className="w-4 h-4 text-gray-500" />;
+      case DriverStatus.SUSPENDED:
+        return <Ban className="w-4 h-4 text-yellow-500" />;
+      case DriverStatus.BLOCKED:
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      default:
+        return <Activity className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  // Update dropdown position and handle outside clicks
+  useEffect(() => {
+    const updateDropdownPosition = () => {
+      if (bulkStatusDropdownRef.current && showBulkStatusDropdown) {
+        const rect = bulkStatusDropdownRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4,
+          right: window.innerWidth - rect.right,
+        });
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (bulkStatusDropdownRef.current && !bulkStatusDropdownRef.current.contains(event.target as Node)) {
+        setShowBulkStatusDropdown(false);
+      }
+    };
+
+    if (showBulkStatusDropdown) {
+      updateDropdownPosition();
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', updateDropdownPosition, true);
+      window.addEventListener('resize', updateDropdownPosition);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+      window.removeEventListener('resize', updateDropdownPosition);
+    };
+  }, [showBulkStatusDropdown]);
 
   // Handle back navigation
   const handleBack = () => {
@@ -184,10 +265,10 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <p className="text-lg font-medium text-[var(--color-text-primary)] mb-2">
-          No drivers found
+          {t('driver.list.noDriversFound')}
         </p>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          There are no drivers to display at this time.
+          {t('driver.list.noDriversToDisplay')}
         </p>
       </div>
     );
@@ -210,7 +291,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
               <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
             </button>
             <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-              Driver Details
+              {t('driver.details.title')}
             </h2>
           </div>
           {driverDetails && (
@@ -221,7 +302,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
               className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               <Trash2 className="w-4 h-4" />
-              Delete Driver
+              {t('common.deleteDriver')}
             </Button>
           )}
         </div>
@@ -236,17 +317,17 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
       >
         <div className="min-w-[1000px]">
           {selectedDriverIds.size > 0 ? (
-            <div className="flex items-center px-4 py-3 h-[48px]">
-              <div className="flex-[0_0_40px]">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-4 h-4 cursor-pointer"
-                />
-              </div>
-              <div className="flex-1 flex items-center gap-3">
+            <div className="flex items-center justify-between px-4 py-3 h-[48px]">
+              <div className="flex items-center gap-3">
+                <div className="flex-[0_0_40px]">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                </div>
                 <span className="text-sm font-semibold text-[var(--color-text-primary)]">
                   {selectedDriverIds.size} selected
                 </span>
@@ -256,6 +337,57 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
                 >
                   Deselect all
                 </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative z-[100]" ref={bulkStatusDropdownRef}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowBulkStatusDropdown(!showBulkStatusDropdown)}
+                    disabled={isBulkUpdatingStatus || isBulkDeleting}
+                    className="flex items-center gap-2"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                    {t('common.changeStatus')}
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                  {showBulkStatusDropdown && dropdownPosition && (
+                    <div 
+                      className="fixed w-48 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg shadow-lg z-[9999] p-2" 
+                      style={{ 
+                        top: `${dropdownPosition.top}px`,
+                        right: `${dropdownPosition.right}px`
+                      }}
+                    >
+                      <div className="space-y-1">
+                        {Object.values(DriverStatus).map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              setPendingBulkStatus(status);
+                              setShowBulkStatusModal(true);
+                              setShowBulkStatusDropdown(false);
+                            }}
+                            className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                          >
+                            {getStatusIcon(status)}
+                            <span>{getStatusLabel(status)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkDeleteModal(true)}
+                  disabled={isBulkDeleting || isBulkUpdatingStatus}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t('common.delete')}
+                </Button>
               </div>
             </div>
           ) : (
@@ -320,15 +452,15 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
         return (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <p className="text-lg font-medium text-[var(--color-text-primary)] mb-2">Error</p>
+              <p className="text-lg font-medium text-[var(--color-text-primary)] mb-2">{t('common.error')}</p>
               <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                {detailsError || 'Driver not found'}
+                {detailsError || t('driver.details.notFound')}
               </p>
               <button
                 onClick={handleBack}
                 className="px-4 py-2 text-sm border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
               >
-                Go Back
+                {t('common.goBack')}
               </button>
             </div>
           </div>
@@ -386,13 +518,52 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
-          title="Delete Driver"
-          message={`Are you sure you want to delete driver "${driverDetails.fullName}"? This action cannot be undone.`}
-          warning="The driver will be soft deleted and will no longer appear in the driver list. They will not be able to login or accept trips."
-          confirmText="Delete Driver"
-          cancelText="Cancel"
+          title={t('driver.delete.title')}
+          message={t('driver.delete.message', { driverName: driverDetails.fullName })}
+          warning={t('driver.delete.warning')}
+          confirmText={t('common.deleteDriver')}
+          cancelText={t('common.cancel')}
           isLoading={deleteDriverMutation.isPending}
           variant="danger"
+        />
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        onConfirm={handleBulkDelete}
+        title={t('driver.bulkDelete.title')}
+        message={t('driver.bulkDelete.message', { count: selectedDriverIds.size })}
+        warning={t('driver.bulkDelete.warning')}
+        confirmText={t('driver.bulkDelete.confirm', { count: selectedDriverIds.size })}
+        cancelText={t('common.cancel')}
+        isLoading={isBulkDeleting}
+        variant="danger"
+      />
+
+      {/* Bulk Status Update Confirmation Modal */}
+      {pendingBulkStatus && (
+        <ConfirmationModal
+          isOpen={showBulkStatusModal}
+          onClose={() => {
+            setShowBulkStatusModal(false);
+            setPendingBulkStatus(null);
+          }}
+          onConfirm={handleBulkStatusChange}
+          title={t('driver.bulkStatus.title')}
+          message={t('driver.bulkStatus.message', { count: selectedDriverIds.size, status: getStatusLabel(pendingBulkStatus) })}
+          warning={
+            pendingBulkStatus === DriverStatus.BLOCKED
+              ? t('driver.status.warning.blocked')
+              : pendingBulkStatus === DriverStatus.SUSPENDED
+              ? t('driver.status.warning.suspended')
+              : undefined
+          }
+          confirmText={t('driver.bulkStatus.confirm', { count: selectedDriverIds.size })}
+          cancelText={t('common.cancel')}
+          isLoading={isBulkUpdatingStatus}
+          variant={pendingBulkStatus === DriverStatus.BLOCKED || pendingBulkStatus === DriverStatus.SUSPENDED ? 'warning' : 'info'}
         />
       )}
     </>
