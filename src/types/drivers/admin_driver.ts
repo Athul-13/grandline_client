@@ -157,3 +157,30 @@ export interface UpdateDriverResponse {
   };
 }
 
+/**
+ * Update Driver Status Request
+ * PATCH /api/v1/admin/drivers/:driverId/status
+ */
+export interface UpdateDriverStatusRequest {
+  status: DriverStatusType;
+}
+
+/**
+ * Update Driver Status Response
+ * PATCH /api/v1/admin/drivers/:driverId/status
+ */
+export interface UpdateDriverStatusResponse {
+  success: boolean;
+  message: string;
+  driver: {
+    driverId: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    licenseNumber: string;
+    status: DriverStatusType;
+    isOnboarded: boolean;
+    updatedAt: Date | string;
+  };
+}
+
