@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     users: '/admin/users',
     userDetails: (id: string) => `/admin/users/${id}`,
     changeUserStatus: (id: string) => `/admin/users/${id}/status`,
+    userStatistics: '/admin/users/statistics',
     bookings: '/admin/bookings',
     buses: '/admin/buses',
     routes: '/admin/routes',
