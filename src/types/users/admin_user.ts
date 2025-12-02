@@ -115,3 +115,36 @@ export interface ChangeUserStatusResponse {
   };
 }
 
+/**
+ * User Statistics Request Parameters
+ * GET /api/v1/admin/users/statistics
+ */
+export interface UserStatisticsRequest {
+  timeRange?: 'all_time' | '7_days' | '30_days' | 'custom';
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string
+}
+
+/**
+ * User Statistics Response
+ * GET /api/v1/admin/users/statistics
+ */
+export interface UserStatisticsResponse {
+  success: boolean;
+  statistics: {
+    totalUsers: number;
+    activeUsers: number;
+    inactiveUsers: number;
+    blockedUsers: number;
+    verifiedUsers: number;
+    unverifiedUsers: number;
+    newUsers: number;
+    usersByStatus: Record<string, number>;
+    timeRange: {
+      type: 'all_time' | '7_days' | '30_days' | 'custom';
+      startDate?: Date | string;
+      endDate?: Date | string;
+    };
+  };
+}
+
