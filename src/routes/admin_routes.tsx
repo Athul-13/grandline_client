@@ -106,9 +106,17 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* Driver Management */}
+      {/* Driver Management - handles both list and details */}
       <Route
         path="driver-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminDriverManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+      <Route
+        path="driver-management/:id"
         element={
           <ProtectedAdminLayoutRoute>
             <AdminDriverManagementPage />

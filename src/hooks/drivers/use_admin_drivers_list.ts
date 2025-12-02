@@ -1,32 +1,32 @@
 import { useQuery } from '@tanstack/react-query';
-import { userService } from '../../services/api/user_service';
-import type { AdminUserListParams, AdminUserListResponse } from '../../types/users/admin_user';
+import { driverService } from '../../services/api/driver_service';
+import type { AdminDriverListParams, AdminDriverListResponse } from '../../types/drivers/admin_driver';
 import { sanitizeErrorMessage } from '../../utils/error_sanitizer';
 import { useCallback, useMemo } from 'react';
 
-interface UseAdminUsersListParams {
+interface UseAdminDriversListParams {
   page?: number;
   limit?: number;
   status?: string[];
-  isVerified?: boolean;
+  isOnboarded?: boolean;
   search?: string;
-  sortBy?: 'email' | 'fullName' | 'createdAt';
+  sortBy?: 'email' | 'fullName' | 'licenseNumber' | 'createdAt' | 'salary';
   sortOrder?: 'asc' | 'desc';
 }
 
-interface UseAdminUsersListReturn {
-  users: AdminUserListResponse['users'];
-  pagination: AdminUserListResponse['pagination'] | null;
+interface UseAdminDriversListReturn {
+  drivers: AdminDriverListResponse['drivers'];
+  pagination: AdminDriverListResponse['pagination'] | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
 /**
- * Hook for fetching and managing admin users list
+ * Hook for fetching and managing admin drivers list
  * Uses React Query for caching and automatic refetching
  */
-export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUsersListReturn => {
+export const useAdminDriversList = (params?: UseAdminDriversListParams): UseAdminDriversListReturn => {
   // Memoize status array to prevent infinite loops from reference changes
   const statusKey = useMemo(() => {
     if (!params?.status || params.status.length === 0) {
@@ -38,12 +38,12 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
   // Build query key for React Query
   const queryKey = useMemo(() => {
     return [
-      'adminUsers',
+      'adminDrivers',
       params?.page,
       params?.limit,
       params?.search,
       statusKey,
-      params?.isVerified,
+      params?.isOnboarded,
       params?.sortBy,
       params?.sortOrder,
     ];
@@ -52,7 +52,7 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
     params?.limit,
     params?.search,
     statusKey,
-    params?.isVerified,
+    params?.isOnboarded,
     params?.sortBy,
     params?.sortOrder,
   ]);
@@ -62,10 +62,10 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
     isLoading,
     error,
     refetch,
-  } = useQuery<AdminUserListResponse, Error>({
+  } = useQuery<AdminDriverListResponse, Error>({
     queryKey: queryKey,
     queryFn: async () => {
-      const requestParams: AdminUserListParams = {
+      const requestParams: AdminDriverListParams = {
         page: params?.page || 1,
         limit: params?.limit || 20,
       };
@@ -80,9 +80,9 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
         requestParams.status = params.status;
       }
 
-      // Add isVerified filter if provided
-      if (params?.isVerified !== undefined) {
-        requestParams.isVerified = params.isVerified;
+      // Add isOnboarded filter if provided
+      if (params?.isOnboarded !== undefined) {
+        requestParams.isOnboarded = params.isOnboarded;
       }
 
       // Add sorting parameters if provided
@@ -93,7 +93,7 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
         requestParams.sortOrder = params.sortOrder;
       }
 
-      const response = await userService.getAdminUsers(requestParams);
+      const response = await driverService.getAdminDrivers(requestParams);
       return response;
     },
     placeholderData: (previousData) => previousData,
@@ -105,8 +105,8 @@ export const useAdminUsersList = (params?: UseAdminUsersListParams): UseAdminUse
   }, [refetch]);
 
   return {
-    users: (data as AdminUserListResponse | undefined)?.users || [],
-    pagination: (data as AdminUserListResponse | undefined)?.pagination || null,
+    drivers: (data as AdminDriverListResponse | undefined)?.drivers || [],
+    pagination: (data as AdminDriverListResponse | undefined)?.pagination || null,
     isLoading,
     error: error ? sanitizeErrorMessage(error) : null,
     refetch: memoizedRefetch,
