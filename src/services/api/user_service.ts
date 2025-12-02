@@ -10,6 +10,8 @@ import type {
   AdminUserListResponse,
   AdminUserListParams,
   AdminUserDetailsResponse,
+  UserStatisticsResponse,
+  UserStatisticsRequest,
 } from '../../types/users/admin_user';
 
 /**
@@ -128,6 +130,32 @@ export const userService = {
       API_ENDPOINTS.users.deleteAccount,
       { data: { password } }
     );
+    return response.data;
+  },
+
+  /**
+   * Get user statistics (admin only)
+   * GET /api/v1/admin/users/statistics?timeRange=7_days&startDate=...&endDate=...
+   */
+  getUserStatistics: async (params?: UserStatisticsRequest): Promise<UserStatisticsResponse> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      if (params.timeRange) {
+        queryParams.append('timeRange', params.timeRange);
+      }
+      if (params.startDate) {
+        queryParams.append('startDate', params.startDate);
+      }
+      if (params.endDate) {
+        queryParams.append('endDate', params.endDate);
+      }
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ENDPOINTS.admin.users}/statistics?${queryString}` : `${API_ENDPOINTS.admin.users}/statistics`;
+    
+    const response = await grandlineAxiosClient.get<UserStatisticsResponse>(url);
     return response.data;
   },
 };
