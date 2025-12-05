@@ -89,6 +89,7 @@ export const API_ENDPOINTS = {
     calculatePricing: (id: string) => `/quotes/${id}/calculate-pricing`,
     submit: (id: string) => `/quotes/${id}/submit`,
     recommendations: '/quotes/recommendations',
+    payment: (id: string) => `/quotes/${id}/payment`,
   },
   // Event type endpoints
   eventTypes: {

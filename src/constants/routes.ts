@@ -18,6 +18,7 @@ export const ROUTES = {
   reservations: '/reservations',
   support: '/support',
   buildQuote: '/build-quote',
+  payment: (quoteId: string) => `/payment/${quoteId}`,
   profile: {
     base: '/profile',
     myProfile: '/profile/my-profile',

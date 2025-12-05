@@ -206,5 +206,24 @@ export const quoteService = {
     );
     return response.data;
   },
+
+  /**
+   * Get payment page data
+   * GET /api/v1/quotes/:id/payment
+   */
+  getPaymentPage: async (id: string): Promise<{
+    quoteId: string;
+    totalPrice: number;
+    paymentWindowExpiresAt: string | null;
+    message: string;
+  }> => {
+    const response = await grandlineAxiosClient.get<{
+      quoteId: string;
+      totalPrice: number;
+      paymentWindowExpiresAt: string | null;
+      message: string;
+    }>(API_ENDPOINTS.quotes.payment(id));
+    return response.data;
+  },
 };
 
