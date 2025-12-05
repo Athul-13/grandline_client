@@ -1,6 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import { ROUTES } from '../../constants/routes';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 interface PublicRouteProps {
   children: React.ReactElement;
@@ -20,8 +22,8 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-(--color-bg-primary) flex items-center justify-center">
-        <div className="text-(--color-text-primary)">Loading...</div>
+      <div className="absolute inset-0 bg-(--color-bg-primary)/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <Spin indicator={<LoadingOutlined spin />} size="large" />
       </div>
     );
   }

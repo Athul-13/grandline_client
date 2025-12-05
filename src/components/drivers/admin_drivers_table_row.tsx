@@ -47,14 +47,18 @@ export const AdminDriversTableRow: React.FC<AdminDriversTableRowProps> = ({
           className="w-4 h-4 cursor-pointer"
         />
       </td>
-      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%] min-w-0 overflow-hidden">
+      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-1 min-w-0 overflow-hidden">
         {highlightSearchTerm(driver.fullName, searchQuery)}
       </td>
-      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_18%] min-w-0 overflow-hidden">
-        {highlightSearchTerm(driver.email, searchQuery)}
-      </td>
-      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%] min-w-0 overflow-hidden">
-        {driver.phoneNumber ? highlightSearchTerm(driver.phoneNumber, searchQuery) : '-'}
+      <td className="px-4 py-3 text-sm flex-[0_0_20%] min-w-0 overflow-hidden">
+        <div className="flex flex-col">
+          <span className="text-[var(--color-text-primary)] font-medium">
+            {highlightSearchTerm(driver.email, searchQuery)}
+          </span>
+          <span className="text-[var(--color-text-secondary)] text-xs mt-0.5 break-all">
+            {driver.phoneNumber ? highlightSearchTerm(driver.phoneNumber, searchQuery) : '-'}
+          </span>
+        </div>
       </td>
       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%] min-w-0 overflow-hidden">
         {highlightSearchTerm(driver.licenseNumber, searchQuery)}
@@ -68,7 +72,7 @@ export const AdminDriversTableRow: React.FC<AdminDriversTableRowProps> = ({
       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
         ₹{driver.salary.toFixed(2)}/hr
       </td>
-      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_9%]">
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
         {formatDate(driver.createdAt)}
       </td>
     </tr>

@@ -210,12 +210,12 @@ export const QuoteBuilderContainer: React.FC = () => {
                       
                       // Submit quote
                       await quoteService.submitQuote(quoteId);
-                      
-                      // Redirect to quotes list page
-                      navigate('/user/quotes');
                     } catch (error) {
                       console.error('Failed to submit quote:', error);
                       // TODO: Show error message to user
+                    } finally {
+                      // Redirect to quotes list page
+                      navigate(`/quotes?quoteId=${quoteId}`);
                     }
                   }}
                   isLoading={isLoading}
