@@ -71,6 +71,7 @@ export interface AdminQuoteDetailsResponse {
   pricing?: {
     fuelPriceAtTime: number;
     averageDriverRateAtTime: number;
+    actualDriverRate?: number;
     taxPercentageAtTime: number;
     baseFare: number;
     distanceFare: number;
@@ -82,6 +83,9 @@ export interface AdminQuoteDetailsResponse {
     tax: number;
     total: number;
   };
+  assignedDriverId?: string;
+  actualDriverRate?: number;
+  quotedAt?: Date | string;
   routeData?: {
     outbound: {
       totalDistance: number;

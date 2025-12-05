@@ -13,6 +13,7 @@ export const QuoteStatus = {
   ACCEPTED: 'accepted',
   REJECTED: 'rejected',
   PAID: 'paid',
+  QUOTED: 'quoted',
 } as const;
 
 /**
@@ -50,6 +51,9 @@ export interface Quote {
   selectedAmenities: string[]; // Array of amenity IDs
   pricing?: PricingBreakdown;
   routeData?: RouteData;
+  assignedDriverId?: string;
+  actualDriverRate?: number;
+  quotedAt?: Date | string;
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -103,6 +107,7 @@ export interface RouteSegment {
 export interface PricingBreakdown {
   fuelPriceAtTime: number;
   averageDriverRateAtTime: number;
+  actualDriverRate?: number;
   taxPercentageAtTime: number;
   baseFare: number;
   distanceFare: number;
@@ -176,6 +181,9 @@ export interface QuoteResponse {
     outbound: unknown[]; // ItineraryStopDto[] - defined in itinerary.ts
     return?: unknown[]; // ItineraryStopDto[] - defined in itinerary.ts
   };
+  assignedDriverId?: string;
+  actualDriverRate?: number;
+  quotedAt?: Date | string;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

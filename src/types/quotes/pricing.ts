@@ -9,6 +9,7 @@
 export interface PricingBreakdown {
   fuelPriceAtTime: number;
   averageDriverRateAtTime: number;
+  actualDriverRate?: number;
   taxPercentageAtTime: number;
   baseFare: number;
   distanceFare: number;
