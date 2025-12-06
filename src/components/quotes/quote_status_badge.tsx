@@ -17,6 +17,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
       case QuoteStatus.SUBMITTED:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case QuoteStatus.QUOTED:
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
       case QuoteStatus.NEGOTIATING:
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case QuoteStatus.ACCEPTED:

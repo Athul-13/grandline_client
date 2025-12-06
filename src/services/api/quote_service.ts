@@ -14,6 +14,9 @@ import type {
   AdminQuoteDetailsResponse,
   UpdateQuoteStatusRequest,
   UpdateQuoteStatusResponse,
+  AssignDriverToQuoteRequest,
+  AssignDriverToQuoteResponse,
+  RecalculateQuoteResponse,
 } from '../../types/quotes/admin_quote';
 import type {
   CalculateRoutesRequest,
@@ -203,6 +206,32 @@ export const quoteService = {
     const response = await grandlineAxiosClient.put<UpdateQuoteStatusResponse>(
       API_ENDPOINTS.admin.updateQuoteStatus(id),
       data
+    );
+    return response.data;
+  },
+
+  /**
+   * Assign driver to quote (admin only)
+   * POST /api/v1/admin/quotes/:id/assign-driver
+   */
+  assignDriverToQuote: async (
+    id: string,
+    data: AssignDriverToQuoteRequest
+  ): Promise<AssignDriverToQuoteResponse> => {
+    const response = await grandlineAxiosClient.post<AssignDriverToQuoteResponse>(
+      API_ENDPOINTS.admin.assignDriver(id),
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Recalculate quote pricing (admin only)
+   * POST /api/v1/admin/quotes/:id/recalculate
+   */
+  recalculateQuote: async (id: string): Promise<RecalculateQuoteResponse> => {
+    const response = await grandlineAxiosClient.post<RecalculateQuoteResponse>(
+      API_ENDPOINTS.admin.recalculateQuote(id)
     );
     return response.data;
   },

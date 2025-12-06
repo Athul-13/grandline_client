@@ -10,6 +10,7 @@ import { VehiclesBentoCard } from './details/bento/vehicles_bento_card';
 import { AmenitiesBentoCard } from './details/bento/amenities_bento_card';
 import { PricingBentoCard } from './details/bento/pricing_bento_card';
 import { RouteBentoCard } from './details/bento/route_bento_card';
+import { PaymentWindowStatus } from './details/payment_window_status';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
 import { useUnreadCount } from '../../hooks/chat/use_unread_count';
 import type { QuoteResponse } from '../../types/quotes/quote';
@@ -83,6 +84,11 @@ export const UserQuoteDetailsView: React.FC<UserQuoteDetailsViewProps> = ({
 
       {/* Content Area with Two Column Layout */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
+        {/* Payment Window Status - Full Width */}
+        <div className="mb-4">
+          <PaymentWindowStatus quoteDetails={quoteDetails} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
           {/* Left Column: Basic Info, Itinerary, Amenities, Pricing */}
           <div className="flex flex-col gap-4">

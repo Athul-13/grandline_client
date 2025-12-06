@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserPlus, RefreshCw } from 'lucide-react';
 import { ChatIcon } from '../chat/common/chat_icon';
+import { Button } from '../common/ui/button';
 import { QuoteStatus } from '../../types/quotes/quote';
 import type { AdminQuoteDetails } from '../../types/quotes/admin_quote';
 
@@ -11,6 +12,10 @@ interface AdminQuoteDetailsHeaderProps {
   onBack: () => void;
   onStatusChange: (newStatus: 'paid' | 'submitted') => Promise<void>;
   onChatClick?: () => void;
+  onAssignDriver?: () => void;
+  onRecalculate?: () => void;
+  isAssigningDriver?: boolean;
+  isRecalculating?: boolean;
   unreadCount?: number;
 }
 
@@ -25,14 +30,27 @@ export const AdminQuoteDetailsHeader: React.FC<AdminQuoteDetailsHeaderProps> = (
   onBack,
   onStatusChange,
   onChatClick,
+  onAssignDriver,
+  onRecalculate,
+  isAssigningDriver = false,
+  isRecalculating = false,
   unreadCount = 0,
 }) => {
   // Chat is available when status is SUBMITTED or later
   const isChatAvailable =
     quoteDetails.status === QuoteStatus.SUBMITTED ||
+    quoteDetails.status === QuoteStatus.QUOTED ||
     quoteDetails.status === QuoteStatus.NEGOTIATING ||
     quoteDetails.status === QuoteStatus.ACCEPTED ||
     quoteDetails.status === QuoteStatus.PAID;
+
+  // Driver assignment available for SUBMITTED or QUOTED status
+  const canAssignDriver =
+    (quoteDetails.status === QuoteStatus.SUBMITTED || quoteDetails.status === QuoteStatus.QUOTED) &&
+    !quoteDetails.assignedDriverId;
+
+  // Recalculation available for QUOTED status
+  const canRecalculate = quoteDetails.status === QuoteStatus.QUOTED;
   return (
     <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
       <div className="flex items-center justify-between px-4 py-3">
@@ -53,6 +71,34 @@ export const AdminQuoteDetailsHeader: React.FC<AdminQuoteDetailsHeaderProps> = (
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Assign Driver Button */}
+          {canAssignDriver && onAssignDriver && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAssignDriver}
+              disabled={isAssigningDriver}
+              className="flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              {isAssigningDriver ? 'Assigning...' : 'Assign Driver'}
+            </Button>
+          )}
+
+          {/* Recalculate Button */}
+          {canRecalculate && onRecalculate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRecalculate}
+              disabled={isRecalculating}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+              {isRecalculating ? 'Recalculating...' : 'Recalculate'}
+            </Button>
+          )}
+
           {/* Chat Icon */}
           {isChatAvailable && onChatClick && (
             <ChatIcon unreadCount={unreadCount} onClick={onChatClick} />

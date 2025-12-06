@@ -58,6 +58,8 @@ export const API_ENDPOINTS = {
     quotes: '/admin/quotes',
     quoteDetails: (id: string) => `/admin/quotes/${id}`,
     updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
+    assignDriver: (id: string) => `/admin/quotes/${id}/assign-driver`,
+    recalculateQuote: (id: string) => `/admin/quotes/${id}/recalculate`,
     pricingConfig: {
       active: '/admin/pricing-config',
       create: '/admin/pricing-config',

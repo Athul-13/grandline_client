@@ -222,6 +222,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
         isUpdatingStatus={isUpdatingStatus}
         onBack={handleBack}
         onStatusChange={handleStatusChange}
+        onRefetch={refetch}
       />
     );
   }

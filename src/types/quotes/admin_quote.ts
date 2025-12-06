@@ -3,7 +3,7 @@
  * Types for admin quote list view
  */
 
-import type { QuoteStatusType, TripTypeType, PaginationMeta } from './quote';
+import type { QuoteStatusType, TripTypeType, PaginationMeta, QuoteResponse } from './quote';
 import type { ItineraryStopDto } from './itinerary';
 
 /**
@@ -142,6 +142,31 @@ export interface UpdateQuoteStatusResponse {
   };
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+/**
+ * Assign Driver to Quote Request
+ * POST /api/v1/admin/quotes/:id/assign-driver
+ */
+export interface AssignDriverToQuoteRequest {
+  driverId: string;
+}
+
+/**
+ * Assign Driver to Quote Response
+ * POST /api/v1/admin/quotes/:id/assign-driver
+ */
+export type AssignDriverToQuoteResponse = QuoteResponse;
+
+/**
+ * Recalculate Quote Response
+ * POST /api/v1/admin/quotes/:id/recalculate
+ */
+export interface RecalculateQuoteResponse {
+  success: boolean;
+  message: string;
+  requiresVehicleReselection?: boolean;
+  quote?: QuoteResponse;
 }
 
 /**
