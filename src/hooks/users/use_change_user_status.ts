@@ -47,7 +47,7 @@ export const useChangeUserStatus = (params?: UseChangeUserStatusParams): UseChan
     try {
       const response = await mutation.mutateAsync({ userId, data });
       return response;
-    } catch (err) {
+    } catch  {
       return null;
     }
   };

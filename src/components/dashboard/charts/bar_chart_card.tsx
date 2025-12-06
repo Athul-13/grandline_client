@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { chartColors, getColorByIndex } from '../../../utils/chart_colors';
+import { chartColors } from '../../../utils/chart_colors';
 
 interface BarChartData {
   name: string;
