@@ -60,6 +60,15 @@ export const API_ENDPOINTS = {
     updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
     assignDriver: (id: string) => `/admin/quotes/${id}/assign-driver`,
     recalculateQuote: (id: string) => `/admin/quotes/${id}/recalculate`,
+    reservations: '/admin/reservations',
+    reservationDetails: (id: string) => `/admin/reservations/${id}`,
+    updateReservationStatus: (id: string) => `/admin/reservations/${id}/status`,
+    addPassengers: (id: string) => `/admin/reservations/${id}/passengers`,
+    changeDriver: (id: string) => `/admin/reservations/${id}/change-driver`,
+    adjustVehicles: (id: string) => `/admin/reservations/${id}/adjust-vehicles`,
+    processRefund: (id: string) => `/admin/reservations/${id}/refund`,
+    cancelReservation: (id: string) => `/admin/reservations/${id}/cancel`,
+    addCharge: (id: string) => `/admin/reservations/${id}/charges`,
     pricingConfig: {
       active: '/admin/pricing-config',
       create: '/admin/pricing-config',
@@ -120,6 +129,11 @@ export const API_ENDPOINTS = {
     markRead: (notificationId: string) => `/notifications/${notificationId}/mark-read`,
     markAllRead: '/notifications/mark-all-read',
     unreadCount: '/notifications/unread-count',
+  },
+  // Reservation endpoints
+  reservations: {
+    list: '/reservations',
+    getById: (id: string) => `/reservations/${id}`,
   },
 } as const;
 
