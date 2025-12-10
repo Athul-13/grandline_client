@@ -243,15 +243,54 @@ export const quoteService = {
   getPaymentPage: async (id: string): Promise<{
     quoteId: string;
     totalPrice: number;
+    pricing?: {
+      baseFare?: number;
+      distanceFare?: number;
+      driverCharge?: number;
+      fuelMaintenance?: number;
+      nightCharge?: number;
+      amenitiesTotal?: number;
+      subtotal?: number;
+      tax?: number;
+      taxPercentageAtTime?: number;
+      total?: number;
+    };
     paymentWindowExpiresAt: string | null;
-    message: string;
   }> => {
     const response = await grandlineAxiosClient.get<{
       quoteId: string;
       totalPrice: number;
+      pricing?: {
+        baseFare?: number;
+        distanceFare?: number;
+        driverCharge?: number;
+        fuelMaintenance?: number;
+        nightCharge?: number;
+        amenitiesTotal?: number;
+        subtotal?: number;
+        tax?: number;
+        taxPercentageAtTime?: number;
+        total?: number;
+      };
       paymentWindowExpiresAt: string | null;
-      message: string;
-    }>(API_ENDPOINTS.quotes.payment(id));
+    }>(API_ENDPOINTS.quotes.payment.getPage(id));
+    return response.data;
+  },
+
+  /**
+   * Create payment intent
+   * POST /api/v1/quotes/:id/payment/create-intent
+   */
+  createPaymentIntent: async (id: string): Promise<{
+    clientSecret: string;
+    paymentIntentId: string;
+    paymentId: string;
+  }> => {
+    const response = await grandlineAxiosClient.post<{
+      clientSecret: string;
+      paymentIntentId: string;
+      paymentId: string;
+    }>(API_ENDPOINTS.quotes.payment.createIntent(id));
     return response.data;
   },
 };

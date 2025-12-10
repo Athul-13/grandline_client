@@ -1,30 +1,76 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { quoteService } from '../../services/api/quote_service';
 import { ROUTES } from '../../constants/routes';
-import { formatPrice } from '../../utils/quote_formatters';
-import { CreditCard, ArrowLeft, Clock, AlertCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import {
+  PaymentHeader,
+  PaymentWindowAlert,
+  PaymentMethodSelector,
+  StripePaymentForm,
+  PaymentLoadingState,
+  PaymentErrorState,
+} from '../../components/payment';
+import { PricingDetailsSidebar } from '../../components/payment/pricing_details_sidebar';
+import { AlertCircle } from 'lucide-react';
+
+type PaymentMethod = 'stripe' | 'paypal' | null;
 
 /**
  * Payment Page Component
- * Displays payment information and placeholder for payment integration
+ * Displays payment information and payment form
  */
 export const PaymentPage: React.FC = () => {
   const { quoteId } = useParams<{ quoteId: string }>();
   const navigate = useNavigate();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  const { data: paymentData, isLoading, error } = useQuery({
+  const { data: paymentData, isLoading, error } = useQuery<{
+    quoteId: string;
+    totalPrice: number;
+    pricing?: {
+      baseFare?: number;
+      distanceFare?: number;
+      driverCharge?: number;
+      fuelMaintenance?: number;
+      nightCharge?: number;
+      amenitiesTotal?: number;
+      subtotal?: number;
+      tax?: number;
+      taxPercentageAtTime?: number;
+      total?: number;
+    };
+    paymentWindowExpiresAt: string | null;
+  }>({
     queryKey: ['payment', quoteId],
     queryFn: () => quoteService.getPaymentPage(quoteId!),
     enabled: !!quoteId,
   });
 
+  const createPaymentIntentMutation = useMutation({
+    mutationFn: () => quoteService.createPaymentIntent(quoteId!),
+    onSuccess: (data) => {
+      setClientSecret(data.clientSecret);
+    },
+    onError: (error) => {
+      console.error('Failed to create payment intent:', error);
+    },
+  });
+
+  useEffect(() => {
+    if (selectedPaymentMethod === 'stripe' && !clientSecret && !createPaymentIntentMutation.isPending) {
+      createPaymentIntentMutation.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPaymentMethod, clientSecret]);
+
+  // Error states
   if (!quoteId) {
     return (
-      <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10">
+      <div className="p-6 max-w-7xl mx-auto">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-200">Quote ID is required</p>
+          <p className="text-sm text-red-800 dark:text-red-200">Quote ID is required</p>
         </div>
       </div>
     );
@@ -32,10 +78,10 @@ export const PaymentPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10 flex items-center justify-center min-h-screen">
+      <div className="p-6 max-w-7xl mx-auto flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto"></div>
-          <p className="mt-4 text-[var(--color-text-secondary)]">Loading payment information...</p>
+          <p className="mt-4 text-sm text-[var(--color-text-secondary)]">Loading payment information...</p>
         </div>
       </div>
     );
@@ -43,18 +89,21 @@ export const PaymentPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10">
+      <div className="p-6 max-w-7xl mx-auto">
+        <PaymentHeader />
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-            <p className="text-red-800 dark:text-red-200 font-semibold">Error loading payment information</p>
+          <div className="flex items-start gap-2 mb-2">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+              Error loading payment information
+            </p>
           </div>
-          <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+          <p className="text-sm text-red-700 dark:text-red-300 mt-1 ml-7">
             {error instanceof Error ? error.message : 'An unknown error occurred'}
           </p>
           <button
             onClick={() => navigate(ROUTES.quotes)}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm w-full sm:w-auto"
           >
             Back to Quotes
           </button>
@@ -70,104 +119,69 @@ export const PaymentPage: React.FC = () => {
   const paymentWindowExpiresAt = paymentData.paymentWindowExpiresAt
     ? new Date(paymentData.paymentWindowExpiresAt)
     : null;
-  const timeRemaining = paymentWindowExpiresAt
-    ? formatDistanceToNow(paymentWindowExpiresAt, { addSuffix: true })
-    : null;
+
+  const handlePaymentSuccess = () => {
+    navigate(`${ROUTES.quotes}?quoteId=${quoteId}&payment=success`);
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error('Payment error:', error);
+  };
 
   return (
-    <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <button
-          onClick={() => navigate(ROUTES.quotes)}
-          className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Quotes</span>
-        </button>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
-          Payment
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-[var(--color-text-secondary)]">
-          Complete your payment to confirm your booking
-        </p>
-      </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <PaymentHeader />
 
-      {/* Payment Window Status */}
-      {paymentWindowExpiresAt && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <div>
-              <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
-                Payment Window
-              </p>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                Payment expires {timeRemaining}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaymentWindowAlert expiresAt={paymentWindowExpiresAt} />
 
-      {/* Payment Information Card */}
-      <div className="bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-6 mb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-            <CreditCard className="w-6 h-6 text-[var(--color-primary)]" />
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Payment Area - Left Side (2 columns on large screens) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Payment Method Selection with Expandable Forms */}
+          <div className="bg-[var(--color-bg-card)] rounded-lg border border-[var(--color-border)] p-6 shadow-lg">
+            <PaymentMethodSelector
+              selectedMethod={selectedPaymentMethod}
+              onSelect={setSelectedPaymentMethod}
+            >
+              {/* Stripe Payment Form Content */}
+              {createPaymentIntentMutation.isPending && <PaymentLoadingState />}
+
+              {createPaymentIntentMutation.isError && (
+                <PaymentErrorState message="Failed to initialize payment. Please try again." />
+              )}
+
+              {clientSecret && !createPaymentIntentMutation.isPending && (
+                <StripePaymentForm
+                  clientSecret={clientSecret}
+                  quoteId={quoteId}
+                  totalPrice={paymentData.totalPrice}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  onCancel={() => {
+                    setSelectedPaymentMethod(null);
+                    setClientSecret(null);
+                  }}
+                />
+              )}
+            </PaymentMethodSelector>
           </div>
+
+          {/* Action Button */}
           <div>
-            <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-              Payment Details
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              Quote ID: {paymentData.quoteId}
-            </p>
+            <button
+              onClick={() => navigate(`${ROUTES.quotes}?quoteId=${quoteId}`)}
+              className="w-full px-6 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors text-base font-medium shadow-lg"
+            >
+              View Quote Details
+            </button>
           </div>
         </div>
 
-        {/* Total Amount */}
-        <div className="border-t border-[var(--color-border)] pt-6">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold text-[var(--color-text-primary)]">
-              Total Amount
-            </span>
-            <span className="text-3xl font-bold text-[var(--color-primary)]">
-              {formatPrice(paymentData.totalPrice)}
-            </span>
-          </div>
+        {/* Pricing Details Sidebar - Right Side (1 column on large screens) */}
+        <div className="lg:col-span-1">
+          <PricingDetailsSidebar pricing={paymentData.pricing} quoteId={paymentData.quoteId} />
         </div>
-      </div>
-
-      {/* Payment Integration Placeholder */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
-              Payment Integration
-            </p>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-              {paymentData.message || 'Payment integration will be implemented here. This is a placeholder page.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-4">
-        <button
-          onClick={() => navigate(`${ROUTES.quotes}?quoteId=${quoteId}`)}
-          className="flex-1 px-6 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors"
-        >
-          View Quote Details
-        </button>
-        <button
-          disabled
-          className="flex-1 px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg opacity-50 cursor-not-allowed"
-        >
-          Proceed to Payment
-        </button>
       </div>
     </div>
   );

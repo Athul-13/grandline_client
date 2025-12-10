@@ -13,7 +13,7 @@ export const UserLayout: React.FC<UserLayoutProps> = ({ children }) => {
   return (
     <div className="h-screen bg-[var(--color-bg-primary)] overflow-hidden flex flex-col">
       <Navbar />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-y-auto">
         {children}
       </main>
     </div>
