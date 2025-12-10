@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../common/ui/button';
-import { FormInput } from '../../../components/common/forms/form_input';
+import { FormInput } from '../../../common/forms/form_input';
 
 interface PassengerForm {
   fullName: string;

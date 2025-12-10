@@ -71,6 +71,12 @@ export interface ReservationChargeResponse {
  */
 export interface AdminReservationDetailsResponse extends ReservationResponse {
   user: AdminUserInfo;
+  passengers?: Array<{
+    passengerId: string;
+    fullName: string;
+    phoneNumber: string;
+    age: number;
+  }>;
   modifications?: ReservationModificationResponse[];
   charges?: ReservationChargeResponse[];
   totalCharges?: number;

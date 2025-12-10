@@ -1,9 +1,27 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { AdminReservationDetailsHeader } from './admin_reservation_details_header';
-import { cn } from '../../../utils/cn';
-import { formatDate, formatPrice, getTripTypeLabel } from '../../../utils/quote_formatters';
 import { ReservationStatusBadge } from '../reservation_status_badge';
+import { formatDate, formatPrice, getTripTypeLabel } from '../../../utils/quote_formatters';
+import { TripDetailsSection } from './details/trip_details_section';
+import { PassengersSection } from './details/passengers_section';
+import { ItinerarySection } from './details/itinerary_section';
+import { VehiclesSection } from './details/vehicles_section';
+import { AmenitiesSection } from './details/amenities_section';
+import { DriverSection } from './details/driver_section';
+import { AddPassengersModal } from './modals/add_passengers_modal';
+import { ChangeDriverModal } from './modals/change_driver_modal';
+import { AdjustVehiclesModal } from './modals/adjust_vehicles_modal';
+import { ProcessRefundModal } from './modals/process_refund_modal';
+import { CancelReservationModal } from './modals/cancel_reservation_modal';
+import { AddChargeModal } from './modals/add_charge_modal';
+import { useAddPassengers } from '../../../hooks/reservations/use_add_passengers';
+import { useChangeDriver } from '../../../hooks/reservations/use_change_driver';
+import { useAdjustVehicles } from '../../../hooks/reservations/use_adjust_vehicles';
+import { useProcessRefund } from '../../../hooks/reservations/use_process_refund';
+import { useCancelReservation } from '../../../hooks/reservations/use_cancel_reservation';
+import { useAddCharge } from '../../../hooks/reservations/use_add_charge';
+import toast from 'react-hot-toast';
 import type { AdminReservationDetailsResponse } from '../../../types/reservations/admin_reservation';
 import { ReservationStatus } from '../../../types/reservations/reservation';
 
@@ -40,6 +58,22 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
     charges: false,
   });
 
+  // Modal states
+  const [showAddPassengersModal, setShowAddPassengersModal] = useState(false);
+  const [showChangeDriverModal, setShowChangeDriverModal] = useState(false);
+  const [showAdjustVehiclesModal, setShowAdjustVehiclesModal] = useState(false);
+  const [showProcessRefundModal, setShowProcessRefundModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showAddChargeModal, setShowAddChargeModal] = useState(false);
+
+  // Hooks for actions
+  const { addPassengers, isLoading: isAddingPassengers } = useAddPassengers();
+  const { changeDriver, isLoading: isChangingDriver } = useChangeDriver();
+  const { adjustVehicles, isLoading: isAdjustingVehicles } = useAdjustVehicles();
+  const { processRefund, isLoading: isProcessingRefund } = useProcessRefund();
+  const { cancelReservation, isLoading: isCancelling } = useCancelReservation();
+  const { addCharge, isLoading: isAddingCharge } = useAddCharge();
+
   // Toggle accordion section
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
@@ -67,6 +101,94 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
 
   const availableStatuses = getAvailableStatuses();
 
+  // Action handlers
+  const handleAddPassengers = async (passengers: Array<{ fullName: string; phoneNumber: string; age: number }>) => {
+    const result = await addPassengers(reservationDetails.reservationId, { passengers });
+    if (result) {
+      toast.success('Passengers added successfully');
+      setShowAddPassengersModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to add passengers');
+    }
+  };
+
+  const handleChangeDriver = async (driverId: string, reason?: string) => {
+    const result = await changeDriver(reservationDetails.reservationId, { driverId, reason });
+    if (result) {
+      toast.success('Driver changed successfully');
+      setShowChangeDriverModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to change driver');
+    }
+  };
+
+  const handleAdjustVehicles = async (vehicles: Array<{ vehicleId: string; quantity: number }>) => {
+    const result = await adjustVehicles(reservationDetails.reservationId, { vehicles });
+    if (result) {
+      toast.success('Vehicles adjusted successfully');
+      setShowAdjustVehiclesModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to adjust vehicles');
+    }
+  };
+
+  const handleProcessRefund = async (amount: number, reason?: string) => {
+    const result = await processRefund(reservationDetails.reservationId, { amount, reason });
+    if (result) {
+      toast.success(`Refund of ${amount} processed successfully`);
+      setShowProcessRefundModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to process refund');
+    }
+  };
+
+  const handleCancel = async (reason: string) => {
+    const result = await cancelReservation(reservationDetails.reservationId, { reason });
+    if (result) {
+      toast.success('Reservation cancelled successfully');
+      setShowCancelModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to cancel reservation');
+    }
+  };
+
+  const handleAddCharge = async (chargeType: string, description: string, amount: number, currency?: string) => {
+    const result = await addCharge(reservationDetails.reservationId, {
+      chargeType: chargeType as 'additional_passenger' | 'vehicle_upgrade' | 'amenity_add' | 'late_fee' | 'other',
+      description,
+      amount,
+      currency,
+    });
+    if (result) {
+      toast.success('Charge added successfully');
+      setShowAddChargeModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to add charge');
+    }
+  };
+
+  // Calculate max refund amount
+  const maxRefundAmount = reservationDetails.originalPricing?.total || 0;
+  const currency = reservationDetails.originalPricing?.currency || 'INR';
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
       {/* Header */}
@@ -76,6 +198,12 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
         onBack={onBack}
         onStatusChange={onStatusChange}
         availableStatuses={availableStatuses}
+        onAddPassengers={() => setShowAddPassengersModal(true)}
+        onChangeDriver={() => setShowChangeDriverModal(true)}
+        onAdjustVehicles={() => setShowAdjustVehiclesModal(true)}
+        onProcessRefund={() => setShowProcessRefundModal(true)}
+        onCancel={() => setShowCancelModal(true)}
+        onAddCharge={() => setShowAddChargeModal(true)}
       />
 
       {/* Content */}
@@ -316,11 +444,108 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
           </div>
         )}
 
-        {/* Placeholder sections for other details */}
-        <div className="text-sm text-[var(--color-text-secondary)] text-center py-8">
-          More sections (Trip Details, Passengers, Itinerary, Vehicles, Amenities, Driver) will be added in the next iteration.
+        {/* Trip Details Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <TripDetailsSection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.tripDetails}
+            onToggle={() => toggleSection('tripDetails')}
+          />
+        </div>
+
+        {/* Passengers Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <PassengersSection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.passengers}
+            onToggle={() => toggleSection('passengers')}
+          />
+        </div>
+
+        {/* Itinerary Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <ItinerarySection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.itinerary}
+            onToggle={() => toggleSection('itinerary')}
+          />
+        </div>
+
+        {/* Vehicles Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <VehiclesSection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.vehicles}
+            onToggle={() => toggleSection('vehicles')}
+          />
+        </div>
+
+        {/* Amenities Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <AmenitiesSection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.amenities}
+            onToggle={() => toggleSection('amenities')}
+          />
+        </div>
+
+        {/* Driver Section */}
+        <div className="border border-[var(--color-border)] rounded-lg">
+          <DriverSection
+            reservationDetails={reservationDetails}
+            isExpanded={expandedSections.driver}
+            onToggle={() => toggleSection('driver')}
+            onChangeDriverClick={() => setShowChangeDriverModal(true)}
+          />
         </div>
       </div>
+
+      {/* Modals */}
+      <AddPassengersModal
+        isOpen={showAddPassengersModal}
+        onClose={() => setShowAddPassengersModal(false)}
+        onAdd={handleAddPassengers}
+        isLoading={isAddingPassengers}
+      />
+
+      <ChangeDriverModal
+        isOpen={showChangeDriverModal}
+        onClose={() => setShowChangeDriverModal(false)}
+        onChange={handleChangeDriver}
+        isLoading={isChangingDriver}
+        currentDriverId={reservationDetails.assignedDriverId}
+      />
+
+      <AdjustVehiclesModal
+        isOpen={showAdjustVehiclesModal}
+        onClose={() => setShowAdjustVehiclesModal(false)}
+        onAdjust={handleAdjustVehicles}
+        isLoading={isAdjustingVehicles}
+        currentVehicles={reservationDetails.selectedVehicles}
+      />
+
+      <ProcessRefundModal
+        isOpen={showProcessRefundModal}
+        onClose={() => setShowProcessRefundModal(false)}
+        onRefund={handleProcessRefund}
+        isLoading={isProcessingRefund}
+        maxRefundAmount={maxRefundAmount}
+        currency={currency}
+      />
+
+      <CancelReservationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onCancel={handleCancel}
+        isLoading={isCancelling}
+      />
+
+      <AddChargeModal
+        isOpen={showAddChargeModal}
+        onClose={() => setShowAddChargeModal(false)}
+        onAdd={handleAddCharge}
+        isLoading={isAddingCharge}
+      />
     </div>
   );
 };

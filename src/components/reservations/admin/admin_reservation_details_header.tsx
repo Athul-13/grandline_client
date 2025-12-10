@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Users, UserCog, Truck, DollarSign, X, Plus } from 'lucide-react';
 import { Button } from '../../common/ui/button';
 import { ReservationStatusBadge } from '../reservation_status_badge';
 import { formatDate } from '../../../utils/quote_formatters';
@@ -11,6 +11,12 @@ interface AdminReservationDetailsHeaderProps {
   onBack: () => void;
   onStatusChange: (newStatus: string) => Promise<void>;
   availableStatuses: Array<{ value: string; label: string }>;
+  onAddPassengers?: () => void;
+  onChangeDriver?: () => void;
+  onAdjustVehicles?: () => void;
+  onProcessRefund?: () => void;
+  onCancel?: () => void;
+  onAddCharge?: () => void;
 }
 
 /**
@@ -23,14 +29,22 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
   onBack,
   onStatusChange,
   availableStatuses,
+  onAddPassengers,
+  onChangeDriver,
+  onAdjustVehicles,
+  onProcessRefund,
+  onCancel,
+  onAddCharge,
 }) => {
   const handleStatusChange = async (newStatus: string) => {
     await onStatusChange(newStatus);
   };
 
+  const canModify = reservationDetails.status !== 'cancelled' && reservationDetails.status !== 'refunded';
+
   return (
     <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 mb-3">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <button
             onClick={onBack}
@@ -79,6 +93,78 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
           </div>
         )}
       </div>
+
+      {/* Action Buttons */}
+      {canModify && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {onAddPassengers && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddPassengers}
+              className="text-sm flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Add Passengers
+            </Button>
+          )}
+          {onChangeDriver && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onChangeDriver}
+              className="text-sm flex items-center gap-2"
+            >
+              <UserCog className="w-4 h-4" />
+              Change Driver
+            </Button>
+          )}
+          {onAdjustVehicles && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAdjustVehicles}
+              className="text-sm flex items-center gap-2"
+            >
+              <Truck className="w-4 h-4" />
+              Adjust Vehicles
+            </Button>
+          )}
+          {onProcessRefund && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onProcessRefund}
+              className="text-sm flex items-center gap-2"
+            >
+              <DollarSign className="w-4 h-4" />
+              Process Refund
+            </Button>
+          )}
+          {onAddCharge && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddCharge}
+              className="text-sm flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Charge
+            </Button>
+          )}
+          {onCancel && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              className="text-sm flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-50"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

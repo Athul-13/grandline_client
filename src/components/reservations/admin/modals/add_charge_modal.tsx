@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../../common/ui/button';
-import { FormInput } from '../../../components/common/forms/form_input';
-import { FormSelect } from '../../../components/common/forms/form_select';
+import { FormInput } from '../../../common/forms/form_input';
+import { FormSelect } from '../../../common/forms/form_select';
 
 interface AddChargeModalProps {
   isOpen: boolean;
