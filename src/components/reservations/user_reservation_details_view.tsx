@@ -6,6 +6,8 @@ import { ItineraryBentoCard } from './details/itinerary_bento_card';
 import { VehiclesBentoCard } from './details/vehicles_bento_card';
 import { AmenitiesBentoCard } from './details/amenities_bento_card';
 import { DriverDetailsBentoCard } from './details/driver_details_bento_card';
+import { PassengersBentoCard } from './details/passengers_bento_card';
+import { RouteBentoCard } from './details/route_bento_card';
 import type { ReservationResponse } from '../../types/reservations/reservation';
 
 interface UserReservationDetailsViewProps {
@@ -47,7 +49,7 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
               <BasicInfoBentoCard reservationDetails={reservationDetails} />
             </div>
 
-            {/* Driver Info - Placeholder for now */}
+            {/* Driver Info */}
             {reservationDetails.assignedDriverId && (
               <div>
                 <DriverDetailsBentoCard reservationDetails={reservationDetails} />
@@ -71,8 +73,13 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
             )}
           </div>
 
-          {/* Right Column: Vehicles */}
+          {/* Right Column: Passengers, Vehicles, Route */}
           <div className="flex flex-col gap-4">
+            {/* Passengers - Scrollable */}
+            <div className="min-h-[400px] max-h-[600px] overflow-hidden">
+              <PassengersBentoCard reservationDetails={reservationDetails} />
+            </div>
+
             {/* Vehicles - Scrollable */}
             {reservationDetails.selectedVehicles && reservationDetails.selectedVehicles.length > 0 && (
               <div className="min-h-[150px] max-h-[250px] overflow-hidden">
@@ -81,6 +88,13 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
                   vehicles={vehicles}
                   isLoading={isLoadingVehicles}
                 />
+              </div>
+            )}
+
+            {/* Route */}
+            {reservationDetails.routeData && (
+              <div className="max-h-[200px]">
+                <RouteBentoCard reservationDetails={reservationDetails} />
               </div>
             )}
           </div>

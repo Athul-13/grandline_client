@@ -23,33 +23,26 @@ export const PassengersSection: React.FC<PassengersSectionProps> = ({
       onToggle={onToggle}
     >
       {reservationDetails.passengers && reservationDetails.passengers.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {reservationDetails.passengers.map((passenger) => (
             <div
               key={passenger.passengerId}
-              className="p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)]"
+              className="p-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)]"
             >
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-medium text-[var(--color-text-secondary)]">Name:</span>
-                  <span className="ml-2 text-[var(--color-text-primary)] font-medium">
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex-1">
+                  <span className="font-medium text-[var(--color-text-primary)]">
                     {passenger.fullName}
                   </span>
                 </div>
                 {passenger.phoneNumber && (
-                  <div>
-                    <span className="text-[var(--color-text-secondary)]">Phone:</span>
-                    <span className="ml-2 text-[var(--color-text-primary)]">
-                      {passenger.phoneNumber}
-                    </span>
+                  <div className="text-[var(--color-text-secondary)]">
+                    <span className="text-xs">{passenger.phoneNumber}</span>
                   </div>
                 )}
                 {passenger.age !== undefined && (
-                  <div>
-                    <span className="text-[var(--color-text-secondary)]">Age:</span>
-                    <span className="ml-2 text-[var(--color-text-primary)]">
-                      {passenger.age} years
-                    </span>
+                  <div className="text-[var(--color-text-secondary)]">
+                    <span className="text-xs">{passenger.age} years</span>
                   </div>
                 )}
               </div>

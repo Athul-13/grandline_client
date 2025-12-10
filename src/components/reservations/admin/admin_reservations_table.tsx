@@ -9,7 +9,7 @@ import { useUpdateReservationStatus } from '../../../hooks/reservations/use_upda
 import { useSearchContext } from '../../../hooks/use_search_context';
 import { ConfirmationModal } from '../../common/modals/confirmation_modal';
 import { Button } from '../../common/ui/button';
-import { TableSkeleton } from '../../common/ui/loaders';
+import { TableSkeleton, ReservationDetailsSkeleton } from '../../common/ui/loaders';
 import type { AdminReservationListItem } from '../../../types/reservations/admin_reservation';
 import type { ReservationStatusType } from '../../../types/reservations/reservation';
 import { AdminReservationDetailsView } from './admin_reservation_details_view';
@@ -191,7 +191,7 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
   // Reservation Details View
   if (reservationId) {
     if (isLoadingDetails) {
-      return <div className="p-4">Loading reservation details...</div>;
+      return <ReservationDetailsSkeleton variant="admin" />;
     }
 
     if (detailsError || !reservationDetails) {
@@ -277,7 +277,7 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
               {selectedReservationIds.size > 0 ? (
                 // Action buttons header when selection exists
                 <div className="flex items-center px-4 py-3 h-[48px]">
-                  <div className="flex-[0_0_40px]">
+                  <div className="w-[40px]">
                     <input
                       type="checkbox"
                       checked={allSelected}
@@ -302,44 +302,45 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
                 </div>
               ) : (
                 // Normal header
-                <div className="flex items-center px-4 py-3 h-[48px]">
-                  <div className="flex-[0_0_40px]">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-4 h-4 cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex-[0_0_120px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    ID
-                  </div>
-                  <div className="flex-[0_0_150px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    User
-                  </div>
-                  <div className="flex-[0_0_150px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Trip Name
-                  </div>
-                  <div className="flex-[0_0_100px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Type
-                  </div>
-                  <div className="flex-[0_0_120px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Status
-                  </div>
-                  <div className="flex-[0_0_120px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Date
-                  </div>
-                  <div className="flex-[0_0_200px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Locations
-                  </div>
-                  <div className="flex-[0_0_120px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Price
-                  </div>
-                  <div className="flex-[0_0_120px] text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                    Created
-                  </div>
-                </div>
+                <table className="w-full table-fixed">
+                  <thead>
+                    <tr className="flex h-[48px]">
+                      <th className="px-4 py-3 flex-[0_0_40px] flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={allSelected && reservations.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 cursor-pointer"
+                        />
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
+                        Reservation ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-1 whitespace-nowrap flex items-center">
+                        Trip Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_8%] whitespace-nowrap flex items-center">
+                        Type
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_10%] whitespace-nowrap flex items-center">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
+                        Trip Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_15%] whitespace-nowrap flex items-center">
+                        User
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_18%] whitespace-nowrap flex items-center">
+                        Locations
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
+                        Created Date
+                      </th>
+                    </tr>
+                  </thead>
+                </table>
               )}
             </div>
           </div>
@@ -347,27 +348,25 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
           {/* Scrollable Body */}
           <div
             ref={bodyScrollRef}
-            className="flex-1 overflow-y-auto overflow-x-auto hide-scrollbar"
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-none"
             onScroll={handleBodyScroll}
           >
-            <div className="min-w-[1000px]">
-              <table className="w-full">
-                <tbody>
-                  {reservations.map((reservation) => (
-                    <AdminReservationsTableRow
-                      key={reservation.reservationId}
-                      reservation={reservation}
-                      searchQuery={searchQuery}
-                      copiedReservationId={copiedReservationId}
-                      onCopyReservationId={handleCopyReservationId}
-                      isSelected={selectedReservationIds.has(reservation.reservationId)}
-                      onSelectChange={(isSelected) => handleSelectReservation(reservation.reservationId, isSelected)}
-                      onRowClick={() => navigate(`/admin/reservations/${reservation.reservationId}`)}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <table className="w-full table-fixed min-w-[1000px]">
+              <tbody className="block">
+                {reservations.map((reservation) => (
+                  <AdminReservationsTableRow
+                    key={reservation.reservationId}
+                    reservation={reservation}
+                    searchQuery={searchQuery}
+                    copiedReservationId={copiedReservationId}
+                    onCopyReservationId={handleCopyReservationId}
+                    isSelected={selectedReservationIds.has(reservation.reservationId)}
+                    onSelectChange={(isSelected) => handleSelectReservation(reservation.reservationId, isSelected)}
+                    onRowClick={() => navigate(`/admin/reservations/${reservation.reservationId}`)}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

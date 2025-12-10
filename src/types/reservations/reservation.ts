@@ -150,6 +150,12 @@ export interface ReservationResponse {
     isDriverStaying: boolean;
     stayingDuration?: number;
   }>;
+  passengers?: Array<{
+    passengerId: string;
+    fullName: string;
+    phoneNumber: string;
+    age: number;
+  }>;
 }
 
 /**
@@ -161,6 +167,7 @@ export interface ReservationListItem {
   tripType: TripTypeType;
   status: ReservationStatusType;
   reservationDate: Date | string;
+  tripDate?: Date | string; // Date of the trip (from first pickup stop's arrival time)
   startLocation?: string; // Location name of pickup
   endLocation?: string; // Location name of dropoff
   originalPrice?: number;

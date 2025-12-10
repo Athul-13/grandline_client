@@ -4,7 +4,7 @@ import { ReservationsTableRow } from './reservations_table_row';
 import { ReservationsCard } from './reservations_card';
 import { UserReservationDetailsView } from './user_reservation_details_view';
 import { useReservationDetails } from '../../hooks/reservations/use_reservation_details';
-import { TableSkeleton, QuoteDetailsSkeleton } from '../common/ui/loaders';
+import { TableSkeleton, ReservationDetailsSkeleton } from '../common/ui/loaders';
 import type { ReservationListItem } from '../../types/reservations/reservation';
 
 interface ReservationsTableProps {
@@ -48,7 +48,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
   // Reservation Details View
   if (reservationId) {
     if (isLoadingDetails) {
-      return <QuoteDetailsSkeleton variant="user" />;
+      return <ReservationDetailsSkeleton variant="user" />;
     }
 
     if (detailsError || !reservationDetails) {

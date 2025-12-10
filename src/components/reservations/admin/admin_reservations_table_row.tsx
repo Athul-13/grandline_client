@@ -1,7 +1,7 @@
 import { Copy, Check } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { highlightSearchTerm } from '../../../utils/highlight_search';
-import { formatDate, formatPrice, getTripTypeLabel } from '../../../utils/quote_formatters';
+import { formatDate, getTripTypeLabel } from '../../../utils/quote_formatters';
 import { ReservationStatusBadge } from '../reservation_status_badge';
 import type { AdminReservationListItem } from '../../../types/reservations/admin_reservation';
 
@@ -31,115 +31,107 @@ export const AdminReservationsTableRow: React.FC<AdminReservationsTableRowProps>
   return (
     <tr
       className={cn(
-          'border-b border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer',
-          isSelected && 'bg-[var(--color-bg-secondary)]'
-        )}
-        onClick={onRowClick}
+        'flex hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer relative',
+        isSelected && 'bg-[var(--color-bg-secondary)]'
+      )}
+      onClick={onRowClick}
+    >
+      {/* Checkbox */}
+      <td
+        className="px-4 py-3 flex-[0_0_40px] flex items-center"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Checkbox */}
-        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={(e) => {
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onSelectChange(e.target.checked);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-4 h-4 cursor-pointer"
+        />
+      </td>
+
+      {/* Reservation ID */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group min-w-0 overflow-hidden">
+        <div className="flex items-center">
+          <span>{highlightSearchTerm(reservation.reservationId.slice(0, 8) + '...', searchQuery)}</span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              onSelectChange(e.target.checked);
+              onCopyReservationId(reservation.reservationId, e);
             }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-4 h-4 cursor-pointer"
-          />
-        </td>
+            className={cn(
+              'opacity-0 group-hover:opacity-100 transition-opacity',
+              'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
+              'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
+              'flex-shrink-0'
+            )}
+            title="Copy reservation ID"
+          >
+            {copiedReservationId === reservation.reservationId ? (
+              <Check className="w-3.5 h-3.5 text-green-500" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+      </td>
 
-        {/* Reservation ID */}
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-[var(--color-text-primary)]">
-              {highlightSearchTerm(reservation.reservationId.slice(0, 8) + '...', searchQuery)}
+      {/* Trip Name */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-1 min-w-0 overflow-hidden">
+        {reservation.tripName ? highlightSearchTerm(reservation.tripName, searchQuery) : '-'}
+      </td>
+
+      {/* Trip Type */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_8%]">
+        {getTripTypeLabel(reservation.tripType)}
+      </td>
+
+      {/* Status */}
+      <td className="px-4 py-3 flex-[0_0_10%]">
+        <ReservationStatusBadge status={reservation.status} />
+      </td>
+
+      {/* Trip Date */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_12%]">
+        {reservation.tripDate ? formatDate(reservation.tripDate) : formatDate(reservation.reservationDate)}
+      </td>
+
+      {/* User */}
+      <td className="px-4 py-3 text-sm flex-[0_0_15%] min-w-0 overflow-hidden">
+        <div className="flex flex-col">
+          <span className="text-[var(--color-text-primary)] font-medium">
+            {highlightSearchTerm(reservation.user.fullName, searchQuery)}
+          </span>
+          <span className="text-[var(--color-text-secondary)] text-xs mt-0.5 break-all">
+            {highlightSearchTerm(reservation.user.email, searchQuery)}
+          </span>
+        </div>
+      </td>
+
+      {/* Locations */}
+      <td className="px-4 py-3 text-sm flex-[0_0_18%] min-w-0 overflow-hidden">
+        <div className="flex flex-col">
+          {reservation.startLocation && (
+            <span className="text-[var(--color-text-secondary)] text-xs truncate" title={reservation.startLocation}>
+              {reservation.startLocation}
             </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopyReservationId(reservation.reservationId, e);
-              }}
-              className={cn(
-                'p-1 rounded hover:bg-[var(--color-bg-hover)] transition-colors',
-                'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              )}
-              title="Copy reservation ID"
-            >
-              {copiedReservationId === reservation.reservationId ? (
-                <Check className="w-3 h-3 text-green-600" />
-              ) : (
-                <Copy className="w-3 h-3" />
-              )}
-            </button>
-          </div>
-        </td>
+          )}
+          {reservation.endLocation && (
+            <span className="text-[var(--color-text-secondary)] text-xs mt-0.5 truncate" title={reservation.endLocation}>
+              → {reservation.endLocation}
+            </span>
+          )}
+        </div>
+      </td>
 
-        {/* User */}
-        <td className="px-4 py-3">
-          <div className="text-sm text-[var(--color-text-primary)]">
-            <div className="font-medium">{highlightSearchTerm(reservation.user.fullName, searchQuery)}</div>
-            <div className="text-xs text-[var(--color-text-secondary)]">{reservation.user.email}</div>
-          </div>
-        </td>
-
-        {/* Trip Name */}
-        <td className="px-4 py-3">
-          <div className="text-sm text-[var(--color-text-primary)]">
-            {reservation.tripName ? highlightSearchTerm(reservation.tripName, searchQuery) : 'Untitled Trip'}
-          </div>
-        </td>
-
-        {/* Trip Type */}
-        <td className="px-4 py-3">
-          <span className="text-sm text-[var(--color-text-secondary)]">
-            {getTripTypeLabel(reservation.tripType)}
-          </span>
-        </td>
-
-        {/* Status */}
-        <td className="px-4 py-3">
-          <ReservationStatusBadge status={reservation.status} />
-        </td>
-
-        {/* Reservation Date */}
-        <td className="px-4 py-3">
-          <span className="text-sm text-[var(--color-text-primary)]">
-            {formatDate(reservation.reservationDate)}
-          </span>
-        </td>
-
-        {/* Locations */}
-        <td className="px-4 py-3">
-          <div className="text-sm text-[var(--color-text-primary)]">
-            {reservation.startLocation && (
-              <div className="truncate max-w-[150px]" title={reservation.startLocation}>
-                {reservation.startLocation}
-              </div>
-            )}
-            {reservation.endLocation && (
-              <div className="text-xs text-[var(--color-text-secondary)] truncate max-w-[150px]" title={reservation.endLocation}>
-                → {reservation.endLocation}
-              </div>
-            )}
-          </div>
-        </td>
-
-        {/* Original Price */}
-        <td className="px-4 py-3">
-          <span className="text-sm text-[var(--color-text-primary)] font-medium">
-            {formatPrice(reservation.originalPrice)}
-          </span>
-        </td>
-
-        {/* Created At */}
-        <td className="px-4 py-3">
-          <span className="text-sm text-[var(--color-text-secondary)]">
-            {formatDate(reservation.createdAt)}
-          </span>
-        </td>
-      </tr>
+      {/* Created Date */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%]">
+        {formatDate(reservation.createdAt)}
+      </td>
+    </tr>
   );
 };
 

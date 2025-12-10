@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, Users, UserCog, Truck, DollarSign, X, Plus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, Users, UserCog, Truck, DollarSign, X, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '../../common/ui/button';
 import { ReservationStatusBadge } from '../reservation_status_badge';
 import { formatDate } from '../../../utils/quote_formatters';
@@ -36,135 +36,156 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
   onCancel,
   onAddCharge,
 }) => {
-  const handleStatusChange = async (newStatus: string) => {
-    await onStatusChange(newStatus);
-  };
+  const [showActionsDropdown, setShowActionsDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const canModify = reservationDetails.status !== 'cancelled' && reservationDetails.status !== 'refunded';
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowActionsDropdown(false);
+      }
+    };
+
+    if (showActionsDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showActionsDropdown]);
+
+  const handleActionClick = (action: () => void) => {
+    action();
+    setShowActionsDropdown(false);
+  };
+
   return (
-    <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
-      <div className="flex items-center justify-between gap-4 mb-3">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
+    <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors flex-shrink-0"
-            title="Go back"
+            className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors text-[var(--color-text-primary)]"
+            title="Back to reservations"
           >
-            <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] truncate">
-                {reservationDetails.tripName || 'Reservation Details'}
-              </h2>
-              <ReservationStatusBadge status={reservationDetails.status} />
-            </div>
-            <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
-              <span>ID: {reservationDetails.reservationId.slice(0, 8)}...</span>
-              <span>•</span>
-              <span>{formatDate(reservationDetails.reservationDate)}</span>
-              {reservationDetails.user && (
-                <>
-                  <span>•</span>
-                  <span>{reservationDetails.user.fullName}</span>
-                </>
-              )}
-            </div>
+          <div>
+            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+              {reservationDetails.tripName || 'Reservation Details'}
+            </p>
+            <p className="text-xs text-[var(--color-text-secondary)] font-mono">
+              {reservationDetails.reservationId}
+            </p>
           </div>
         </div>
 
-        {/* Status Change Actions */}
-        {availableStatuses.length > 0 && (
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {availableStatuses.map((status) => (
+        <div className="flex items-center gap-3">
+          {/* Actions Dropdown */}
+          {canModify && (
+            <div className="relative" ref={dropdownRef}>
               <Button
-                key={status.value}
                 variant="outline"
                 size="sm"
-                onClick={() => handleStatusChange(status.value)}
-                disabled={isUpdatingStatus}
-                className="text-sm"
+                onClick={() => setShowActionsDropdown(!showActionsDropdown)}
+                className="flex items-center gap-2"
               >
-                {isUpdatingStatus ? 'Updating...' : `Mark as ${status.label}`}
+                <MoreVertical className="w-4 h-4" />
+                Actions
               </Button>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Action Buttons */}
-      {canModify && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {onAddPassengers && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddPassengers}
-              className="text-sm flex items-center gap-2"
-            >
-              <Users className="w-4 h-4" />
-              Add Passengers
-            </Button>
+              {/* Dropdown Menu */}
+              {showActionsDropdown && (
+                <div className="absolute right-0 mt-2 w-56 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1">
+                  {onAddPassengers && (
+                    <button
+                      onClick={() => handleActionClick(onAddPassengers)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <Users className="w-4 h-4" />
+                      Add Passengers
+                    </button>
+                  )}
+                  {onChangeDriver && (
+                    <button
+                      onClick={() => handleActionClick(onChangeDriver)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <UserCog className="w-4 h-4" />
+                      Change Driver
+                    </button>
+                  )}
+                  {onAdjustVehicles && (
+                    <button
+                      onClick={() => handleActionClick(onAdjustVehicles)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <Truck className="w-4 h-4" />
+                      Adjust Vehicles
+                    </button>
+                  )}
+                  {onProcessRefund && (
+                    <button
+                      onClick={() => handleActionClick(onProcessRefund)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      Process Refund
+                    </button>
+                  )}
+                  {onAddCharge && (
+                    <button
+                      onClick={() => handleActionClick(onAddCharge)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Charge
+                    </button>
+                  )}
+                  {onCancel && (
+                    <>
+                      <div className="border-t border-[var(--color-border)] my-1" />
+                      <button
+                        onClick={() => handleActionClick(onCancel)}
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel Reservation
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           )}
-          {onChangeDriver && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onChangeDriver}
-              className="text-sm flex items-center gap-2"
-            >
-              <UserCog className="w-4 h-4" />
-              Change Driver
-            </Button>
-          )}
-          {onAdjustVehicles && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAdjustVehicles}
-              className="text-sm flex items-center gap-2"
-            >
-              <Truck className="w-4 h-4" />
-              Adjust Vehicles
-            </Button>
-          )}
-          {onProcessRefund && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onProcessRefund}
-              className="text-sm flex items-center gap-2"
-            >
-              <DollarSign className="w-4 h-4" />
-              Process Refund
-            </Button>
-          )}
-          {onAddCharge && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddCharge}
-              className="text-sm flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Charge
-            </Button>
-          )}
-          {onCancel && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
-              className="text-sm flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-50"
-            >
-              <X className="w-4 h-4" />
-              Cancel
-            </Button>
+
+          {/* Status Update Control */}
+          {availableStatuses.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[var(--color-text-secondary)]">Status:</span>
+              <select
+                value={reservationDetails.status}
+                onChange={(e) => onStatusChange(e.target.value)}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value={reservationDetails.status}>
+                  {reservationDetails.status.charAt(0).toUpperCase() + reservationDetails.status.slice(1)}
+                </option>
+                {availableStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
