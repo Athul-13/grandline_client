@@ -14,12 +14,14 @@ import { ModificationsSection } from './details/modifications_section';
 import { AddPassengersModal } from './modals/add_passengers_modal';
 import { ChangeDriverModal } from './modals/change_driver_modal';
 import { AdjustVehiclesModal } from './modals/adjust_vehicles_modal';
+import { UpdateItineraryModal } from './modals/update_itinerary_modal';
 import { ProcessRefundModal } from './modals/process_refund_modal';
 import { CancelReservationModal } from './modals/cancel_reservation_modal';
 import { AddChargeModal } from './modals/add_charge_modal';
 import { useAddPassengers } from '../../../hooks/reservations/use_add_passengers';
 import { useChangeDriver } from '../../../hooks/reservations/use_change_driver';
 import { useAdjustVehicles } from '../../../hooks/reservations/use_adjust_vehicles';
+import { useUpdateItinerary } from '../../../hooks/reservations/use_update_itinerary';
 import { useProcessRefund } from '../../../hooks/reservations/use_process_refund';
 import { useCancelReservation } from '../../../hooks/reservations/use_cancel_reservation';
 import { useAddCharge } from '../../../hooks/reservations/use_add_charge';
@@ -64,6 +66,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
   const [showAddPassengersModal, setShowAddPassengersModal] = useState(false);
   const [showChangeDriverModal, setShowChangeDriverModal] = useState(false);
   const [showAdjustVehiclesModal, setShowAdjustVehiclesModal] = useState(false);
+  const [showUpdateItineraryModal, setShowUpdateItineraryModal] = useState(false);
   const [showProcessRefundModal, setShowProcessRefundModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAddChargeModal, setShowAddChargeModal] = useState(false);
@@ -72,6 +75,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
   const { addPassengers, isLoading: isAddingPassengers } = useAddPassengers();
   const { changeDriver, isLoading: isChangingDriver } = useChangeDriver();
   const { adjustVehicles, isLoading: isAdjustingVehicles } = useAdjustVehicles();
+  const { updateItinerary, isLoading: isUpdatingItinerary } = useUpdateItinerary();
   const { processRefund, isLoading: isProcessingRefund } = useProcessRefund();
   const { cancelReservation, isLoading: isCancelling } = useCancelReservation();
   const { addCharge, isLoading: isAddingCharge } = useAddCharge();
@@ -143,6 +147,19 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
     }
   };
 
+  const handleUpdateItinerary = async (data: import('../../../types/reservations/admin_reservation').UpdateReservationItineraryRequest) => {
+    const result = await updateItinerary(reservationDetails.reservationId, data);
+    if (result) {
+      toast.success('Itinerary updated successfully');
+      setShowUpdateItineraryModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error('Failed to update itinerary');
+    }
+  };
+
   const handleProcessRefund = async (amount: number, reason?: string) => {
     const result = await processRefund(reservationDetails.reservationId, { amount, reason });
     if (result) {
@@ -204,6 +221,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
         onAddPassengers={() => setShowAddPassengersModal(true)}
         onChangeDriver={() => setShowChangeDriverModal(true)}
         onAdjustVehicles={() => setShowAdjustVehiclesModal(true)}
+        onUpdateItinerary={() => setShowUpdateItineraryModal(true)}
         onProcessRefund={() => setShowProcessRefundModal(true)}
         onCancel={() => setShowCancelModal(true)}
         onAddCharge={() => setShowAddChargeModal(true)}
@@ -302,6 +320,14 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
         onAdjust={handleAdjustVehicles}
         isLoading={isAdjustingVehicles}
         currentVehicles={reservationDetails.selectedVehicles}
+      />
+
+      <UpdateItineraryModal
+        isOpen={showUpdateItineraryModal}
+        onClose={() => setShowUpdateItineraryModal(false)}
+        onUpdate={handleUpdateItinerary}
+        isLoading={isUpdatingItinerary}
+        reservationDetails={reservationDetails}
       />
 
       <ProcessRefundModal

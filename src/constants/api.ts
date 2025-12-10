@@ -66,6 +66,7 @@ export const API_ENDPOINTS = {
     addPassengers: (id: string) => `/admin/reservations/${id}/passengers`,
     changeDriver: (id: string) => `/admin/reservations/${id}/change-driver`,
     adjustVehicles: (id: string) => `/admin/reservations/${id}/adjust-vehicles`,
+    updateItinerary: (id: string) => `/admin/reservations/${id}/itinerary`,
     processRefund: (id: string) => `/admin/reservations/${id}/refund`,
     cancelReservation: (id: string) => `/admin/reservations/${id}/cancel`,
     addCharge: (id: string) => `/admin/reservations/${id}/charges`,

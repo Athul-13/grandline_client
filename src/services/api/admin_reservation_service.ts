@@ -7,6 +7,7 @@ import type {
   AddPassengersToReservationRequest,
   ChangeReservationDriverRequest,
   AdjustReservationVehiclesRequest,
+  UpdateReservationItineraryRequest,
   ProcessReservationRefundRequest,
   CancelReservationRequest,
   AddReservationChargeRequest,
@@ -106,6 +107,18 @@ export const adminReservationService = {
   adjustVehicles: async (id: string, request: AdjustReservationVehiclesRequest): Promise<{ reservation: AdminReservationDetailsResponse }> => {
     const response = await grandlineAxiosClient.post<{ reservation: AdminReservationDetailsResponse }>(
       API_ENDPOINTS.admin.adjustVehicles(id),
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Update reservation itinerary
+   * PUT /api/v1/admin/reservations/:id/itinerary
+   */
+  updateItinerary: async (id: string, request: UpdateReservationItineraryRequest): Promise<{ reservation: AdminReservationDetailsResponse }> => {
+    const response = await grandlineAxiosClient.put<{ reservation: AdminReservationDetailsResponse }>(
+      API_ENDPOINTS.admin.updateItinerary(id),
       request
     );
     return response.data;

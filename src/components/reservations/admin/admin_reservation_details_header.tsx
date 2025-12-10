@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Users, UserCog, Truck, DollarSign, X, Plus, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Users, UserCog, Truck, Route, DollarSign, X, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '../../common/ui/button';
 import { ReservationStatusBadge } from '../reservation_status_badge';
 import { formatDate } from '../../../utils/quote_formatters';
@@ -14,6 +14,7 @@ interface AdminReservationDetailsHeaderProps {
   onAddPassengers?: () => void;
   onChangeDriver?: () => void;
   onAdjustVehicles?: () => void;
+  onUpdateItinerary?: () => void;
   onProcessRefund?: () => void;
   onCancel?: () => void;
   onAddCharge?: () => void;
@@ -32,6 +33,7 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
   onAddPassengers,
   onChangeDriver,
   onAdjustVehicles,
+  onUpdateItinerary,
   onProcessRefund,
   onCancel,
   onAddCharge,
@@ -126,6 +128,15 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
                     >
                       <Truck className="w-4 h-4" />
                       Adjust Vehicles
+                    </button>
+                  )}
+                  {onUpdateItinerary && (
+                    <button
+                      onClick={() => handleActionClick(onUpdateItinerary)}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+                    >
+                      <Route className="w-4 h-4" />
+                      Update Itinerary
                     </button>
                   )}
                   {onProcessRefund && (

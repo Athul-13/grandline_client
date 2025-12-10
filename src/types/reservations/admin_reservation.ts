@@ -111,6 +111,22 @@ export interface AdjustReservationVehiclesRequest {
   }>;
 }
 
+export interface UpdateReservationItineraryRequest {
+  stops: Array<{
+    itineraryId?: string;
+    tripType: 'outbound' | 'return';
+    stopOrder: number;
+    locationName: string;
+    latitude: number;
+    longitude: number;
+    arrivalTime: Date | string;
+    departureTime?: Date | string;
+    stopType: string;
+    isDriverStaying: boolean;
+    stayingDuration?: number;
+  }>;
+}
+
 export interface ProcessReservationRefundRequest {
   amount: number;
   reason?: string;
