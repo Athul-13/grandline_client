@@ -38,7 +38,7 @@ export const sanitizeErrorMessage = (error: unknown): string => {
   // Remove sensitive patterns that might expose internal structure
   // Remove absolute file paths (but keep relative error context)
   message = message.replace(/[A-Z]:\\[^\s]+/g, '[path]');
-  message = message.replace(/\/[a-z0-9_\-]+\/[a-z0-9_\-]+\/[^\s]+/gi, '[path]');
+  message = message.replace(/\/[a-z0-9_-]+\/[a-z0-9_-]+\/[^\s]+/gi, '[path]');
 
   // Remove email addresses (might be in error messages)
   message = message.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[email]');

@@ -247,8 +247,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
         minWidth="1000px"
         columns={[
           { width: '15%' },
-          { width: '18%' },
-          { width: '12%' },
+          { width: '20%' },
           { width: '12%' },
           { width: '12%' },
           { width: '12%' },
@@ -403,14 +402,11 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
                       className="w-4 h-4 cursor-pointer"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%] whitespace-nowrap flex items-center">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-1 whitespace-nowrap flex items-center">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_18%] whitespace-nowrap flex items-center">
-                    Email
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%] whitespace-nowrap flex items-center">
-                    Phone
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_20%] whitespace-nowrap flex items-center">
+                    Contact
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%] whitespace-nowrap flex items-center">
                     License

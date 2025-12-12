@@ -1,4 +1,4 @@
-import { cn } from '../../utils/cn';
+
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 interface DriverOnboardingBadgeProps {

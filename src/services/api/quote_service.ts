@@ -14,6 +14,9 @@ import type {
   AdminQuoteDetailsResponse,
   UpdateQuoteStatusRequest,
   UpdateQuoteStatusResponse,
+  AssignDriverToQuoteRequest,
+  AssignDriverToQuoteResponse,
+  RecalculateQuoteResponse,
 } from '../../types/quotes/admin_quote';
 import type {
   CalculateRoutesRequest,
@@ -204,6 +207,90 @@ export const quoteService = {
       API_ENDPOINTS.admin.updateQuoteStatus(id),
       data
     );
+    return response.data;
+  },
+
+  /**
+   * Assign driver to quote (admin only)
+   * POST /api/v1/admin/quotes/:id/assign-driver
+   */
+  assignDriverToQuote: async (
+    id: string,
+    data: AssignDriverToQuoteRequest
+  ): Promise<AssignDriverToQuoteResponse> => {
+    const response = await grandlineAxiosClient.post<AssignDriverToQuoteResponse>(
+      API_ENDPOINTS.admin.assignDriver(id),
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Recalculate quote pricing (admin only)
+   * POST /api/v1/admin/quotes/:id/recalculate
+   */
+  recalculateQuote: async (id: string): Promise<RecalculateQuoteResponse> => {
+    const response = await grandlineAxiosClient.post<RecalculateQuoteResponse>(
+      API_ENDPOINTS.admin.recalculateQuote(id)
+    );
+    return response.data;
+  },
+
+  /**
+   * Get payment page data
+   * GET /api/v1/quotes/:id/payment
+   */
+  getPaymentPage: async (id: string): Promise<{
+    quoteId: string;
+    totalPrice: number;
+    pricing?: {
+      baseFare?: number;
+      distanceFare?: number;
+      driverCharge?: number;
+      fuelMaintenance?: number;
+      nightCharge?: number;
+      amenitiesTotal?: number;
+      subtotal?: number;
+      tax?: number;
+      taxPercentageAtTime?: number;
+      total?: number;
+    };
+    paymentWindowExpiresAt: string | null;
+  }> => {
+    const response = await grandlineAxiosClient.get<{
+      quoteId: string;
+      totalPrice: number;
+      pricing?: {
+        baseFare?: number;
+        distanceFare?: number;
+        driverCharge?: number;
+        fuelMaintenance?: number;
+        nightCharge?: number;
+        amenitiesTotal?: number;
+        subtotal?: number;
+        tax?: number;
+        taxPercentageAtTime?: number;
+        total?: number;
+      };
+      paymentWindowExpiresAt: string | null;
+    }>(API_ENDPOINTS.quotes.payment.getPage(id));
+    return response.data;
+  },
+
+  /**
+   * Create payment intent
+   * POST /api/v1/quotes/:id/payment/create-intent
+   */
+  createPaymentIntent: async (id: string): Promise<{
+    clientSecret: string;
+    paymentIntentId: string;
+    paymentId: string;
+  }> => {
+    const response = await grandlineAxiosClient.post<{
+      clientSecret: string;
+      paymentIntentId: string;
+      paymentId: string;
+    }>(API_ENDPOINTS.quotes.payment.createIntent(id));
     return response.data;
   },
 };

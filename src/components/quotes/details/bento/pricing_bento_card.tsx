@@ -34,7 +34,15 @@ export const PricingBentoCard: React.FC<PricingBentoCardProps> = ({ quoteDetails
               <div>
                 <span className="text-[var(--color-text-secondary)]">Driver Rate:</span>
                 <span className="ml-2 text-[var(--color-text-primary)] font-medium block">
-                  {formatPrice(quoteDetails.pricing.averageDriverRateAtTime)}/hr
+                  {quoteDetails.pricing.actualDriverRate
+                    ? formatPrice(quoteDetails.pricing.actualDriverRate)
+                    : formatPrice(quoteDetails.pricing.averageDriverRateAtTime)}
+                  /hr
+                  {quoteDetails.pricing.actualDriverRate && (
+                    <span className="ml-1 text-xs text-[var(--color-text-secondary)]">
+                      (actual)
+                    </span>
+                  )}
                 </span>
               </div>
               <div>

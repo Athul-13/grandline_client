@@ -152,7 +152,7 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
             </button>
           </div>
         </td>
-        <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%] min-w-0 overflow-hidden">
+        <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-1 min-w-0 overflow-hidden">
           {quote.tripName ? highlightSearchTerm(quote.tripName, searchQuery) : '-'}
         </td>
         <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_8%]">
@@ -161,16 +161,20 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
         <td className="px-4 py-3 flex-[0_0_10%]">
           <StatusBadge status={quote.status} />
         </td>
-        <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] flex-[0_0_15%] min-w-0 overflow-hidden">
-          {highlightSearchTerm(quote.user.fullName, searchQuery)}
-        </td>
-        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_18%]">
-          {highlightSearchTerm(quote.user.email, searchQuery)}
+        <td className="px-4 py-3 text-sm flex-[0_0_20%] min-w-0 overflow-hidden">
+          <div className="flex flex-col">
+            <span className="text-[var(--color-text-primary)] font-medium">
+              {highlightSearchTerm(quote.user.fullName, searchQuery)}
+            </span>
+            <span className="text-[var(--color-text-secondary)] text-xs mt-0.5 break-all">
+              {highlightSearchTerm(quote.user.email, searchQuery)}
+            </span>
+          </div>
         </td>
         <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium flex-[0_0_12%]">
           {formatPrice(quote.totalPrice)}
         </td>
-        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_10%]">
+        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%]">
           {formatDate(quote.createdAt)}
         </td>
       </tr>

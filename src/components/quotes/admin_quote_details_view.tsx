@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AdminQuoteDetailsHeader } from './admin_quote_details_header';
+import { DriverAssignmentModal } from './admin/driver_assignment_modal';
 import { BasicInfoSection } from './details/basic_info_section';
 import { UserInfoSection } from './details/user_info_section';
 import { PassengersSection } from './details/passengers_section';
@@ -13,6 +14,9 @@ import { useQuoteVehicles } from '../../hooks/quotes/use_quote_vehicles';
 import { useQuoteAmenities } from '../../hooks/quotes/use_quote_amenities';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
 import { useUnreadCount } from '../../hooks/chat/use_unread_count';
+import { useAssignDriverToQuote } from '../../hooks/quotes/use_assign_driver_to_quote';
+import { useRecalculateQuote } from '../../hooks/quotes/use_recalculate_quote';
+import { toast } from 'react-hot-toast';
 import type { AdminQuoteDetails } from '../../types/quotes/admin_quote';
 import { QuoteStatus } from '../../types/quotes/quote';
 
@@ -21,6 +25,7 @@ interface AdminQuoteDetailsViewProps {
   isUpdatingStatus: boolean;
   onBack: () => void;
   onStatusChange: (newStatus: 'paid' | 'submitted') => Promise<void>;
+  onRefetch?: () => Promise<void>;
 }
 
 /**
@@ -32,6 +37,7 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
   isUpdatingStatus,
   onBack,
   onStatusChange,
+  onRefetch,
 }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basicInfo: false,
@@ -44,6 +50,10 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
     route: false,
   });
   const [showChat, setShowChat] = useState(false);
+  const [showDriverAssignmentModal, setShowDriverAssignmentModal] = useState(false);
+
+  const { assignDriver, isLoading: isAssigningDriver, error: assignError } = useAssignDriverToQuote();
+  const { recalculate, isLoading: isRecalculating, error: recalculateError, requiresVehicleReselection } = useRecalculateQuote();
 
   const { vehicles, isLoading: isLoadingVehicles } = useQuoteVehicles(quoteDetails.selectedVehicles);
   const { amenities, isLoading: isLoadingAmenities } = useQuoteAmenities(quoteDetails.selectedAmenities);
@@ -98,6 +108,35 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
     }
   };
 
+  const handleAssignDriver = async (driverId: string) => {
+    const success = await assignDriver(quoteDetails.quoteId, { driverId });
+    if (success) {
+      toast.success('Driver assigned successfully');
+      setShowDriverAssignmentModal(false);
+      if (onRefetch) {
+        await onRefetch();
+      }
+    } else {
+      toast.error(assignError || 'Failed to assign driver');
+    }
+  };
+
+  const handleRecalculate = async () => {
+    const success = await recalculate(quoteDetails.quoteId);
+    if (success) {
+      if (requiresVehicleReselection) {
+        toast.error('Selected vehicles are no longer available. Please ask the user to select new vehicles.');
+      } else {
+        toast.success('Quote recalculated successfully');
+        if (onRefetch) {
+          await onRefetch();
+        }
+      }
+    } else {
+      toast.error(recalculateError || 'Failed to recalculate quote');
+    }
+  };
+
   // Show chat view if chat is active
   if (showChat) {
     return (
@@ -106,20 +145,32 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-      {/* Header with Back Button, Chat Icon, and Status Control */}
-      <AdminQuoteDetailsHeader
-        quoteDetails={quoteDetails}
-        availableStatuses={availableStatuses}
-        isUpdatingStatus={isUpdatingStatus}
-        onBack={handleBackToQuotes}
-        onStatusChange={onStatusChange}
-        onChatClick={handleChatClick}
-        unreadCount={unreadCount}
+    <React.Fragment>
+      <DriverAssignmentModal
+        isOpen={showDriverAssignmentModal}
+        onClose={() => setShowDriverAssignmentModal(false)}
+        onAssign={handleAssignDriver}
+        isLoading={isAssigningDriver}
       />
 
-      {/* Scrollable Content Area with Accordions */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
+      <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+        {/* Header with Back Button, Chat Icon, and Status Control */}
+        <AdminQuoteDetailsHeader
+          quoteDetails={quoteDetails}
+          availableStatuses={availableStatuses}
+          isUpdatingStatus={isUpdatingStatus}
+          onBack={handleBackToQuotes}
+          onStatusChange={onStatusChange}
+          onChatClick={handleChatClick}
+          onAssignDriver={() => setShowDriverAssignmentModal(true)}
+          onRecalculate={handleRecalculate}
+          isAssigningDriver={isAssigningDriver}
+          isRecalculating={isRecalculating}
+          unreadCount={unreadCount}
+        />
+
+        {/* Scrollable Content Area with Accordions */}
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
         <BasicInfoSection
           quoteDetails={quoteDetails}
           isExpanded={expandedSections.basicInfo}
@@ -171,8 +222,9 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
           isExpanded={expandedSections.route}
           onToggle={() => toggleSection('route')}
         />
+        </div>
       </div>
-    </div>
+    </React.Fragment>
   );
 };
 

@@ -11,7 +11,6 @@ import { PieChartCard } from './charts/pie_chart_card';
 import { LineChartCard } from './charts/line_chart_card';
 import { useDriverStatistics } from '../../hooks/drivers/use_driver_statistics';
 import { chartColors } from '../../utils/chart_colors';
-import { DriverStatus } from '../../types/drivers/admin_driver';
 
 interface DriverDashboardContentProps {
   timeRange?: 'all_time' | '7_days' | '30_days' | 'custom';

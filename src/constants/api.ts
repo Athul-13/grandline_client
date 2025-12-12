@@ -58,6 +58,21 @@ export const API_ENDPOINTS = {
     quotes: '/admin/quotes',
     quoteDetails: (id: string) => `/admin/quotes/${id}`,
     updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
+    assignDriver: (id: string) => `/admin/quotes/${id}/assign-driver`,
+    recalculateQuote: (id: string) => `/admin/quotes/${id}/recalculate`,
+    reservations: '/admin/reservations',
+    reservationDetails: (id: string) => `/admin/reservations/${id}`,
+    updateReservationStatus: (id: string) => `/admin/reservations/${id}/status`,
+    addPassengers: (id: string) => `/admin/reservations/${id}/passengers`,
+    changeDriver: (id: string) => `/admin/reservations/${id}/change-driver`,
+    adjustVehicles: (id: string) => `/admin/reservations/${id}/adjust-vehicles`,
+    updateItinerary: (id: string) => `/admin/reservations/${id}/itinerary`,
+    processRefund: (id: string) => `/admin/reservations/${id}/refund`,
+    cancelReservation: (id: string) => `/admin/reservations/${id}/cancel`,
+    addCharge: (id: string) => `/admin/reservations/${id}/charges`,
+    markChargeAsPaid: (id: string, chargeId: string) => `/admin/reservations/${id}/charges/${chargeId}/mark-paid`,
+    exportPDF: (id: string) => `/admin/reservations/${id}/export/pdf`,
+    exportCSV: (id: string) => `/admin/reservations/${id}/export/csv`,
     pricingConfig: {
       active: '/admin/pricing-config',
       create: '/admin/pricing-config',
@@ -89,6 +104,10 @@ export const API_ENDPOINTS = {
     calculatePricing: (id: string) => `/quotes/${id}/calculate-pricing`,
     submit: (id: string) => `/quotes/${id}/submit`,
     recommendations: '/quotes/recommendations',
+    payment: {
+      getPage: (id: string) => `/quotes/${id}/payment`,
+      createIntent: (id: string) => `/quotes/${id}/payment/create-intent`,
+    },
   },
   // Event type endpoints
   eventTypes: {
@@ -114,6 +133,14 @@ export const API_ENDPOINTS = {
     markRead: (notificationId: string) => `/notifications/${notificationId}/mark-read`,
     markAllRead: '/notifications/mark-all-read',
     unreadCount: '/notifications/unread-count',
+  },
+  // Reservation endpoints
+  reservations: {
+    list: '/reservations',
+    getById: (id: string) => `/reservations/${id}`,
+    chargePayment: {
+      createIntent: (reservationId: string, chargeId: string) => `/reservations/${reservationId}/charges/${chargeId}/payment/create-intent`,
+    },
   },
 } as const;
 

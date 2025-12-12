@@ -68,9 +68,17 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* Reservations */}
+      {/* Reservations - handles both list and details */}
       <Route
         path="reservations"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminReservationsPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+      <Route
+        path="reservations/:id"
         element={
           <ProtectedAdminLayoutRoute>
             <AdminReservationsPage />

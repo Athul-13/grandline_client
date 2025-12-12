@@ -1,7 +1,9 @@
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/ui/button';
 import { ChatIcon } from '../chat/common/chat_icon';
 import { QuoteStatus } from '../../types/quotes/quote';
+import { ROUTES } from '../../constants/routes';
 import type { QuoteResponse } from '../../types/quotes/quote';
 
 interface UserQuoteDetailsHeaderProps {
@@ -25,12 +27,32 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
   onChatClick,
   unreadCount = 0,
 }) => {
+  const navigate = useNavigate();
+
   // Chat is available when status is SUBMITTED or later
   const isChatAvailable =
     quoteDetails.status === QuoteStatus.SUBMITTED ||
+    quoteDetails.status === QuoteStatus.QUOTED ||
     quoteDetails.status === QuoteStatus.NEGOTIATING ||
     quoteDetails.status === QuoteStatus.ACCEPTED ||
     quoteDetails.status === QuoteStatus.PAID;
+
+  // Payment button is available for QUOTED status quotes
+  const isPaymentAvailable = quoteDetails.status === QuoteStatus.QUOTED && quoteDetails.quotedAt;
+  
+  // Check if payment window has expired
+  const isPaymentWindowExpired = (): boolean => {
+    if (!quoteDetails.quotedAt) return true;
+    const quotedAt = typeof quoteDetails.quotedAt === 'string' 
+      ? new Date(quoteDetails.quotedAt) 
+      : quoteDetails.quotedAt;
+    const paymentWindowExpiresAt = new Date(quotedAt.getTime() + 24 * 60 * 60 * 1000);
+    return new Date() > paymentWindowExpiresAt;
+  };
+
+  const handlePaymentClick = () => {
+    navigate(ROUTES.payment(quoteDetails.quoteId));
+  };
   return (
     <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
       <div className="flex items-center justify-between px-4 py-3">
@@ -50,6 +72,19 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Payment Button - Show for QUOTED status */}
+          {isPaymentAvailable && !isPaymentWindowExpired() && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handlePaymentClick}
+              className="flex items-center gap-2 bg-[var(--color-primary)] text-white hover:opacity-90"
+            >
+              <CreditCard className="w-4 h-4" />
+              Pay Now
+            </Button>
+          )}
+
           {/* Chat Icon with Label */}
           {isChatAvailable && onChatClick && (
             <ChatIcon

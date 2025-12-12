@@ -19,11 +19,7 @@ export const useDriverStatistics = (params?: DriverStatisticsRequest): UseDriver
   const [error, setError] = useState<string | null>(null);
 
   // Memoize params to prevent unnecessary re-renders
-  const memoizedParams = useMemo(() => params, [
-    params?.timeRange,
-    params?.startDate,
-    params?.endDate,
-  ]);
+  const memoizedParams = useMemo(() => params, [params]);
 
   const fetchStatistics = useCallback(async () => {
     setIsLoading(true);

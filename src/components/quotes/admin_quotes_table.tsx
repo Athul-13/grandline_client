@@ -222,6 +222,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
         isUpdatingStatus={isUpdatingStatus}
         onBack={handleBack}
         onStatusChange={handleStatusChange}
+        onRefetch={refetch}
       />
     );
   }
@@ -238,8 +239,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
           { width: '15%' },
           { width: '8%' },
           { width: '10%' },
-          { width: '15%' },
-          { width: '18%' },
+          { width: '20%' },
           { width: '12%' },
           { width: '12%' },
         ]}
@@ -320,28 +320,25 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
                           className="w-4 h-4 cursor-pointer"
                         />
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
                         Quote ID
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-1 whitespace-nowrap flex items-center">
                         Trip Name
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_8%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_8%] whitespace-nowrap flex items-center">
                         Type
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_10%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_10%] whitespace-nowrap flex items-center">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_15%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_20%] whitespace-nowrap flex items-center">
                         User
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_18%] whitespace-nowrap flex items-center">
-                        Email
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
                         Total Price
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] flex-[0_0_12%] whitespace-nowrap flex items-center">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
                         Created Date
                       </th>
                     </tr>

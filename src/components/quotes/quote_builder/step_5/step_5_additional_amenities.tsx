@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../../../components/common/ui/button';
 import { usePaidAmenities } from '../../../../hooks/quotes/use_paid_amenities';
 import { useVehicleRecommendations } from '../../../../hooks/quotes/use_vehicle_recommendations';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { cn } from '../../../../utils/cn';
 import type { ItineraryStopDto } from '../../../../types/quotes/itinerary';
 import type { TripTypeType, SelectedVehicle } from '../../../../types/quotes/quote';
@@ -41,6 +41,8 @@ export const Step5AdditionalAmenities: React.FC<Step5AdditionalAmenitiesProps> =
   onSubmitQuote,
   isLoading = false,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Fetch paid amenities
   const { amenities: paidAmenities, isLoading: isLoadingAmenities, error: amenitiesError, refetch: refetchAmenities } = usePaidAmenities(true);
 
@@ -112,9 +114,19 @@ export const Step5AdditionalAmenities: React.FC<Step5AdditionalAmenitiesProps> =
   }, []);
 
   const handleSubmit = async () => {
-    // Save selected amenities before submitting
-    // (They should already be saved via auto-save, but ensure they're saved)
-    await onSubmitQuote();
+    if (isSubmitting || !quoteId) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Save selected amenities before submitting
+      // (They should already be saved via auto-save, but ensure they're saved)
+      await onSubmitQuote();
+    } catch (error) {
+      console.error('Failed to submit quote:', error);
+      // Error handling is done in parent component
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -208,18 +220,25 @@ export const Step5AdditionalAmenities: React.FC<Step5AdditionalAmenitiesProps> =
         <Button
           onClick={onPrevious}
           variant="outline"
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
           size="sm"
         >
           Previous
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isLoading || !quoteId}
-          loading={isLoading}
+          disabled={isLoading || isSubmitting || !quoteId}
           size="sm"
+          className="flex items-center gap-2"
         >
-          Complete Quote
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Submitting...</span>
+            </>
+          ) : (
+            'Complete Quote'
+          )}
         </Button>
       </div>
     </div>
