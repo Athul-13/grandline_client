@@ -5,7 +5,7 @@ import { useSearchContext } from '../../hooks/use_search_context';
 import { AdminReservationsTable } from '../../components/reservations/admin/admin_reservations_table';
 import { useAdminReservationsList } from '../../hooks/reservations/use_admin_reservations_list';
 import { Pagination } from '../../components/common/ui/pagination';
-import { ReservationStatus } from '../../types/reservations/reservation';
+import { ReservationStatus, type ReservationStatusType } from '../../types/reservations/reservation';
 import { cn } from '../../utils/cn';
 
 const FILTER_STORAGE_KEY = 'admin_reservations_filters';
@@ -73,7 +73,7 @@ export const AdminReservationsPage: React.FC = () => {
     limit: itemsPerPage,
     includeDeleted,
     search: searchQuery,
-    status: selectedStatuses.length > 0 ? (selectedStatuses as ReservationStatus[]) : undefined,
+    status: selectedStatuses.length > 0 ? (selectedStatuses as ReservationStatusType[]) : undefined,
     sortBy,
     sortOrder,
   });

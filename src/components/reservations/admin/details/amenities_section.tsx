@@ -31,9 +31,9 @@ export const AmenitiesSection: React.FC<AmenitiesSectionProps> = ({
         </div>
       ) : amenities && amenities.length > 0 ? (
         <div className="flex flex-wrap gap-2">
-          {amenities.map((amenity) => (
+          {amenities.map((amenity, index) => (
             <div
-              key={amenity.amenityId}
+              key={amenity.amenityId || `amenity-${index}`}
               className="px-3 py-1.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)] text-sm text-[var(--color-text-primary)]"
             >
               {amenity.icon && <span className="mr-2">{amenity.icon}</span>}

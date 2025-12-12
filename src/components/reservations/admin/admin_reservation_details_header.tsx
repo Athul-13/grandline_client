@@ -88,9 +88,7 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-              {reservationDetails.tripName || 'Reservation Details'}
-            </p>
+            <p className="text-sm font-semibold text-[var(--color-text-primary)]">Reservation Details</p>
             <p className="text-xs text-[var(--color-text-secondary)] font-mono">
               {reservationDetails.reservationId}
             </p>

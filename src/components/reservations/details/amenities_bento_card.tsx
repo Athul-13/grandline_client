@@ -53,11 +53,11 @@ export const AmenitiesBentoCard: React.FC<AmenitiesBentoCardProps> = ({
         <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Amenities</h3>
       </div>
       <div className="flex flex-wrap gap-2">
-        {reservationDetails.selectedAmenities.map((amenityId) => {
+        {reservationDetails.selectedAmenities.map((amenityId, index) => {
           const amenity = amenities.find((a) => a.amenityId === amenityId);
           return (
             <span
-              key={amenityId}
+              key={amenityId || `amenity-${index}`}
               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)]"
             >
               {amenity?.name || amenityId}

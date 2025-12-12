@@ -28,11 +28,12 @@ export const useReservationAmenities = (
         const fetchedAmenities = await Promise.all(
           selectedAmenities.map(async (amenityId) => {
             try {
-              const amenity = await amenityService.getAmenityById(amenityId);
+              const response = await amenityService.getAmenityById(amenityId);
+              const amenity = response.amenity;
               return {
                 amenityId: amenity.amenityId,
                 name: amenity.name,
-                icon: amenity.icon,
+                icon: undefined, // Icon not available in API response
               };
             } catch (error) {
               console.error(`Failed to fetch amenity ${amenityId}:`, error);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ReservationsTable } from '../../components/reservations/reservations_table';
 import { useReservationsList } from '../../hooks/reservations/use_reservations_list';
 
@@ -7,6 +8,8 @@ import { useReservationsList } from '../../hooks/reservations/use_reservations_l
  * Displays user reservations in a table with pagination
  */
 export const ReservationsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const reservationId = searchParams.get('reservationId');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
@@ -21,14 +24,17 @@ export const ReservationsPage: React.FC = () => {
 
   return (
     <div className="p-5 sm:p-4 md:p-6 lg:p-8 xl:p-10 space-y-4 sm:space-y-6 h-full flex flex-col">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
-          Reservations
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-[var(--color-text-secondary)]">
-          View and manage your confirmed reservations
-        </p>
-      </div>
+      {/* Hide title when viewing reservation details */}
+      {!reservationId && (
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
+            Reservations
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-[var(--color-text-secondary)]">
+            View and manage your confirmed reservations
+          </p>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col min-h-0">
         {error ? (

@@ -4,6 +4,7 @@ import { formatDate } from '../../../../utils/quote_formatters';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { AdminReservationDetailsResponse } from '../../../../types/reservations/admin_reservation';
 
+
 interface ModificationsSectionProps {
   reservationDetails: AdminReservationDetailsResponse;
   isExpanded: boolean;
@@ -11,7 +12,7 @@ interface ModificationsSectionProps {
 }
 
 interface ModificationItemProps {
-  mod: AdminReservationDetailsResponse['modifications'][0];
+  mod: NonNullable<AdminReservationDetailsResponse['modifications']>[0];
 }
 
 /**
