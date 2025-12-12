@@ -70,6 +70,9 @@ export const API_ENDPOINTS = {
     processRefund: (id: string) => `/admin/reservations/${id}/refund`,
     cancelReservation: (id: string) => `/admin/reservations/${id}/cancel`,
     addCharge: (id: string) => `/admin/reservations/${id}/charges`,
+    markChargeAsPaid: (id: string, chargeId: string) => `/admin/reservations/${id}/charges/${chargeId}/mark-paid`,
+    exportPDF: (id: string) => `/admin/reservations/${id}/export/pdf`,
+    exportCSV: (id: string) => `/admin/reservations/${id}/export/csv`,
     pricingConfig: {
       active: '/admin/pricing-config',
       create: '/admin/pricing-config',
@@ -135,6 +138,9 @@ export const API_ENDPOINTS = {
   reservations: {
     list: '/reservations',
     getById: (id: string) => `/reservations/${id}`,
+    chargePayment: {
+      createIntent: (reservationId: string, chargeId: string) => `/reservations/${reservationId}/charges/${chargeId}/payment/create-intent`,
+    },
   },
 } as const;
 

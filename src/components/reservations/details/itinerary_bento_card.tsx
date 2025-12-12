@@ -35,7 +35,7 @@ export const ItineraryBentoCard: React.FC<ItineraryBentoCardProps> = ({
   const outboundStops = itinerary.filter((stop) => stop.tripType === 'outbound').sort((a, b) => a.stopOrder - b.stopOrder);
   const returnStops = itinerary.filter((stop) => stop.tripType === 'return').sort((a, b) => a.stopOrder - b.stopOrder);
 
-  const renderStop = (stop: typeof itinerary[0], index: number) => (
+  const renderStop = (stop: typeof itinerary[0]) => (
     <div
       key={stop.itineraryId}
       className="p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)] mb-2"
@@ -102,7 +102,7 @@ export const ItineraryBentoCard: React.FC<ItineraryBentoCardProps> = ({
               Outbound Journey
             </h4>
             <div className="space-y-2">
-              {outboundStops.map((stop, index) => renderStop(stop, index))}
+              {outboundStops.map((stop) => renderStop(stop))}
             </div>
           </div>
         )}
@@ -114,7 +114,7 @@ export const ItineraryBentoCard: React.FC<ItineraryBentoCardProps> = ({
               Return Journey
             </h4>
             <div className="space-y-2">
-              {returnStops.map((stop, index) => renderStop(stop, index))}
+              {returnStops.map((stop) => renderStop(stop))}
             </div>
           </div>
         )}

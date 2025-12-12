@@ -288,6 +288,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
           reservationDetails={reservationDetails}
           isExpanded={expandedSections.charges}
           onToggle={() => toggleSection('charges')}
+          onRefetch={onRefetch}
         />
 
         <ModificationsSection

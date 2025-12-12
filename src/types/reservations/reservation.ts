@@ -156,6 +156,18 @@ export interface ReservationResponse {
     phoneNumber: string;
     age: number;
   }>;
+  charges?: Array<{
+    chargeId: string;
+    reservationId: string;
+    chargeType: 'additional_passenger' | 'vehicle_upgrade' | 'amenity_add' | 'late_fee' | 'other';
+    description: string;
+    amount: number;
+    currency: string;
+    addedBy: string;
+    isPaid: boolean;
+    paidAt?: Date | string;
+    createdAt: Date | string;
+  }>;
 }
 
 /**

@@ -159,5 +159,38 @@ export const adminReservationService = {
     );
     return response.data;
   },
+
+  /**
+   * Mark charge as paid
+   * PUT /api/v1/admin/reservations/:id/charges/:chargeId/mark-paid
+   */
+  markChargeAsPaid: async (id: string, chargeId: string): Promise<{ charge: import('../../types/reservations/admin_reservation').ReservationChargeResponse }> => {
+    const response = await grandlineAxiosClient.put<{ charge: import('../../types/reservations/admin_reservation').ReservationChargeResponse }>(
+      API_ENDPOINTS.admin.markChargeAsPaid(id, chargeId)
+    );
+    return response.data;
+  },
+
+  /**
+   * Export reservation to PDF
+   * GET /api/v1/admin/reservations/:id/export/pdf
+   */
+  exportPDF: async (id: string): Promise<Blob> => {
+    const response = await grandlineAxiosClient.get(API_ENDPOINTS.admin.exportPDF(id), {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  /**
+   * Export reservation to CSV
+   * GET /api/v1/admin/reservations/:id/export/csv
+   */
+  exportCSV: async (id: string): Promise<Blob> => {
+    const response = await grandlineAxiosClient.get(API_ENDPOINTS.admin.exportCSV(id), {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
 

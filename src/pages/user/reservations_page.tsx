@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLanguage } from '../../hooks/use_language';
 import { ReservationsTable } from '../../components/reservations/reservations_table';
 import { useReservationsList } from '../../hooks/reservations/use_reservations_list';
 
@@ -8,11 +7,10 @@ import { useReservationsList } from '../../hooks/reservations/use_reservations_l
  * Displays user reservations in a table with pagination
  */
 export const ReservationsPage: React.FC = () => {
-  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
-  const { reservations, pagination, isLoading, error, refetch } = useReservationsList({
+  const { reservations, pagination, isLoading, error } = useReservationsList({
     page: currentPage,
     limit: itemsPerPage,
   });

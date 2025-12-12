@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { adminReservationService } from '../../services/api/admin_reservation_service';
 import type { AdminReservationListItem } from '../../types/reservations/admin_reservation';
 import type { ReservationStatusType } from '../../types/reservations/reservation';
@@ -35,14 +35,6 @@ export const useAdminReservationsList = (params?: UseAdminReservationsListParams
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize status array to prevent infinite loops from reference changes
-  const statusKey = useMemo(() => {
-    if (!params?.status || params.status.length === 0) {
-      return '';
-    }
-    return [...params.status].sort().join(',');
-  }, [params?.status]);
-
   const fetchReservations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -73,7 +65,7 @@ export const useAdminReservationsList = (params?: UseAdminReservationsListParams
     params?.limit,
     params?.includeDeleted,
     params?.search,
-    statusKey,
+    params?.status,
     params?.sortBy,
     params?.sortOrder,
   ]);

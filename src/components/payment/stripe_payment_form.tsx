@@ -26,7 +26,7 @@ const PaymentForm: React.FC<{
   totalPrice: number;
   onSuccess: () => void;
   onError: (error: string) => void;
-}> = ({ quoteId, totalPrice, onSuccess, onError }) => {
+}> = ({ quoteId, totalPrice, onSuccess, onError: _onError }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -57,10 +57,11 @@ const PaymentForm: React.FC<{
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         onSuccess();
       }
-    } catch (err) {
+      } catch (err) {
       const error = err instanceof Error ? err.message : 'An unexpected error occurred';
       setErrorMessage(error);
       setIsProcessing(false);
+      _onError(error);
     }
   };
 
@@ -104,7 +105,8 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   totalPrice,
   onSuccess,
   onError,
-  onCancel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onCancel: _onCancel,
 }) => {
   return (
     <div>

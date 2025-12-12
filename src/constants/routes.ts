@@ -16,6 +16,8 @@ export const ROUTES = {
   dashboard: '/dashboard',
   quotes: '/quotes',
   reservations: '/reservations',
+  reservationDetails: (id: string) => `/reservations/${id}`,
+  chargePayment: (reservationId: string, chargeId: string) => `/reservations/${reservationId}/charges/${chargeId}/pay`,
   support: '/support',
   buildQuote: '/build-quote',
   payment: (quoteId: string) => `/payment/${quoteId}`,

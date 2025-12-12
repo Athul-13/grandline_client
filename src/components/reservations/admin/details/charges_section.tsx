@@ -1,11 +1,17 @@
+import React from 'react';
 import { FilterSection } from '../../../common/filters/filter_section';
 import { formatDate, formatPrice } from '../../../../utils/quote_formatters';
+import { Button } from '../../../common/ui/button';
+import { CheckCircle2 } from 'lucide-react';
+import { useMarkChargeAsPaid } from '../../../../hooks/reservations/use_mark_charge_as_paid';
+import toast from 'react-hot-toast';
 import type { AdminReservationDetailsResponse } from '../../../../types/reservations/admin_reservation';
 
 interface ChargesSectionProps {
   reservationDetails: AdminReservationDetailsResponse;
   isExpanded: boolean;
   onToggle: () => void;
+  onRefetch?: () => Promise<void>;
 }
 
 /**
@@ -16,7 +22,20 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({
   reservationDetails,
   isExpanded,
   onToggle,
+  onRefetch,
 }) => {
+  const { markChargeAsPaid, isLoading: isMarkingPaid } = useMarkChargeAsPaid();
+
+  const handleMarkAsPaid = async (chargeId: string) => {
+    const result = await markChargeAsPaid(reservationDetails.reservationId, chargeId);
+    if (result) {
+      toast.success('Charge marked as paid successfully');
+      if (onRefetch) {
+        await onRefetch();
+      }
+    }
+  };
+
   if (!reservationDetails.charges || reservationDetails.charges.length === 0) {
     return null;
   }
@@ -37,10 +56,26 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({
                   {formatPrice(charge.amount)} {charge.currency}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
-                <span className="capitalize">{charge.chargeType.replace('_', ' ')}</span>
-                <span>{charge.isPaid ? 'Paid' : 'Unpaid'}</span>
-                {charge.paidAt && <span>{formatDate(charge.paidAt)}</span>}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
+                  <span className="capitalize">{charge.chargeType.replace('_', ' ')}</span>
+                  <span className={charge.isPaid ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}>
+                    {charge.isPaid ? 'Paid' : 'Unpaid'}
+                  </span>
+                  {charge.paidAt && <span>{formatDate(charge.paidAt)}</span>}
+                </div>
+                {!charge.isPaid && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleMarkAsPaid(charge.chargeId)}
+                    disabled={isMarkingPaid}
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <CheckCircle2 className="w-3 h-3" />
+                    Mark as Paid
+                  </Button>
+                )}
               </div>
             </div>
           ))}

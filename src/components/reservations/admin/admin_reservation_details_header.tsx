@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Users, UserCog, Truck, Route, DollarSign, X, Plus, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Users, UserCog, Truck, Route, DollarSign, X, Plus, MoreVertical, Download, FileText } from 'lucide-react';
 import { Button } from '../../common/ui/button';
-import { ReservationStatusBadge } from '../reservation_status_badge';
-import { formatDate } from '../../../utils/quote_formatters';
+import { useExportReservation } from '../../../hooks/reservations/use_export_reservation';
 import type { AdminReservationDetailsResponse } from '../../../types/reservations/admin_reservation';
 
 interface AdminReservationDetailsHeaderProps {
@@ -18,6 +17,8 @@ interface AdminReservationDetailsHeaderProps {
   onProcessRefund?: () => void;
   onCancel?: () => void;
   onAddCharge?: () => void;
+  onExportPDF?: () => void;
+  onExportCSV?: () => void;
 }
 
 /**
@@ -37,28 +38,38 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
   onProcessRefund,
   onCancel,
   onAddCharge,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onExportPDF: _onExportPDF,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onExportCSV: _onExportCSV,
 }) => {
   const [showActionsDropdown, setShowActionsDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const { exportPDF, exportCSV, isLoading: isExporting } = useExportReservation();
 
   const canModify = reservationDetails.status !== 'cancelled' && reservationDetails.status !== 'refunded';
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowActionsDropdown(false);
       }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setShowExportDropdown(false);
+      }
     };
 
-    if (showActionsDropdown) {
+    if (showActionsDropdown || showExportDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showActionsDropdown]);
+  }, [showActionsDropdown, showExportDropdown]);
 
   const handleActionClick = (action: () => void) => {
     action();
@@ -87,6 +98,48 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Export Dropdown */}
+          <div className="relative" ref={exportDropdownRef}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              disabled={isExporting}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export
+            </Button>
+
+            {/* Export Dropdown Menu */}
+            {showExportDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1">
+                <button
+                  onClick={() => {
+                    exportPDF(reservationDetails.reservationId);
+                    setShowExportDropdown(false);
+                  }}
+                  disabled={isExporting}
+                  className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors disabled:opacity-50"
+                >
+                  <FileText className="w-4 h-4" />
+                  Export as PDF
+                </button>
+                <button
+                  onClick={() => {
+                    exportCSV(reservationDetails.reservationId);
+                    setShowExportDropdown(false);
+                  }}
+                  disabled={isExporting}
+                  className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors disabled:opacity-50"
+                >
+                  <FileText className="w-4 h-4" />
+                  Export as CSV
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Actions Dropdown */}
           {canModify && (
             <div className="relative" ref={dropdownRef}>
