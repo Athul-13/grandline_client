@@ -18,8 +18,14 @@ export const useUserStatistics = (params?: UserStatisticsRequest): UseUserStatis
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize params to prevent unnecessary re-renders
-  const memoizedParams = useMemo(() => params, [params]);
+  const memoizedParams = useMemo(() => {
+    if (!params) return undefined;
+    return {
+      timeRange: params.timeRange,
+      startDate: params.startDate,
+      endDate: params.endDate,
+    };
+  }, [params?.timeRange, params?.startDate, params?.endDate]);
 
   const fetchStatistics = useCallback(async () => {
     setIsLoading(true);
