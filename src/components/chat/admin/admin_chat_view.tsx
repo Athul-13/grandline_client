@@ -1,38 +1,51 @@
 import { useEffect } from 'react';
 import { useAppSelector } from '../../../store/hooks';
 import { useSocketConnection } from '../../../hooks/chat/use_socket_connection';
-import { useChatForQuote } from '../../../hooks/chat/use_chat_for_quote';
 import { useChatMessages } from '../../../hooks/chat/use_chat_messages';
 import { AdminChatHeader } from './admin_chat_header';
 import { AdminChatBody } from './admin_chat_body';
 import { AdminChatInput } from './admin_chat_input';
 import { ConnectionStatus } from '../common/connection_status';
 import { ErrorMessage } from '../../common/ui/error_message';
-import type { AdminQuoteDetails } from '../../../types/quotes/admin_quote';
+import type { Chat } from '../../../types/chat/chat';
 
 interface AdminChatViewProps {
-  quoteDetails: AdminQuoteDetails;
+  chat: Chat | null;
+  contextType: string;   // e.g., 'quote', 'driver'
+  contextId: string;     // e.g., quote ID, driver ID
+  contextLabel: string;  // e.g., 'Quote', 'Driver'
+  otherUserName: string; // Name of the other party (user or driver)
+  isLoadingChat: boolean;
+  chatError: string | null;
+  isJoined: boolean;
+  joinChat: () => Promise<void>;
+  refetchChat: () => Promise<void>;
   onBack: () => void;
 }
 
 /**
  * Admin Chat View Component
- * Main chat view with table-like structure (header + body)
+ * Generic chat view that works with any context (quotes, drivers, etc.)
  * Integrated with Socket.io for real-time functionality
  */
-export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBack }) => {
+export const AdminChatView: React.FC<AdminChatViewProps> = ({
+  chat,
+  contextType,
+  contextId,
+  contextLabel,
+  otherUserName,
+  isLoadingChat,
+  chatError,
+  isJoined,
+  joinChat,
+  refetchChat,
+  onBack,
+}) => {
   const currentUser = useAppSelector((state) => state.auth.user);
   const currentUserId = currentUser?.userId || '';
 
   // Socket connection
   const { isConnected, isConnecting, error: socketError, reconnect } = useSocketConnection();
-
-  // Get or create chat for quote (autoJoin: false - we'll join explicitly when view opens)
-  const { chat, isLoading: isLoadingChat, error: chatError, isJoined, joinChat, refetch: refetchChat } = useChatForQuote({
-    quoteId: quoteDetails.quoteId,
-    userId: quoteDetails.user?.userId || '',
-    autoJoin: false,
-  });
 
   // Explicitly join chat room when chat view opens and chat is available
   useEffect(() => {
@@ -49,8 +62,8 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
     sendMessage,
   } = useChatMessages({
     chatId: chat?.chatId || null,
-    quoteId: quoteDetails.quoteId,
-    contextType: 'quote',
+    contextId: contextId,
+    contextType,
     isJoined,
     onChatCreated: () => {
       // Refetch chat after first message creates it
@@ -77,14 +90,11 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
     });
   }, [isLoadingChat, isLoadingMessages, isConnected, chat]);
 
-  // Get other user name (user from quote)
-  const otherUserName = quoteDetails.user?.fullName || 'User';
-
   // Show error if chat failed to load
   if (chatError && !isLoadingChat) {
     return (
       <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-        <AdminChatHeader quoteDetails={quoteDetails} onBack={onBack} />
+        <AdminChatHeader contextLabel={contextLabel} contextId={contextId} onBack={onBack} />
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             <ErrorMessage message={chatError} />
@@ -103,7 +113,7 @@ export const AdminChatView: React.FC<AdminChatViewProps> = ({ quoteDetails, onBa
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
       {/* Chat Header */}
-      <AdminChatHeader quoteDetails={quoteDetails} onBack={onBack} />
+      <AdminChatHeader contextLabel={contextLabel} contextId={contextId} onBack={onBack} />
 
       {/* Connection Status */}
       <ConnectionStatus

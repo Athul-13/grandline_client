@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trash2, MoreVertical, ChevronDown, Activity, Clock, ShieldOff, Ban, XCircle } from 'lucide-react';
+import { Trash2, MoreVertical, ChevronDown, Activity, Clock, ShieldOff, Ban, XCircle } from 'lucide-react';
 import { Pagination } from '../common/ui/pagination';
 import { AdminDriversTableRow } from './admin_drivers_table_row';
 import { AdminDriverDetailsView } from './admin_driver_details_view';
@@ -275,37 +275,9 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 
   // Render table header
   const renderTableHeader = () => {
+    // No header needed when viewing driver details - header is in AdminDriverDetailsView
     if (driverId) {
-      return (
-        <div 
-          ref={headerScrollRef}
-          className="shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] h-[48px] flex items-center justify-between px-4"
-        >
-          <div className="flex items-center">
-            <button
-              onClick={handleBack}
-              className="p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors mr-2"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
-            </button>
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-              {t('driver.details.title')}
-            </h2>
-          </div>
-          {driverDetails && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t('common.deleteDriver')}
-            </Button>
-          )}
-        </div>
-      );
+      return null;
     }
 
     return (
@@ -469,6 +441,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
             driverDetails={driverDetails}
             onStatusChange={refetchDriverDetails}
             onUpdate={refetchDriverDetails}
+            onBack={handleBack}
           />
         </div>
       );
@@ -502,10 +475,19 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
   return (
     <>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
-          {renderTableHeader()}
-          {renderBodyContent()}
-        </div>
+        {driverId ? (
+          // Driver details view - no border/card wrapper (handled in AdminDriverDetailsView)
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            {renderTableHeader()}
+            {renderBodyContent()}
+          </div>
+        ) : (
+          // Table view - with border/card wrapper
+          <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
+            {renderTableHeader()}
+            {renderBodyContent()}
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

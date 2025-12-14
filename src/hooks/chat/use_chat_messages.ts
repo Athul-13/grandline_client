@@ -14,7 +14,7 @@ import type {
 
 interface UseChatMessagesParams {
   chatId: string | null;
-  quoteId?: string; // For creating chat on first message
+  contextId?: string; // For creating chat on first message
   contextType?: string; // For creating chat on first message (default: 'quote')
   onChatCreated?: (chatId: string) => void; // Callback when chat is created after first message
   isJoined?: boolean; // Whether user has joined the chat room
@@ -39,7 +39,7 @@ interface UseChatMessagesReturn {
  * Hook for fetching and managing chat messages with real-time updates
  */
 export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesReturn => {
-  const { chatId, quoteId, contextType = 'quote', onChatCreated, isJoined = false, page = 1, limit = 20, autoFetch = true } = params;
+  const { chatId, contextId, contextType = 'quote', onChatCreated, isJoined = false, page = 1, limit = 20, autoFetch = true } = params;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -115,10 +115,10 @@ export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesR
 
         if (chatId) {
           messageData.chatId = chatId;
-        } else if (quoteId) {
+        } else if (contextId) {
           // First message - send with context info (server auto-creates chat)
           messageData.contextType = contextType || 'quote';
-          messageData.contextId = quoteId;
+          messageData.contextId = contextId;
         } else {
           reject(new Error('Cannot send message: chat ID or quote ID is required'));
           return;
@@ -161,7 +161,7 @@ export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesR
         );
       });
     },
-    [chatId, quoteId, contextType, onChatCreated, sortMessages]
+    [chatId, contextId, contextType, onChatCreated, sortMessages]
   );
 
   const markAsRead = useCallback(() => {
@@ -219,7 +219,7 @@ export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesR
       // In this case, accept the message if:
       // 1. It's sent by current user (we just sent it)
       // 2. Or we have quoteId and this might be the first message creating the chat
-      const isFirstMessage = !chatId && (message.senderId === currentUserId || quoteId);
+      const isFirstMessage = !chatId && (message.senderId === currentUserId || contextId);
       
       if (!messageBelongsToCurrentChat && !isFirstMessage) {
         return;
@@ -309,7 +309,7 @@ export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesR
       cleanupFunctionsRef.current.forEach((cleanup) => cleanup());
       cleanupFunctionsRef.current = [];
     };
-  }, [chatId, sortMessages, currentUserId, quoteId, onChatCreated, isConnected]);
+  }, [chatId, sortMessages, currentUserId, contextId, onChatCreated, isConnected]);
 
   // Fetch messages on mount or when chatId changes
   useEffect(() => {
