@@ -59,7 +59,7 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
   const { amenities, isLoading: isLoadingAmenities } = useQuoteAmenities(quoteDetails.selectedAmenities);
 
   // Get chat for quote (autoJoin: false - only fetch chat data, don't join room)
-  const { chat } = useChatForQuote({
+  const { chat, isLoading: isLoadingChat, error: chatError, isJoined, joinChat, refetch: refetchChat } = useChatForQuote({
     quoteId: quoteDetails.quoteId,
     userId: quoteDetails.user?.userId || '',
     autoJoin: false,
@@ -140,7 +140,19 @@ export const AdminQuoteDetailsView: React.FC<AdminQuoteDetailsViewProps> = ({
   // Show chat view if chat is active
   if (showChat) {
     return (
-      <AdminChatView quoteDetails={quoteDetails} onBack={handleBackFromChat} />
+      <AdminChatView
+        chat={chat}
+        contextType="quote"
+        contextId={quoteDetails.quoteId}
+        contextLabel="Quote"
+        otherUserName={quoteDetails.user?.fullName || 'User'}
+        isLoadingChat={isLoadingChat}
+        chatError={chatError}
+        isJoined={isJoined}
+        joinChat={joinChat}
+        refetchChat={refetchChat}
+        onBack={handleBackFromChat}
+      />
     );
   }
 

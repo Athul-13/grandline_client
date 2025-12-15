@@ -142,6 +142,12 @@ export const API_ENDPOINTS = {
       createIntent: (reservationId: string, chargeId: string) => `/reservations/${reservationId}/charges/${chargeId}/payment/create-intent`,
     },
   },
+  // Dashboard endpoints
+  dashboard: {
+    stats: '/dashboard/stats',
+    activity: '/dashboard/activity',
+    adminAnalytics: '/dashboard/admin/analytics',
+  },
 } as const;
 
 /**
