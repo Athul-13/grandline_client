@@ -1,10 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { chatSocketService } from '../../../services/socket/chat_socket_service';
 import { MessageBubble } from '../common/message_bubble';
 import { TypingIndicator } from '../common/typing_indicator';
+import { getDateLabel, isDifferentDay } from '../../../utils/chat_date_utils';
 import type { Message } from '../../../types/chat/message';
 import type { TypingEvent, TypingStoppedEvent } from '../../../types/chat/chat_socket_events';
 import { cn } from '../../../utils/cn';
+
+interface MessageWithSeparator {
+  type: 'message' | 'dateSeparator';
+  message?: Message;
+  dateLabel?: string;
+  key: string;
+}
 
 interface AdminChatBodyProps {
   messages: Message[];
@@ -31,6 +39,39 @@ export const AdminChatBody: React.FC<AdminChatBodyProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Prepare messages with date separators
+  const messagesWithSeparators = useMemo<MessageWithSeparator[]>(() => {
+    if (messages.length === 0) return [];
+
+    const result: MessageWithSeparator[] = [];
+    
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+      const messageDate = message.createdAt;
+      
+      // Add date separator if this is the first message or date changed
+      if (i === 0 || isDifferentDay(messageDate, messages[i - 1].createdAt)) {
+        const dateKey = typeof messageDate === 'string' 
+          ? messageDate.split('T')[0] 
+          : messageDate.toISOString().split('T')[0];
+        result.push({
+          type: 'dateSeparator',
+          dateLabel: getDateLabel(messageDate),
+          key: `date-${dateKey}`,
+        });
+      }
+      
+      // Add the message
+      result.push({
+        type: 'message',
+        message,
+        key: message.messageId,
+      });
+    }
+    
+    return result;
+  }, [messages]);
 
   // Listen for typing indicators
   useEffect(() => {
@@ -112,14 +153,32 @@ export const AdminChatBody: React.FC<AdminChatBodyProps> = ({
         className
       )}
     >
-      {messages.map((message) => (
-        <MessageBubble
-          key={message.messageId}
-          message={message}
-          isOwnMessage={message.senderId === currentUserId}
-          senderName={message.senderId === currentUserId ? undefined : otherUserName}
-        />
-      ))}
+      {messagesWithSeparators.map((item) => {
+        if (item.type === 'dateSeparator') {
+          return (
+            <div key={item.key} className="flex items-center justify-center py-2">
+              <div className="px-3 py-1 rounded-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                  {item.dateLabel}
+                </span>
+              </div>
+            </div>
+          );
+        }
+        
+        if (item.message) {
+          return (
+            <MessageBubble
+              key={item.key}
+              message={item.message}
+              isOwnMessage={item.message.senderId === currentUserId}
+              senderName={item.message.senderId === currentUserId ? undefined : otherUserName}
+            />
+          );
+        }
+        
+        return null;
+      })}
 
       {isTyping && <TypingIndicator />}
 

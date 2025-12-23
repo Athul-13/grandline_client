@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { MessageStatusIcon } from './message_status_icon';
 import type { Message } from '../../../types/chat/message';
 import { cn } from '../../../utils/cn';
@@ -21,7 +20,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const formatTime = (date: string | Date): string => {
     try {
       const messageDate = typeof date === 'string' ? new Date(date) : date;
-      return format(messageDate, 'HH:mm');
+      // Use Intl.DateTimeFormat for locale-aware time formatting (12h or 24h)
+      return new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(messageDate);
     } catch {
       return '';
     }
@@ -46,18 +49,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]'
         )}
       >
-        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+        <div className="flex items-end gap-2 flex-wrap">
+          <p className="text-sm whitespace-pre-wrap flex-1">{message.content}</p>
+          <span className={cn(
+            'text-xs whitespace-nowrap',
+            isOwnMessage ? 'text-white/70' : 'text-[var(--color-text-secondary)]'
+          )}>
+            {formatTime(message.createdAt)}
+          </span>
+        </div>
       </div>
 
-      <div
-        className={cn(
-          'flex items-center gap-1 text-xs text-[var(--color-text-secondary)] px-2',
-          isOwnMessage ? 'flex-row-reverse' : 'flex-row'
-        )}
-      >
-        <span>{formatTime(message.createdAt)}</span>
-        {isOwnMessage && <MessageStatusIcon status={message.deliveryStatus} />}
-      </div>
+      {isOwnMessage && (
+        <div className="flex items-center justify-end gap-1 text-xs text-[var(--color-text-secondary)] px-2">
+          <MessageStatusIcon status={message.deliveryStatus} />
+        </div>
+      )}
     </div>
   );
 };
