@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { RefreshCw, Calendar, Users, Car, FileText, CalendarCheck, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Calendar, Users, Car, FileText, CalendarCheck, MapPin, Wifi, WifiOff } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { useLanguage } from '../../hooks/use_language';
 import { DashboardContent } from '../../components/dashboard/dashboard_content';
 import { DriverDashboardContent } from '../../components/dashboard/driver_dashboard_content';
 import { QuotesAnalyticsContent } from '../../components/dashboard/quotes_analytics_content';
 import { ReservationsAnalyticsContent } from '../../components/dashboard/reservations_analytics_content';
+import { AdminLiveTripsMap } from '../../components/maps';
 import { Button } from '../../components/common/ui/button';
 import { cn } from '../../utils/cn';
 import { adminDashboardSocketService } from '../../services/socket/admin_dashboard_socket_service';
 import { useAdminDashboardAnalytics } from '../../hooks/dashboard/use_admin_dashboard_analytics';
 import { isSocketConnected } from '../../services/socket/socket_client';
 
-type DashboardTab = 'users' | 'drivers' | 'quotes' | 'reservations';
+type DashboardTab = 'users' | 'drivers' | 'quotes' | 'reservations' | 'live-trips';
 
 export const AdminDashboardPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -293,6 +294,29 @@ export const AdminDashboardPage: React.FC = () => {
               </span>
             )}
           </button>
+          <button
+            onClick={() => setActiveTab('live-trips')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]',
+              'flex items-center gap-2',
+              activeTab === 'live-trips'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            )}
+          >
+            <MapPin className="w-4 h-4" />
+            <span>Live Trips Map</span>
+            {activeTab === 'live-trips' && isSocketConnected() && (
+              <span title="Live updates enabled">
+                <Wifi className="w-3 h-3 text-green-500" />
+              </span>
+            )}
+            {activeTab === 'live-trips' && !isSocketConnected() && (
+              <span title="Live updates disabled">
+                <WifiOff className="w-3 h-3 text-gray-400" />
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Dashboard Content */}
@@ -315,6 +339,10 @@ export const AdminDashboardPage: React.FC = () => {
               startDate={startDate}
               endDate={endDate}
             />
+          ) : activeTab === 'live-trips' ? (
+            <div className="h-[calc(100vh-200px)] min-h-[600px] rounded-lg border border-[var(--color-border)] overflow-hidden">
+              <AdminLiveTripsMap className="w-full h-full" />
+            </div>
           ) : (
             <ReservationsAnalyticsContent
               timeRange={timeRange}

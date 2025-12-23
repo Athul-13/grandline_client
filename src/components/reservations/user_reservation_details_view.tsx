@@ -9,6 +9,7 @@ import { AmenitiesBentoCard } from './details/amenities_bento_card';
 import { DriverDetailsBentoCard } from './details/driver_details_bento_card';
 import { PassengersBentoCard } from './details/passengers_bento_card';
 import { RouteBentoCard } from './details/route_bento_card';
+import { DriverTrackingBentoCard } from './details/driver_tracking_bento_card';
 import { UserChatView } from '../chat/user/user_chat_view';
 import { UserReservationChatView } from '../chat/user/user_reservation_chat_view';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
@@ -165,6 +166,11 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
                 <RouteBentoCard reservationDetails={reservationDetails} />
               </div>
             )}
+
+            {/* Driver Tracking (only shown when trip is active) */}
+            <div className="min-h-[400px]">
+              <DriverTrackingBentoCard reservationDetails={reservationDetails} />
+            </div>
           </div>
         </div>
       </div>
