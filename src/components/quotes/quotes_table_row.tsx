@@ -2,6 +2,7 @@ import { cn } from '../../utils/cn';
 import { StatusBadge } from './quote_status_badge';
 import { formatDate, getTripTypeLabel } from '../../utils/quote_formatters';
 import type { QuoteListItem } from '../../types/quotes/quote';
+import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 
 interface QuotesTableRowProps {
   quote: QuoteListItem;
@@ -20,10 +21,12 @@ export const QuotesTableRow: React.FC<QuotesTableRowProps> = ({
   onSelectChange,
   onRowClick,
 }) => {
+  const { unreadCount } = useQuoteUnreadCount({ quoteId: quote.quoteId });
+
   return (
     <tr
       className={cn(
-        'hover:bg-[var(--color-bg-secondary)] transition-colors',
+        'hover:bg-[var(--color-bg-secondary)] transition-colors relative',
         isSelected && 'bg-blue-50 dark:bg-blue-900/20',
         onRowClick && 'cursor-pointer'
       )}
@@ -63,10 +66,18 @@ export const QuotesTableRow: React.FC<QuotesTableRowProps> = ({
         {quote.startLocation || '-'}
       </td>
       <td
-        className="px-4 py-3 text-sm text-[var(--color-text-secondary)] max-w-[200px] truncate"
+        className="px-4 py-3 text-sm text-[var(--color-text-secondary)] max-w-[200px] truncate relative"
         title={quote.endLocation || undefined}
       >
         {quote.endLocation || '-'}
+        {unreadCount > 0 && (
+          <div className="absolute top-2 right-2 z-50">
+            <div className="relative flex items-center justify-center">
+              {/* <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50 animate-ping opacity-75"></div> */}
+              <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50"></div>
+            </div>
+          </div>
+        )}
       </td>
     </tr>
   );

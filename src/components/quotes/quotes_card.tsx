@@ -2,6 +2,7 @@ import { cn } from '../../utils/cn';
 import { StatusBadge } from './quote_status_badge';
 import { formatDate, getTripTypeLabel } from '../../utils/quote_formatters';
 import type { QuoteListItem } from '../../types/quotes/quote';
+import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 
 interface QuotesCardProps {
   quote: QuoteListItem;
@@ -20,15 +21,25 @@ export const QuotesCard: React.FC<QuotesCardProps> = ({
   onSelectChange,
   onCardClick,
 }) => {
+  const { unreadCount } = useQuoteUnreadCount({ quoteId: quote.quoteId });
+
   return (
     <div
       className={cn(
-        'bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4',
+        'bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 relative',
         isSelected && 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20',
         onCardClick && 'cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors'
       )}
       onClick={onCardClick}
     >
+      {unreadCount > 0 && (
+        <div className="absolute top-3 right-3 z-50">
+          <div className="relative flex items-center justify-center">
+            {/* <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50 animate-ping opacity-75"></div> */}
+            <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50"></div>
+          </div>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <input

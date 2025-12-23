@@ -168,6 +168,7 @@ export interface ReservationResponse {
     paidAt?: Date | string;
     createdAt: Date | string;
   }>;
+  chatEnabled?: boolean;
 }
 
 /**
