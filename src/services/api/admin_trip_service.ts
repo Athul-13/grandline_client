@@ -6,6 +6,7 @@ import type {
 
 const API_ENDPOINTS = {
   trips: '/admin/trips',
+  activeTripLocations: '/admin/trips/active/locations',
 } as const;
 
 /**
@@ -31,6 +32,37 @@ export const adminTripService = {
     const url = queryString ? `${API_ENDPOINTS.trips}?${queryString}` : API_ENDPOINTS.trips;
 
     const response = await grandlineAxiosClient.get<AdminTripsListResponse>(url);
+    return response.data;
+  },
+
+  /**
+   * Get active trip locations (for map rehydration)
+   * GET /api/v1/admin/trips/active/locations
+   */
+  getActiveTripLocations: async (): Promise<{
+    locations: Array<{
+      reservationId: string;
+      driverId: string;
+      latitude: number;
+      longitude: number;
+      accuracy?: number;
+      heading?: number;
+      speed?: number;
+      timestamp: string;
+    }>;
+  }> => {
+    const response = await grandlineAxiosClient.get<{
+      locations: Array<{
+        reservationId: string;
+        driverId: string;
+        latitude: number;
+        longitude: number;
+        accuracy?: number;
+        heading?: number;
+        speed?: number;
+        timestamp: string;
+      }>;
+    }>(API_ENDPOINTS.activeTripLocations);
     return response.data;
   },
 };

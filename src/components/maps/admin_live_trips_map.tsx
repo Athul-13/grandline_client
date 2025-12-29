@@ -11,6 +11,7 @@ import { locationSocketService, type LocationUpdateEvent } from '../../services/
 import { Wifi, WifiOff } from 'lucide-react';
 import { isSocketConnected, getSocketClient } from '../../services/socket/socket_client';
 import { lerp, lerpAngle, easeOutCubic } from '../../utils/interpolation';
+import { adminTripService } from '../../services/api/admin_trip_service';
 
 interface ActiveTrip {
   reservationId: string;
@@ -57,6 +58,8 @@ export const AdminLiveTripsMap: React.FC<AdminLiveTripsMapProps> = ({
   const interpolationRef = useRef<Map<string, InterpolationState>>(new Map());
   const lastUpdateTimeRef = useRef<Map<string, number>>(new Map());
   const [isConnected, setIsConnected] = useState(isSocketConnected());
+  const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+  const locationsLoadedRef = useRef(false);
 
   // Initialize trips from props
   useEffect(() => {
@@ -64,6 +67,84 @@ export const AdminLiveTripsMap: React.FC<AdminLiveTripsMapProps> = ({
       tripsRef.current.set(trip.reservationId, trip);
     });
   }, [initialTrips]);
+
+  // Fetch active trip locations when map is ready (before socket subscription)
+  const fetchActiveLocations = async () => {
+    if (locationsLoadedRef.current) {
+      return; // Only fetch once
+    }
+
+    try {
+      setIsLoadingLocations(true);
+      const response = await adminTripService.getActiveTripLocations();
+      
+      // Render markers for all returned locations
+      if (mapRef.current && response.locations.length > 0) {
+        response.locations.forEach((location) => {
+          // Only add if not already present (avoid duplicates)
+          if (!tripsRef.current.has(location.reservationId)) {
+            const trip: ActiveTrip = {
+              reservationId: location.reservationId,
+              driverId: location.driverId,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              heading: location.heading,
+              timestamp: location.timestamp,
+            };
+            
+            tripsRef.current.set(location.reservationId, trip);
+            
+            // Create marker immediately
+            const el = document.createElement('div');
+            el.className = 'driver-marker';
+            el.style.width = '20px';
+            el.style.height = '20px';
+            el.style.borderRadius = '50%';
+            el.style.backgroundColor = '#C5630C';
+            el.style.border = '2px solid white';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            el.style.cursor = 'pointer';
+            el.style.transition = 'none';
+            el.title = `Reservation: ${location.reservationId}`;
+
+            const marker = new mapboxgl.Marker({ element: el })
+              .setLngLat([location.longitude, location.latitude])
+              .addTo(mapRef.current!);
+
+            if (location.heading !== undefined && location.heading !== null) {
+              const element = marker.getElement();
+              if (element) {
+                element.style.transform = `rotate(${location.heading}deg)`;
+              }
+            }
+
+            markersRef.current.set(location.reservationId, marker);
+          }
+        });
+
+        // Fit bounds to show all active trips
+        setTimeout(() => {
+          if (mapRef.current && tripsRef.current.size > 0) {
+            const bounds = new mapboxgl.LngLatBounds();
+            tripsRef.current.forEach((trip) => {
+              bounds.extend([trip.longitude, trip.latitude]);
+            });
+            mapRef.current.fitBounds(bounds, {
+              padding: 50,
+              maxZoom: 15,
+            });
+          }
+        }, 100);
+      }
+      
+      locationsLoadedRef.current = true;
+    } catch (error) {
+      console.error('Error fetching active trip locations:', error);
+      // Continue even if fetch fails - socket updates will still work
+    } finally {
+      setIsLoadingLocations(false);
+    }
+  };
 
   // Animate marker interpolation
   const animateMarker = (reservationId: string, state: InterpolationState, marker: mapboxgl.Marker) => {
@@ -225,18 +306,22 @@ export const AdminLiveTripsMap: React.FC<AdminLiveTripsMapProps> = ({
     startedTripsRef.current.delete(reservationId);
   };
 
-  // Subscribe to location updates
+  // Subscribe to location updates (only after initial load)
   useLocationUpdates({
     onLocationUpdate: handleLocationUpdate,
     onTripEnded: handleTripEnded,
-    enabled: true,
+    enabled: !isLoadingLocations, // Wait for initial load before subscribing
   });
 
-  // Subscribe to trip started events
+  // Subscribe to trip started events (only after initial load)
   useEffect(() => {
+    if (isLoadingLocations) {
+      return; // Wait for initial load
+    }
+    
     const unsubscribe = locationSocketService.onTripStarted(handleTripStarted);
     return unsubscribe;
-  }, []);
+  }, [isLoadingLocations]);
 
   // Monitor socket connection
   useEffect(() => {
@@ -336,6 +421,8 @@ export const AdminLiveTripsMap: React.FC<AdminLiveTripsMapProps> = ({
         className={className}
         onMapReady={(map) => {
           mapRef.current = map;
+          // Fetch active trip locations when map is ready
+          fetchActiveLocations();
           // Fit bounds to initial trips if any
           if (initialTrips.length > 0) {
             setTimeout(fitBounds, 500);
