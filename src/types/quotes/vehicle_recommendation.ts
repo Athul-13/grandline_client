@@ -23,6 +23,7 @@ export interface RecommendationVehicle {
   name: string;
   capacity: number;
   quantity: number;
+  imageUrls?: string[];
 }
 
 /**
@@ -36,6 +37,7 @@ export interface AvailableVehicle {
   baseFare: number;
   isAvailable: boolean;
   availableQuantity: number;
+  imageUrls?: string[];
   includedAmenities: {
     amenityId: string;
     name: string;

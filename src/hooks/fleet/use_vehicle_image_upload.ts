@@ -20,7 +20,7 @@ interface UseVehicleImageUploadReturn {
   uploadUrl: string | null;
   signatureExpiresAt: number | null;
   addImages: (files: File[]) => Promise<void>;
-  removeImage: (id: string) => Promise<void>;
+  removeImage: (id: string) => void;
   retryUpload: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
   getSuccessfullyUploadedUrls: () => string[];
@@ -191,9 +191,10 @@ export const useVehicleImageUpload = (): UseVehicleImageUploadReturn => {
     [images, uploadImage]
   );
 
-  // Remove image and delete from Cloudinary if uploaded
+  // Remove image from local state
+  // Backend handles Cloudinary deletion when vehicle is updated
   const removeImage = useCallback(
-    async (id: string) => {
+    (id: string) => {
       const image = images.find((img) => img.id === id);
       if (!image) return;
 
@@ -204,20 +205,8 @@ export const useVehicleImageUpload = (): UseVehicleImageUploadReturn => {
         abortControllersRef.current.delete(id);
       }
 
-      // Delete from Cloudinary if successfully uploaded
-      if (image.status === 'success' && image.url) {
-        try {
-          await vehicleService.deleteImages({ urls: [image.url] });
-        } catch (error) {
-          console.error('Failed to delete image from Cloudinary:', error);
-          // Continue with removal even if delete fails
-        }
-      }
-
-      // Remove from state
       setImages((prev) => {
         const updated = prev.filter((img) => img.id !== id);
-        // Clean up preview URL
         if (image.preview) {
           URL.revokeObjectURL(image.preview);
         }
@@ -281,28 +270,14 @@ export const useVehicleImageUpload = (): UseVehicleImageUploadReturn => {
     [images, uploadImage]
   );
 
-  // Clear all images and delete from Cloudinary
+  // Clear all images from local state
+  // Backend handles Cloudinary deletion when vehicle is updated or deleted
   const clearAll = useCallback(async () => {
     // Abort all ongoing uploads
     abortControllersRef.current.forEach((controller) => {
       controller.abort();
     });
     abortControllersRef.current.clear();
-
-    // Get all successfully uploaded URLs
-    const uploadedUrls = images
-      .filter((img) => img.status === 'success' && img.url)
-      .map((img) => img.url!);
-
-    // Delete from Cloudinary if any
-    if (uploadedUrls.length > 0) {
-      try {
-        await vehicleService.deleteImages({ urls: uploadedUrls });
-      } catch (error) {
-        console.error('Failed to delete images from Cloudinary:', error);
-        // Continue with cleanup even if delete fails
-      }
-    }
 
     // Clean up preview URLs
     images.forEach((img) => {
@@ -311,7 +286,6 @@ export const useVehicleImageUpload = (): UseVehicleImageUploadReturn => {
       }
     });
 
-    // Clear state
     setImages([]);
     setIsUploading(false);
   }, [images]);

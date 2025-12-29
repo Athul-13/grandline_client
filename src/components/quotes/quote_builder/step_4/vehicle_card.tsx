@@ -47,6 +47,21 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
     .map((v) => `${v.name}${v.quantity > 1 ? ` (x${v.quantity})` : ''}`)
     .join(', ');
 
+  // Get first available image from vehicles
+  const getFirstVehicleImage = (): string | null => {
+    for (const vehicle of recommendation.vehicles) {
+      if (vehicle.imageUrls && vehicle.imageUrls.length > 0) {
+        return vehicle.imageUrls[0];
+      }
+    }
+    return null;
+  };
+
+  const displayImage = getFirstVehicleImage();
+  const defaultImage = 'https://via.placeholder.com/400x250?text=No+Image';
+  const imageUrl = displayImage || defaultImage;
+  const hasImages = displayImage !== null;
+
   return (
     <div
       className={cn(
@@ -57,6 +72,26 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
       )}
       onClick={handleClick}
     >
+      {/* Vehicle Image */}
+      <div className="mb-3">
+        <div
+          className={cn(
+            'relative w-full h-40 bg-[var(--color-bg-secondary)] overflow-hidden rounded-lg',
+            !hasImages && 'bg-[var(--color-bg-tertiary)]'
+          )}
+        >
+          <img
+            src={imageUrl}
+            alt={vehicleNames}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to placeholder if image fails to load
+              (e.target as HTMLImageElement).src = defaultImage;
+            }}
+          />
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
