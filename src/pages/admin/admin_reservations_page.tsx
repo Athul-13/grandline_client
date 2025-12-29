@@ -336,7 +336,7 @@ export const AdminReservationsPage: React.FC = () => {
           </div>
 
           {/* Pagination - Disabled when viewing details */}
-          {!reservationId && pagination && pagination.totalPages > 1 && (
+          {!reservationId && pagination && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
               <Pagination
                 currentPage={pagination.page}

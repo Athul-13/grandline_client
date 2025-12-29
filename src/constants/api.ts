@@ -60,6 +60,7 @@ export const API_ENDPOINTS = {
     updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
     assignDriver: (id: string) => `/admin/quotes/${id}/assign-driver`,
     recalculateQuote: (id: string) => `/admin/quotes/${id}/recalculate`,
+    trips: '/admin/trips',
     reservations: '/admin/reservations',
     reservationDetails: (id: string) => `/admin/reservations/${id}`,
     updateReservationStatus: (id: string) => `/admin/reservations/${id}/status`,

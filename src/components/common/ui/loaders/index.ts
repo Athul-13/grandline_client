@@ -7,4 +7,5 @@ export { ReservationDetailsSkeleton } from './reservation_details_skeleton';
 export { UserDetailsSkeleton } from './user_details_skeleton';
 export { FleetCardSkeleton } from './fleet_card_skeleton';
 export { FleetListCardSkeleton } from './fleet_list_card_skeleton';
+export { TripCardSkeleton } from './trip_card_skeleton';
 
