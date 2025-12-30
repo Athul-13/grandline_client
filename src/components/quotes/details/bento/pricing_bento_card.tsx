@@ -1,6 +1,7 @@
 import { DollarSign } from 'lucide-react';
 import { formatPrice } from '../../../../utils/quote_formatters';
 import type { QuoteResponse } from '../../../../types/quotes/quote';
+import { QuoteStatus } from '../../../../types/quotes/quote';
 
 interface PricingBentoCardProps {
   quoteDetails: QuoteResponse;
@@ -11,6 +12,7 @@ interface PricingBentoCardProps {
  * Displays pricing breakdown and configuration
  */
 export const PricingBentoCard: React.FC<PricingBentoCardProps> = ({ quoteDetails }) => {
+
   return (
     <div className="bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] p-4 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-4">
@@ -128,6 +130,20 @@ export const PricingBentoCard: React.FC<PricingBentoCardProps> = ({ quoteDetails
               </div>
             </div>
           </div>
+
+          {/* Payment Status Messages */}
+          {quoteDetails.status === QuoteStatus.PAID && (
+            <div className="border-t border-[var(--color-border)] pt-4 mt-4">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p className="text-sm font-semibold text-green-800 dark:text-green-200">
+                  Payment Completed
+                </p>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Your quote has been paid and converted to a reservation.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <p className="text-sm text-[var(--color-text-secondary)]">Pricing not calculated yet</p>

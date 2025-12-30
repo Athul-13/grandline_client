@@ -15,7 +15,9 @@ import { PaymentWindowStatus } from './details/payment_window_status';
 import { VehicleReselectionNotification } from './details/vehicle_reselection_notification';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
 import { useUnreadCount } from '../../hooks/chat/use_unread_count';
+import { QuoteStatus } from '../../types/quotes/quote';
 import type { QuoteResponse } from '../../types/quotes/quote';
+import { AlertCircle } from 'lucide-react';
 
 interface UserQuoteDetailsViewProps {
   quoteDetails: QuoteResponse;
@@ -86,15 +88,41 @@ export const UserQuoteDetailsView: React.FC<UserQuoteDetailsViewProps> = ({
 
       {/* Content Area with Two Column Layout */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
-        {/* Payment Window Status - Full Width */}
-        <div className="mb-4">
-          <PaymentWindowStatus quoteDetails={quoteDetails} />
-        </div>
+        {/* Expired Quote Message - Full Width */}
+        {quoteDetails.status === QuoteStatus.EXPIRED && (
+          <div className="mb-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
+                    Quote Expired
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300 mb-2">
+                    This quote expired because payment was not completed within 24 hours.
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Please submit again to receive an updated quote.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Vehicle Reselection Notification - Full Width */}
-        <div className="mb-4">
-          <VehicleReselectionNotification quoteDetails={quoteDetails} onEdit={onEdit} />
-        </div>
+        {/* Payment Window Status - Full Width (hide for expired) */}
+        {quoteDetails.status !== QuoteStatus.EXPIRED && (
+          <div className="mb-4">
+            <PaymentWindowStatus quoteDetails={quoteDetails} />
+          </div>
+        )}
+
+        {/* Vehicle Reselection Notification - Full Width (hide for expired) */}
+        {quoteDetails.status !== QuoteStatus.EXPIRED && (
+          <div className="mb-4">
+            <VehicleReselectionNotification quoteDetails={quoteDetails} onEdit={onEdit} />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
           {/* Left Column: Basic Info, Itinerary, Amenities, Pricing */}

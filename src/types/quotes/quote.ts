@@ -14,6 +14,7 @@ export const QuoteStatus = {
   REJECTED: 'rejected',
   PAID: 'paid',
   QUOTED: 'quoted',
+  EXPIRED: 'expired',
 } as const;
 
 /**
