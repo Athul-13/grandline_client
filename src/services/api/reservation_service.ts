@@ -11,10 +11,25 @@ export const reservationService = {
    * Get all reservations for the authenticated user
    * GET /api/v1/reservations
    */
-  getReservations: async (): Promise<{ reservations: ReservationResponse[] }> => {
-    const response = await grandlineAxiosClient.get<{ reservations: ReservationResponse[] }>(
-      API_ENDPOINTS.reservations.list
-    );
+  getReservations: async (params?: {
+    page?: number;
+    limit?: number;
+    forDropdown?: boolean;
+  }): Promise<{ reservations: ReservationResponse[] } | Array<{ reservationId: string; tripName: string; status: string }>> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ENDPOINTS.reservations.list}?${queryString}` : API_ENDPOINTS.reservations.list;
+    
+    const response = await grandlineAxiosClient.get<{ reservations: ReservationResponse[] } | Array<{ reservationId: string; tripName: string; status: string }>>(url);
     return response.data;
   },
 

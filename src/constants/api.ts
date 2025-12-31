@@ -149,6 +149,13 @@ export const API_ENDPOINTS = {
     activity: '/dashboard/activity',
     adminAnalytics: '/dashboard/admin/analytics',
   },
+  // Support endpoints
+  support: {
+    tickets: '/support/tickets',
+    ticketById: (id: string) => `/support/tickets/${id}`,
+    ticketMessages: (id: string) => `/support/tickets/${id}/messages`,
+    addMessage: (id: string) => `/support/tickets/${id}/messages`,
+  },
 } as const;
 
 /**

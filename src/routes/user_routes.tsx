@@ -17,6 +17,8 @@ import { MyProfilePage } from '../pages/user/profile/my_profile_page';
 import { SecurityPage } from '../pages/user/profile/security_page';
 import { NotificationsPage } from '../pages/user/profile/notifications_page';
 import { AccountSettingsPage } from '../pages/user/profile/account_settings_page';
+import { SupportTicketsPage } from '../pages/user/support/support_tickets_page';
+import { SupportTicketDetailPage } from '../pages/user/support/support_ticket_detail_page';
 
 /**
  * User Routes Component
@@ -147,6 +149,8 @@ export const UserRoutes: React.FC = () => {
         <Route path="security" element={<SecurityPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="settings" element={<AccountSettingsPage />} />
+        <Route path="support" element={<SupportTicketsPage />} />
+        <Route path="support/:ticketId" element={<SupportTicketDetailPage />} />
       </Route>
     </Routes>
   );

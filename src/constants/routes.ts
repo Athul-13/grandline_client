@@ -27,6 +27,7 @@ export const ROUTES = {
     security: '/profile/security',
     notifications: '/profile/notifications',
     settings: '/profile/settings',
+    support: '/profile/support',
   },
 
   // Admin routes

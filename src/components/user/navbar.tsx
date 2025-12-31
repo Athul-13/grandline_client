@@ -12,6 +12,7 @@ import logoNavbar from '../../assets/logo_navbar.png';
 import { useLanguage } from '../../hooks/use_language';
 import { useNotificationContext } from '../../hooks/notifications/use_notification_context';
 import { NotificationDropdown } from '../common/notifications/notification_dropdown';
+import { SupportModal } from '../support/support_modal';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -106,8 +107,11 @@ export const Navbar: React.FC = () => {
     return location.pathname === path;
   };
 
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+
   const handleSupportClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsSupportModalOpen(true);
   };
 
   const navLinks: Array<
@@ -377,6 +381,12 @@ export const Navbar: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Support Modal */}
+      <SupportModal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+      />
     </nav>
   );
 };
