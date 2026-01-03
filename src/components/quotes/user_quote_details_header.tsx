@@ -88,7 +88,7 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
           {/* Submit Again Button - Show for EXPIRED status */}
           {isExpired && (
             <Button
-              variant="default"
+              variant="primary"
               size="sm"
               onClick={handleSubmitAgain}
               className="flex items-center gap-2 bg-[var(--color-primary)] text-white hover:opacity-90"
@@ -101,7 +101,7 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
           {/* Payment Button - Show for QUOTED status (not expired) */}
           {!isExpired && isPaymentAvailable && !isPaymentWindowExpired() && (
             <Button
-              variant="default"
+              variant="primary"
               size="sm"
               onClick={handlePaymentClick}
               className="flex items-center gap-2 bg-[var(--color-primary)] text-white hover:opacity-90"
