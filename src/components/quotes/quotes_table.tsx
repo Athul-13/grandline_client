@@ -51,7 +51,7 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
 
   // Check if quote status allows clicking
   const isClickableStatus = (status: string): boolean => {
-    const clickableStatuses: string[] = [QuoteStatus.SUBMITTED, QuoteStatus.NEGOTIATING, QuoteStatus.ACCEPTED, QuoteStatus.PAID];
+    const clickableStatuses: string[] = [QuoteStatus.SUBMITTED, QuoteStatus.QUOTED, QuoteStatus.NEGOTIATING, QuoteStatus.ACCEPTED, QuoteStatus.PAID];
     return clickableStatuses.includes(status);
   };
 
@@ -253,7 +253,16 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
             />
           ) : (
             // Normal header
-            <table className="w-full">
+            <table className="w-full table-fixed">
+              <colgroup>
+                <col className="w-[48px]" />
+                <col className="w-[18%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[15%]" />
+                <col className="w-[21.5%]" />
+                <col className="w-[21.5%]" />
+              </colgroup>
               <thead>
                 <tr>
                   <th className="px-4 py-3 text-left h-[48px]">
@@ -290,7 +299,16 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
         </div>
         {/* Scrollable Body */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
+            <colgroup>
+              <col className="w-[48px]" />
+              <col className="w-[18%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15%]" />
+              <col className="w-[21.5%]" />
+              <col className="w-[21.5%]" />
+            </colgroup>
             <tbody className="divide-y divide-[var(--color-border)]">
               {quotes.map((quote) => {
                 const isClickable = isClickableStatus(quote.status);

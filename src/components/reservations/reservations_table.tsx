@@ -109,7 +109,16 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
       <div className="hidden md:flex flex-1 flex-col min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
         {/* Fixed Header */}
         <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-          <table className="w-full">
+          <table className="w-full table-fixed">
+            <colgroup>
+              <col className="w-[18%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15.5%]" />
+              <col className="w-[15.5%]" />
+            </colgroup>
             <thead>
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] h-[48px]">
@@ -139,7 +148,16 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
         </div>
         {/* Scrollable Body */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
+            <colgroup>
+              <col className="w-[18%]" />
+              <col className="w-[12%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15.5%]" />
+              <col className="w-[15.5%]" />
+            </colgroup>
             <tbody className="divide-y divide-[var(--color-border)]">
               {reservations.map((reservation) => (
                 <ReservationsTableRow

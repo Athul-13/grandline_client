@@ -35,6 +35,7 @@ interface AdminReservationDetailsViewProps {
   onBack: () => void;
   onStatusChange: (newStatus: string) => Promise<void>;
   onRefetch?: () => Promise<void>;
+  renderHeader?: boolean; // Optional prop to control header rendering (default: true for backward compatibility)
 }
 
 /**
@@ -47,6 +48,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
   onBack,
   onStatusChange,
   onRefetch,
+  renderHeader = true, // Default to true for backward compatibility
 }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basicInfo: false,
@@ -212,20 +214,22 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
     <React.Fragment>
       <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
         {/* Header with Back Button and Status Control */}
-        <AdminReservationDetailsHeader
-        reservationDetails={reservationDetails}
-        isUpdatingStatus={isUpdatingStatus}
-        onBack={onBack}
-        onStatusChange={onStatusChange}
-        availableStatuses={availableStatuses}
-        onAddPassengers={() => setShowAddPassengersModal(true)}
-        onChangeDriver={() => setShowChangeDriverModal(true)}
-        onAdjustVehicles={() => setShowAdjustVehiclesModal(true)}
-        onUpdateItinerary={() => setShowUpdateItineraryModal(true)}
-        onProcessRefund={() => setShowProcessRefundModal(true)}
-        onCancel={() => setShowCancelModal(true)}
-        onAddCharge={() => setShowAddChargeModal(true)}
-      />
+        {renderHeader && (
+          <AdminReservationDetailsHeader
+            reservationDetails={reservationDetails}
+            isUpdatingStatus={isUpdatingStatus}
+            onBack={onBack}
+            onStatusChange={onStatusChange}
+            availableStatuses={availableStatuses}
+            onAddPassengers={() => setShowAddPassengersModal(true)}
+            onChangeDriver={() => setShowChangeDriverModal(true)}
+            onAdjustVehicles={() => setShowAdjustVehiclesModal(true)}
+            onUpdateItinerary={() => setShowUpdateItineraryModal(true)}
+            onProcessRefund={() => setShowProcessRefundModal(true)}
+            onCancel={() => setShowCancelModal(true)}
+            onAddCharge={() => setShowAddChargeModal(true)}
+          />
+        )}
 
       {/* Scrollable Content Area with Accordions */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">

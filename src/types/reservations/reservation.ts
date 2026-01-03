@@ -127,6 +127,8 @@ export interface ReservationResponse {
   refundedAt?: Date | string;
   cancellationReason?: string;
   cancelledAt?: Date | string;
+  startedAt?: Date | string; // When driver explicitly started trip
+  completedAt?: Date | string; // When driver explicitly ended trip
   createdAt: Date | string;
   updatedAt: Date | string;
   driver?: {
@@ -168,6 +170,7 @@ export interface ReservationResponse {
     paidAt?: Date | string;
     createdAt: Date | string;
   }>;
+  chatEnabled?: boolean;
 }
 
 /**

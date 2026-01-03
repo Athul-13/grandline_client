@@ -5,6 +5,7 @@ import { highlightSearchTerm } from '../../utils/highlight_search';
 import { formatDate, formatPrice, getTripTypeLabel } from '../../utils/quote_formatters';
 import { StatusBadge } from './quote_status_badge';
 import type { AdminQuoteListItem } from '../../types/quotes/admin_quote';
+import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 
 interface AdminQuotesTableRowProps {
   quote: AdminQuoteListItem;
@@ -29,6 +30,7 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
   onSelectChange,
   onRowClick,
 }) => {
+  const { unreadCount } = useQuoteUnreadCount({ quoteId: quote.quoteId });
   const isDeleted = quote.isDeleted === true;
   const rowRef = useRef<HTMLTableRowElement>(null);
   const [borderStyle, setBorderStyle] = useState<React.CSSProperties>({});
@@ -174,8 +176,16 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
         <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-medium flex-[0_0_12%]">
           {formatPrice(quote.totalPrice)}
         </td>
-        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%]">
+        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] flex-[0_0_12%] relative">
           {formatDate(quote.createdAt)}
+          {unreadCount > 0 && (
+            <div className="absolute top-2 right-2 z-50">
+              <div className="relative flex items-center justify-center">
+                {/* <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50 animate-ping opacity-75"></div> */}
+                <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50"></div>
+              </div>
+            </div>
+          )}
         </td>
       </tr>
     </>

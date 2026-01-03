@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
 import { ROUTES } from '../../../constants/routes';
-import { User, Shield, Bell, Settings } from 'lucide-react';
+import { User, Shield, Bell, Settings, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../../hooks/use_language';
 
 interface SidebarItem {
@@ -21,6 +21,7 @@ export const ProfileSidebar: React.FC = () => {
     { path: ROUTES.profile.security, label: t('profile.sidebar.security'), icon: Shield },
     { path: ROUTES.profile.notifications, label: t('profile.sidebar.notifications'), icon: Bell },
     { path: ROUTES.profile.settings, label: t('profile.sidebar.accountSettings'), icon: Settings },
+    { path: ROUTES.profile.support, label: 'Support', icon: MessageSquare },
   ];
   return (
     <nav className="bg-[var(--color-bg-card)] rounded-lg sm:rounded-xl shadow-lg p-3 sm:p-4 h-fit lg:sticky lg:top-4">

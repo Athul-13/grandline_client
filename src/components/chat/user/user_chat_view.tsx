@@ -49,7 +49,7 @@ export const UserChatView: React.FC<UserChatViewProps> = ({ quoteDetails, onBack
     sendMessage,
   } = useChatMessages({
     chatId: chat?.chatId || null,
-    quoteId: quoteDetails.quoteId,
+    contextId: quoteDetails.quoteId,
     contextType: 'quote',
     isJoined,
     onChatCreated: () => {

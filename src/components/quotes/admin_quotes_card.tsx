@@ -4,6 +4,7 @@ import { highlightSearchTerm } from '../../utils/highlight_search';
 import { formatDate, formatPrice, getTripTypeLabel } from '../../utils/quote_formatters';
 import { StatusBadge } from './quote_status_badge';
 import type { AdminQuoteListItem } from '../../types/quotes/admin_quote';
+import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 
 interface AdminQuotesCardProps {
   quote: AdminQuoteListItem;
@@ -29,6 +30,7 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
   onCardClick,
 }) => {
   const isDeleted = quote.isDeleted === true;
+  const { unreadCount } = useQuoteUnreadCount({ quoteId: quote.quoteId });
 
   return (
     <div
@@ -39,6 +41,14 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
       style={isDeleted ? { boxShadow: 'inset 0 0 0 1px rgba(239, 68, 68, 0.3)' } : undefined}
       onClick={onCardClick}
     >
+      {unreadCount > 0 && (
+        <div className="absolute top-3 right-3 z-50">
+          <div className="relative flex items-center justify-center">
+            {/* <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50 animate-ping opacity-75"></div> */}
+            <div className="absolute w-3 h-3 bg-red-500 rounded-full z-50"></div>
+          </div>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <input

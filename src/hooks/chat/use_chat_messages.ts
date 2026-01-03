@@ -120,7 +120,7 @@ export const useChatMessages = (params: UseChatMessagesParams): UseChatMessagesR
           messageData.contextType = contextType || 'quote';
           messageData.contextId = contextId;
         } else {
-          reject(new Error('Cannot send message: chat ID or quote ID is required'));
+          reject(new Error('Cannot send message: chatId or (contextType + contextId) is required'));
           return;
         }
 

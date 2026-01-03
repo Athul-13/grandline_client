@@ -56,6 +56,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
   } = useVehicleImageUpload();
 
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]); // Track images marked for deletion (explicit intent)
   const [imagesError, setImagesError] = useState('');
 
   const methods = useForm({
@@ -119,6 +120,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           imageUrls: vehicle.imageUrls && vehicle.imageUrls.length > 0 ? vehicle.imageUrls : [],
         });
         setExistingImages(vehicle.imageUrls && vehicle.imageUrls.length > 0 ? vehicle.imageUrls : []);
+        setRemovedImages([]); // Reset deletion tracking
       } else {
         reset({
           vehicleTypeId: '',
@@ -134,6 +136,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           imageUrls: [],
         });
         setExistingImages([]);
+        setRemovedImages([]); // Reset deletion tracking
       }
       setImagesError('');
     }
@@ -258,15 +261,11 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     }
   };
 
-  const handleRemoveExistingImage = async (url: string) => {
-    try {
-      await vehicleService.deleteImages({ urls: [url] });
-      setExistingImages((prev) => prev.filter((img) => img !== url));
-      toast.success('Image removed');
-    } catch (error) {
-      const errorMessage = sanitizeErrorMessage(error);
-      toast.error(errorMessage);
-    }
+  const handleRemoveExistingImage = (url: string) => {
+    // Track removed images for backend deletion on save
+    setRemovedImages((prev) => [...prev, url]);
+    setExistingImages((prev) => prev.filter((img) => img !== url));
+    toast.success('Image will be removed when you save');
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -307,7 +306,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     }
 
     const allImageUrls = [...existingImages, ...getSuccessfullyUploadedUrls()];
-    const requestData = {
+    const requestData: any = {
       vehicleTypeId: data.vehicleTypeId.trim(),
       capacity: Number(data.capacity),
       baseFare: Number(data.baseFare),
@@ -320,6 +319,11 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       status: data.status,
       amenityIds: data.amenityIds || [],
     };
+
+    // Include removed images for backend to handle deletion
+    if (mode === 'edit' && removedImages.length > 0) {
+      requestData.removedImageUrls = removedImages;
+    }
 
     try {
       if (mode === 'add') {

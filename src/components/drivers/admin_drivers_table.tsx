@@ -13,6 +13,7 @@ import { Button } from '../common/ui/button';
 import { ROUTES } from '../../constants/routes';
 import { DriverStatus } from '../../types/drivers/admin_driver';
 import { useLanguage } from '../../hooks/use_language';
+import { useSearchContext } from '../../hooks/use_search_context';
 import type { AdminDriverListItem, DriverStatusType } from '../../types/drivers/admin_driver';
 
 interface AdminDriversTableProps {
@@ -45,6 +46,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
 }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { searchQuery } = useSearchContext();
   
   // Refs for syncing horizontal scroll
   const headerScrollRef = useRef<HTMLDivElement>(null);
@@ -460,7 +462,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
               <AdminDriversTableRow
                 key={driver.driverId}
                 driver={driver}
-                searchQuery="" // Will be passed from parent
+                searchQuery={searchQuery}
                 isSelected={selectedDriverIds.has(driver.driverId)}
                 onSelectChange={(isSelected) => handleSelectDriver(driver.driverId, isSelected)}
                 onRowClick={() => navigate(ROUTES.admin.driverDetails(driver.driverId))}

@@ -17,6 +17,7 @@ export const ROUTES = {
   quotes: '/quotes',
   reservations: '/reservations',
   reservationDetails: (id: string) => `/reservations/${id}`,
+  reservationTrackingMap: (id: string) => `/reservations/${id}/track`,
   chargePayment: (reservationId: string, chargeId: string) => `/reservations/${reservationId}/charges/${chargeId}/pay`,
   support: '/support',
   buildQuote: '/build-quote',
@@ -27,6 +28,7 @@ export const ROUTES = {
     security: '/profile/security',
     notifications: '/profile/notifications',
     settings: '/profile/settings',
+    support: '/profile/support',
   },
 
   // Admin routes
@@ -43,6 +45,7 @@ export const ROUTES = {
     driverManagement: '/admin/driver-management',
     driverDetails: (id: string) => `/admin/driver-management/${id}`,
     supportConcerns: '/admin/support-concerns',
+    supportTicketDetails: (id: string) => `/admin/support-concerns/${id}`,
     settings: '/admin/settings',
   },
 } as const;

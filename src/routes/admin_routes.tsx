@@ -40,9 +40,17 @@ export const AdminRoutes: React.FC = () => {
         }
       />
 
-      {/* Trip Management */}
+      {/* Trip Management - handles both list and details */}
       <Route
         path="trip-management"
+        element={
+          <ProtectedAdminLayoutRoute>
+            <AdminTripManagementPage />
+          </ProtectedAdminLayoutRoute>
+        }
+      />
+      <Route
+        path="trip-management/:id"
         element={
           <ProtectedAdminLayoutRoute>
             <AdminTripManagementPage />
@@ -140,7 +148,9 @@ export const AdminRoutes: React.FC = () => {
             <AdminSupportConcernsPage />
           </ProtectedAdminLayoutRoute>
         }
-      />
+      >
+        <Route path=":id" element={<AdminSupportConcernsPage />} />
+      </Route>
 
       {/* Settings */}
       <Route

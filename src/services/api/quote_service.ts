@@ -40,7 +40,8 @@ export const quoteService = {
     status?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  }): Promise<QuoteListResponse> => {
+    forDropdown?: boolean;
+  }): Promise<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>> => {
     const queryParams = new URLSearchParams();
     
     if (params) {
@@ -54,7 +55,7 @@ export const quoteService = {
     const queryString = queryParams.toString();
     const url = queryString ? `${API_ENDPOINTS.quotes.list}?${queryString}` : API_ENDPOINTS.quotes.list;
     
-    const response = await grandlineAxiosClient.get<QuoteListResponse>(url);
+    const response = await grandlineAxiosClient.get<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>>(url);
     return response.data;
   },
 

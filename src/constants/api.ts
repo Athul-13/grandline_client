@@ -60,6 +60,7 @@ export const API_ENDPOINTS = {
     updateQuoteStatus: (id: string) => `/admin/quotes/${id}/status`,
     assignDriver: (id: string) => `/admin/quotes/${id}/assign-driver`,
     recalculateQuote: (id: string) => `/admin/quotes/${id}/recalculate`,
+    trips: '/admin/trips',
     reservations: '/admin/reservations',
     reservationDetails: (id: string) => `/admin/reservations/${id}`,
     updateReservationStatus: (id: string) => `/admin/reservations/${id}/status`,
@@ -147,6 +148,15 @@ export const API_ENDPOINTS = {
     stats: '/dashboard/stats',
     activity: '/dashboard/activity',
     adminAnalytics: '/dashboard/admin/analytics',
+  },
+  // Support endpoints
+  support: {
+    tickets: '/support/tickets',
+    ticketById: (id: string) => `/support/tickets/${id}`,
+    ticketMessages: (id: string) => `/support/tickets/${id}/messages`,
+    addMessage: (id: string) => `/support/tickets/${id}/messages`,
+    updateStatus: (id: string) => `/support/tickets/${id}/status`,
+    assignToAdmin: (id: string) => `/support/tickets/${id}/assign`,
   },
 } as const;
 
