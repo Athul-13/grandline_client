@@ -165,13 +165,13 @@ export const SupportTicketDetailPage: React.FC = () => {
       {/* Reply Box */}
       {(ticket.status !== TicketStatus.RESOLVED && ticket.status !== TicketStatus.REJECTED) && (
         <div className="border-t border-[var(--color-border)] pt-4">
-          <div className="space-y-3">
+          <div className="flex items-end gap-3">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type your message..."
-              rows={4}
-              className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
+              rows={2}
+              className="flex-1 px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
               disabled={isSubmitting}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -180,18 +180,17 @@ export const SupportTicketDetailPage: React.FC = () => {
                 }
               }}
             />
-            <div className="flex justify-end">
-              <Button
-                variant="primary"
-                onClick={handleSendMessage}
-                loading={isSubmitting}
-                loadingText="Sending..."
-                disabled={!message.trim() || isSubmitting}
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Send Message
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              onClick={handleSendMessage}
+              loading={isSubmitting}
+              loadingText="Sending..."
+              disabled={!message.trim() || isSubmitting}
+              className="flex-shrink-0"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Send Message
+            </Button>
           </div>
         </div>
       )}

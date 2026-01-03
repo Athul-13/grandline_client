@@ -10,6 +10,10 @@ import type {
   GetMessagesByTicketRequest,
   GetMessagesByTicketResponse,
   ActorTypeType,
+  AdminTicketsListResponse,
+  UpdateTicketStatusRequest,
+  AssignTicketToAdminRequest,
+  GetTicketByIdResponse as AdminTicketDetailsResponse,
 } from '../../types/support/ticket';
 
 /**
@@ -80,6 +84,58 @@ export const supportService = {
       {
         params: { page, limit },
       }
+    );
+    return response.data;
+  },
+
+  /**
+   * Get all tickets (admin only)
+   * GET /api/v1/support/tickets?page=1&limit=20&status=open&actorType=user
+   */
+  getAllTickets: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    actorType?: string;
+    assignedAdminId?: string;
+    sortBy?: 'lastMessageAt' | 'createdAt';
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<AdminTicketsListResponse> => {
+    const response = await grandlineAxiosClient.get<AdminTicketsListResponse>(
+      API_ENDPOINTS.support.tickets,
+      {
+        params,
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Update ticket status (admin only)
+   * PATCH /api/v1/support/tickets/:id/status
+   */
+  updateTicketStatus: async (
+    ticketId: string,
+    request: UpdateTicketStatusRequest
+  ): Promise<AdminTicketDetailsResponse> => {
+    const response = await grandlineAxiosClient.patch<AdminTicketDetailsResponse>(
+      API_ENDPOINTS.support.updateStatus(ticketId),
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Assign ticket to admin (admin only)
+   * PATCH /api/v1/support/tickets/:id/assign
+   */
+  assignTicketToAdmin: async (
+    ticketId: string,
+    request: AssignTicketToAdminRequest
+  ): Promise<AdminTicketDetailsResponse> => {
+    const response = await grandlineAxiosClient.patch<AdminTicketDetailsResponse>(
+      API_ENDPOINTS.support.assignToAdmin(ticketId),
+      request
     );
     return response.data;
   },

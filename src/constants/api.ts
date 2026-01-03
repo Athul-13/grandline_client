@@ -155,6 +155,8 @@ export const API_ENDPOINTS = {
     ticketById: (id: string) => `/support/tickets/${id}`,
     ticketMessages: (id: string) => `/support/tickets/${id}/messages`,
     addMessage: (id: string) => `/support/tickets/${id}/messages`,
+    updateStatus: (id: string) => `/support/tickets/${id}/status`,
+    assignToAdmin: (id: string) => `/support/tickets/${id}/assign`,
   },
 } as const;
 

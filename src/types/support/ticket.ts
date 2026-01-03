@@ -151,3 +151,49 @@ export interface GetMessagesByTicketResponse {
   };
 }
 
+/**
+ * Admin ticket list item
+ */
+export interface AdminTicketListItem {
+  ticketId: string;
+  actorType: ActorTypeType;
+  actorId: string;
+  actorName: string;
+  subject: string;
+  status: TicketStatusType;
+  priority: TicketPriorityType;
+  linkedEntityType: LinkedEntityTypeType | null;
+  linkedEntityId: string | null;
+  assignedAdminId: string | null;
+  lastMessageAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Admin tickets list response
+ */
+export interface AdminTicketsListResponse {
+  tickets: AdminTicketListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+/**
+ * Update ticket status request
+ */
+export interface UpdateTicketStatusRequest {
+  status: TicketStatusType;
+}
+
+/**
+ * Assign ticket to admin request
+ */
+export interface AssignTicketToAdminRequest {
+  adminId: string;
+}
+

@@ -44,6 +44,7 @@ export const ROUTES = {
     driverManagement: '/admin/driver-management',
     driverDetails: (id: string) => `/admin/driver-management/${id}`,
     supportConcerns: '/admin/support-concerns',
+    supportTicketDetails: (id: string) => `/admin/support-concerns/${id}`,
     settings: '/admin/settings',
   },
 } as const;

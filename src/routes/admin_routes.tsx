@@ -148,7 +148,9 @@ export const AdminRoutes: React.FC = () => {
             <AdminSupportConcernsPage />
           </ProtectedAdminLayoutRoute>
         }
-      />
+      >
+        <Route path=":id" element={<AdminSupportConcernsPage />} />
+      </Route>
 
       {/* Settings */}
       <Route
