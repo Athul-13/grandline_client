@@ -12,6 +12,7 @@ import { ReservationsPage } from '../pages/user/reservations_page';
 import { BuildQuotePage } from '../pages/user/build_quote_page';
 import { PaymentPage } from '../pages/user/payment_page';
 import { ChargePaymentPage } from '../pages/reservations/charge_payment_page';
+import { ReservationTrackingMapPage } from '../pages/reservations/reservation_tracking_map_page';
 import { ProfilePage } from '../pages/user/profile/profile_page';
 import { MyProfilePage } from '../pages/user/profile/my_profile_page';
 import { SecurityPage } from '../pages/user/profile/security_page';
@@ -131,6 +132,14 @@ export const UserRoutes: React.FC = () => {
         element={
           <ProtectedUserLayoutRoute>
             <ChargePaymentPage />
+          </ProtectedUserLayoutRoute>
+        }
+      />
+      <Route
+        path="reservations/:reservationId/track"
+        element={
+          <ProtectedUserLayoutRoute>
+            <ReservationTrackingMapPage />
           </ProtectedUserLayoutRoute>
         }
       />

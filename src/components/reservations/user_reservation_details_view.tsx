@@ -10,6 +10,7 @@ import { DriverDetailsBentoCard } from './details/driver_details_bento_card';
 import { PassengersBentoCard } from './details/passengers_bento_card';
 import { RouteBentoCard } from './details/route_bento_card';
 import { DriverTrackingBentoCard } from './details/driver_tracking_bento_card';
+import { DriverTrackingInfoBox } from './details/driver_tracking_info_box';
 import { UserChatView } from '../chat/user/user_chat_view';
 import { UserReservationChatView } from '../chat/user/user_reservation_chat_view';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
@@ -122,6 +123,13 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
             {reservationDetails.assignedDriverId && (
               <div>
                 <DriverDetailsBentoCard reservationDetails={reservationDetails} />
+              </div>
+            )}
+
+            {/* Driver Tracking Info Box */}
+            {reservationDetails.assignedDriverId && (
+              <div>
+                <DriverTrackingInfoBox reservationDetails={reservationDetails} />
               </div>
             )}
 
