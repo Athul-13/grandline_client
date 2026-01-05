@@ -19,6 +19,7 @@ interface AdminSupportTableProps {
   isLoading: boolean;
   onPageChange: (page: number) => void;
   ticketId?: string; // When provided, show ticket details instead of table
+  searchQuery?: string; // Search query for highlighting
 }
 
 /**
@@ -31,6 +32,7 @@ export const AdminSupportTable: React.FC<AdminSupportTableProps> = ({
   isLoading,
   onPageChange,
   ticketId,
+  searchQuery = '',
 }) => {
   const navigate = useNavigate();
   
@@ -188,6 +190,7 @@ export const AdminSupportTable: React.FC<AdminSupportTableProps> = ({
                   key={ticket.ticketId}
                   ticket={ticket}
                   onRowClick={() => navigate(ROUTES.admin.supportTicketDetails(ticket.ticketId))}
+                  searchQuery={searchQuery}
                 />
               ))}
             </tbody>
