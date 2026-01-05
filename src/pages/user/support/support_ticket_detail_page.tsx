@@ -89,7 +89,7 @@ export const SupportTicketDetailPage: React.FC = () => {
             <TicketStatusBadge status={ticket.status} />
             {ticket.linkedEntityType && ticket.linkedEntityId && (
               <span className="text-sm text-[var(--color-text-secondary)]">
-                Related to: {ticket.linkedEntityType}
+                Related to: {ticket.linkedEntityNumber}
               </span>
             )}
           </div>

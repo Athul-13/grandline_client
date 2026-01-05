@@ -24,6 +24,9 @@ export const ReservationsTableRow: React.FC<ReservationsTableRowProps> = ({
       )}
       onClick={onRowClick}
     >
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+        {reservation.reservationNumber || '-'}
+      </td>
       <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
         {reservation.tripName || 'Untitled Trip'}
       </td>

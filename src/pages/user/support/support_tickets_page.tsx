@@ -75,7 +75,7 @@ export const SupportTicketsPage: React.FC = () => {
                   </div>
                   {ticket.linkedEntityType && ticket.linkedEntityId && (
                     <p className="text-sm text-[var(--color-text-secondary)] mb-2">
-                      Related to: {ticket.linkedEntityType} ({ticket.linkedEntityId.slice(0, 8)}...)
+                      Related to: {ticket.linkedEntityNumber || '-'}
                     </p>
                   )}
                   <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">

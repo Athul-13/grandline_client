@@ -65,6 +65,7 @@ export interface TicketListItem {
   status: TicketStatusType;
   priority: string;
   linkedEntityType: LinkedEntityTypeType | null;
+  linkedEntityNumber: string | null;
   linkedEntityId: string | null;
   lastMessageAt: Date | null;
   createdAt: Date;
@@ -88,6 +89,7 @@ export interface GetTicketByIdResponse {
   status: TicketStatusType;
   priority: string;
   linkedEntityType: LinkedEntityTypeType | null;
+  linkedEntityNumber: string | null;
   linkedEntityId: string | null;
   assignedAdminId: string | null;
   lastMessageAt: Date | null;
@@ -163,6 +165,7 @@ export interface AdminTicketListItem {
   status: TicketStatusType;
   priority: TicketPriorityType;
   linkedEntityType: LinkedEntityTypeType | null;
+  linkedEntityNumber: string | null;
   linkedEntityId: string | null;
   assignedAdminId: string | null;
   lastMessageAt: Date | null;

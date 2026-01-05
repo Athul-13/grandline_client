@@ -15,7 +15,7 @@ import { UserChatView } from '../chat/user/user_chat_view';
 import { UserReservationChatView } from '../chat/user/user_reservation_chat_view';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
 import type { ReservationResponse } from '../../types/reservations/reservation';
-import type { QuoteResponse } from '../../types/quotes/quote';
+import type { QuoteResponse, QuoteStatusType } from '../../types/quotes/quote';
 
 interface UserReservationDetailsViewProps {
   reservationDetails: ReservationResponse;
@@ -74,18 +74,20 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
     const quoteDetails: QuoteResponse = {
       quoteId: reservationDetails.quoteId,
       userId: reservationDetails.userId,
+      quoteNumber: reservationDetails.reservationNumber || '',
       tripType: reservationDetails.tripType,
       tripName: reservationDetails.tripName || '',
       eventType: reservationDetails.eventType || '',
       customEventType: reservationDetails.customEventType || null,
       passengerCount: reservationDetails.passengerCount || 0,
-      status: 'quoted' as any, // Quote status - not used for chat
+      status: 'quoted' as QuoteStatusType, // Quote status - not used for chat
       selectedVehicles: reservationDetails.selectedVehicles || [],
       selectedAmenities: reservationDetails.selectedAmenities || [],
       routeData: reservationDetails.routeData,
       assignedDriverId: reservationDetails.assignedDriverId,
       createdAt: reservationDetails.createdAt,
       updatedAt: reservationDetails.updatedAt,
+      currentStep: 0,
     };
     return <UserChatView quoteDetails={quoteDetails} onBack={handleBackFromChat} />;
   }

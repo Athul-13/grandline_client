@@ -19,6 +19,7 @@ export interface AdminUserInfo {
  * Admin reservation list item (extends ReservationListItem with user info)
  */
 export interface AdminReservationListItem extends ReservationListItem {
+  reservationNumber?: string;
   user: AdminUserInfo;
 }
 

@@ -64,6 +64,9 @@ export const QuotesCard: React.FC<QuotesCardProps> = ({
             </div>
           </div>
         </div>
+        <div className="text-sm text-[var(--color-text-secondary)]">
+          {quote.quoteNumber}
+        </div>
       </div>
 
       <div className="space-y-2 text-sm">

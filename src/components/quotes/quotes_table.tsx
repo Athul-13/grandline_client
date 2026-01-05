@@ -215,6 +215,7 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
       <TableSkeleton
         hasCheckbox
         columns={[
+          {}, // Quote Number - auto width
           {}, // Trip Name - auto width
           {}, // Type - auto width
           {}, // Status - auto width
@@ -256,6 +257,7 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
             <table className="w-full table-fixed">
               <colgroup>
                 <col className="w-[48px]" />
+                <col className="w-[11%]" />
                 <col className="w-[18%]" />
                 <col className="w-[12%]" />
                 <col className="w-[12%]" />
@@ -273,6 +275,9 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
                       onClick={(e) => e.stopPropagation()}
                       className="w-4 h-4 cursor-pointer"
                     />
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] h-[48px]">
+                    Quote Number
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] h-[48px]">
                     Trip Name
@@ -302,6 +307,7 @@ export const QuotesTable: React.FC<QuotesTableProps> = ({
           <table className="w-full table-fixed">
             <colgroup>
               <col className="w-[48px]" />
+              <col className="w-[11%]" />
               <col className="w-[18%]" />
               <col className="w-[12%]" />
               <col className="w-[12%]" />

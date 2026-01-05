@@ -19,6 +19,12 @@ export const BasicInfoBentoCard: React.FC<BasicInfoBentoCardProps> = ({ quoteDet
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
+          <span className="font-medium text-[var(--color-text-secondary)]">Quote Number:</span>
+          <span className="ml-2 text-[var(--color-text-primary)]">
+            {quoteDetails.quoteNumber || '-'}
+          </span>
+        </div>
+        <div>
           <span className="font-medium text-[var(--color-text-secondary)]">Trip Type:</span>
           <span className="ml-2 text-[var(--color-text-primary)]">
             {quoteDetails.tripType === 'one_way' ? 'One Way' : 'Two Way'}
@@ -30,14 +36,12 @@ export const BasicInfoBentoCard: React.FC<BasicInfoBentoCardProps> = ({ quoteDet
             {quoteDetails.eventType || '-'}
           </span>
         </div>
-        {quoteDetails.customEventType && (
-          <div className="sm:col-span-2">
-            <span className="font-medium text-[var(--color-text-secondary)]">Custom Event Type:</span>
-            <span className="ml-2 text-[var(--color-text-primary)]">
-              {quoteDetails.customEventType}
-            </span>
-          </div>
-        )}
+        <div>
+        <span className="font-medium text-[var(--color-text-secondary)]">Custom Event Type:</span>
+          <span className="ml-2 text-[var(--color-text-primary)]">
+            {quoteDetails.customEventType || '-'}
+          </span>
+        </div>
         <div>
           <span className="font-medium text-[var(--color-text-secondary)]">Passenger Count:</span>
           <span className="ml-2 text-[var(--color-text-primary)] font-medium">

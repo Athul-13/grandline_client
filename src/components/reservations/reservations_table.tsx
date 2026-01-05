@@ -82,6 +82,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
     return (
       <TableSkeleton
         columns={[
+          {}, // Reservation Number
           {}, // Trip Name
           {}, // Type
           {}, // Status
@@ -111,6 +112,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
         <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
           <table className="w-full table-fixed">
             <colgroup>
+              <col className="w-[11%]" />
               <col className="w-[18%]" />
               <col className="w-[12%]" />
               <col className="w-[12%]" />
@@ -121,6 +123,9 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
             </colgroup>
             <thead>
               <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] h-[48px]">
+                  Reservation Number
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-primary)] h-[48px]">
                   Trip Name
                 </th>
@@ -150,6 +155,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
         <div className="flex-1 min-h-0 overflow-y-auto">
           <table className="w-full table-fixed">
             <colgroup>
+              <col className="w-[11%]" />
               <col className="w-[18%]" />
               <col className="w-[12%]" />
               <col className="w-[12%]" />
