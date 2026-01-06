@@ -70,9 +70,11 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
               <div className="flex-shrink-0 w-2 h-2 rounded-full bg-[var(--color-primary)] mt-1" />
             )}
           </div>
-          <p className="text-sm text-[var(--color-text-primary)] line-clamp-2 leading-snug">
-            {notification.message}
-          </p>
+          <div title={notification.message}>
+            <p className="text-sm text-[var(--color-text-primary)] line-clamp-2 leading-snug">
+              {notification.message}
+            </p>
+          </div>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{timeAgo}</p>
         </div>
       </div>

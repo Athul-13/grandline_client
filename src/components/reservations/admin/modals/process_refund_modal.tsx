@@ -72,10 +72,8 @@ export const ProcessRefundModal: React.FC<ProcessRefundModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-              Refund Amount ({currency})
-            </label>
             <FormInput
+              label={`Refund Amount (${currency})`}
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -84,10 +82,8 @@ export const ProcessRefundModal: React.FC<ProcessRefundModalProps> = ({
               min={0}
               max={maxRefundAmount}
               step="0.01"
+              hint={`Maximum refundable: ${formatPrice(maxRefundAmount)} ${currency}`}
             />
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Maximum refundable: {formatPrice(maxRefundAmount)} {currency}
-            </p>
           </div>
 
           <div>
