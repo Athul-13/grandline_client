@@ -199,8 +199,8 @@ export const AdminSupportTable: React.FC<AdminSupportTableProps> = ({
       </div>
 
       {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4">
+      {pagination && (
+        <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
