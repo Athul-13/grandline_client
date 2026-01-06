@@ -46,7 +46,7 @@ export const AdminTripDetailsView: React.FC<AdminTripDetailsViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col bg-[var(--color-bg-primary)]">
+      <div className="h-full px-4 py-3 flex flex-col bg-[var(--color-bg-primary)]">
         {/* Header with Back Button */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)]">
           <Skeleton.Button active size="small" style={{ width: 120, height: 32 }} />
@@ -79,9 +79,9 @@ export const AdminTripDetailsView: React.FC<AdminTripDetailsViewProps> = ({
 
   // For reservation details, we'll reuse the existing view but add live map section
   return (
-    <div className="h-full flex flex-col bg-[var(--color-bg-primary)]">
+    <div className="h-full flex flex-col bg-[var(--color-bg-primary)] px-4 py-4">
       {/* Header with Back Button */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)]">
+      <div className="flex-shrink-0 px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)] rounded-t-lg">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"

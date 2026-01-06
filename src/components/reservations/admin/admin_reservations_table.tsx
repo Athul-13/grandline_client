@@ -43,7 +43,7 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
   reservationId,
 }) => {
   const { searchQuery } = useSearchContext();
-  const [copiedReservationId, setCopiedReservationId] = useState<string | null>(null);
+  const [copiedReservationNumber, setCopiedReservationNumber] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // Refs for syncing horizontal scroll
@@ -164,16 +164,16 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
     navigate(-1);
   };
 
-  // Copy reservation ID to clipboard
-  const handleCopyReservationId = async (idToCopy: string, e: React.MouseEvent) => {
+  // Copy reservation number to clipboard
+  const handleCopyReservationNumber = async (numberToCopy: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(idToCopy);
-      setCopiedReservationId(idToCopy);
-      toast.success('Reservation ID copied to clipboard');
-      setTimeout(() => setCopiedReservationId(null), 2000);
+      await navigator.clipboard.writeText(numberToCopy);
+      setCopiedReservationNumber(numberToCopy);
+      toast.success('Reservation Number copied to clipboard');
+      setTimeout(() => setCopiedReservationNumber(null), 2000);
     } catch {
-      toast.error('Failed to copy reservation ID');
+      toast.error('Failed to copy reservation Number');
     }
   };
 
@@ -358,8 +358,8 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
                     key={reservation.reservationId}
                     reservation={reservation}
                     searchQuery={searchQuery}
-                    copiedReservationId={copiedReservationId}
-                    onCopyReservationId={handleCopyReservationId}
+                    copiedReservationNumber={copiedReservationNumber}
+                    onCopyReservationNumber={handleCopyReservationNumber}
                     isSelected={selectedReservationIds.has(reservation.reservationId)}
                     onSelectChange={(isSelected) => handleSelectReservation(reservation.reservationId, isSelected)}
                     onRowClick={() => navigate(`/admin/reservations/${reservation.reservationId}`)}
@@ -377,8 +377,8 @@ export const AdminReservationsTable: React.FC<AdminReservationsTableProps> = ({
               key={reservation.reservationId}
               reservation={reservation}
               searchQuery={searchQuery}
-              copiedReservationId={copiedReservationId}
-              onCopyReservationId={handleCopyReservationId}
+              copiedReservationNumber={copiedReservationNumber}
+              onCopyReservationNumber={handleCopyReservationNumber}
               isSelected={selectedReservationIds.has(reservation.reservationId)}
               onSelectChange={(isSelected) => handleSelectReservation(reservation.reservationId, isSelected)}
               onCardClick={() => navigate(`/admin/reservations/${reservation.reservationId}`)}

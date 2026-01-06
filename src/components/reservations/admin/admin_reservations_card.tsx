@@ -8,8 +8,8 @@ import type { AdminReservationListItem } from '../../../types/reservations/admin
 interface AdminReservationsCardProps {
   reservation: AdminReservationListItem;
   searchQuery: string;
-  copiedReservationId: string | null;
-  onCopyReservationId: (reservationId: string, e: React.MouseEvent) => void;
+  copiedReservationNumber: string | null;
+  onCopyReservationNumber: (reservationNumber: string, e: React.MouseEvent) => void;
   isSelected: boolean;
   onSelectChange: (isSelected: boolean) => void;
   onCardClick: () => void;
@@ -22,8 +22,8 @@ interface AdminReservationsCardProps {
 export const AdminReservationsCard: React.FC<AdminReservationsCardProps> = ({
   reservation,
   searchQuery,
-  copiedReservationId,
-  onCopyReservationId,
+  copiedReservationNumber,
+  onCopyReservationNumber,
   isSelected,
   onSelectChange,
   onCardClick,
@@ -60,21 +60,21 @@ export const AdminReservationsCard: React.FC<AdminReservationsCardProps> = ({
             </div>
             <div className="flex items-center">
               <p className="text-xs text-[var(--color-text-secondary)] font-mono">
-                ID: {highlightSearchTerm(reservation.reservationId.slice(0, 8) + '...', searchQuery)}
+                Reservation NO.: {highlightSearchTerm(reservation.reservationNumber || '-', searchQuery)}
               </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onCopyReservationId(reservation.reservationId, e);
+                  onCopyReservationNumber(reservation.reservationNumber || '-', e);
                 }}
                 className={cn(
                   'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
                   'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
                   'transition-colors flex-shrink-0'
                 )}
-                title="Copy reservation ID"
+                title="Copy reservation Number"
               >
-                {copiedReservationId === reservation.reservationId ? (
+                {copiedReservationNumber === (reservation.reservationNumber || '-') ? (
                   <Check className="w-3 h-3 text-green-600" />
                 ) : (
                   <Copy className="w-3 h-3" />

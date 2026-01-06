@@ -26,9 +26,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     >
       <div className="space-y-3 text-sm">
         <div>
-          <span className="font-medium text-[var(--color-text-secondary)]">Reservation ID:</span>
+          <span className="font-medium text-[var(--color-text-secondary)]">Reservation Number:</span>
           <span className="ml-2 text-[var(--color-text-primary)] font-mono">
-            {reservationDetails.reservationId}
+            {reservationDetails.reservationNumber || '-'}
           </span>
         </div>
         <div>

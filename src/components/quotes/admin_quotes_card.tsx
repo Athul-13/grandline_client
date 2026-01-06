@@ -9,8 +9,8 @@ import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 interface AdminQuotesCardProps {
   quote: AdminQuoteListItem;
   searchQuery: string;
-  copiedQuoteId: string | null;
-  onCopyQuoteId: (quoteId: string, e: React.MouseEvent) => void;
+  copiedQuoteNumber: string | null;
+  onCopyQuoteNumber: (quoteNumber: string, e: React.MouseEvent) => void;
   isSelected: boolean;
   onSelectChange: (isSelected: boolean) => void;
   onCardClick: () => void;
@@ -23,8 +23,8 @@ interface AdminQuotesCardProps {
 export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
   quote,
   searchQuery,
-  copiedQuoteId,
-  onCopyQuoteId,
+  copiedQuoteNumber,
+  onCopyQuoteNumber,
   isSelected,
   onSelectChange,
   onCardClick,
@@ -73,21 +73,21 @@ export const AdminQuotesCard: React.FC<AdminQuotesCardProps> = ({
           </div>
           <div className="flex items-center">
             <p className="text-xs text-[var(--color-text-secondary)] font-mono">
-              ID: {highlightSearchTerm(quote.quoteId.slice(0, 8) + '...', searchQuery)}
+                Quote NO.: {highlightSearchTerm(quote.quoteNumber || '-', searchQuery)}
             </p>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onCopyQuoteId(quote.quoteId, e);
+                onCopyQuoteNumber((quote.quoteNumber || '-'), e);
               }}
               className={cn(
                 'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
                 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
                 'transition-colors flex-shrink-0'
               )}
-              title="Copy quote ID"
+              title="Copy quote Number"
             >
-              {copiedQuoteId === quote.quoteId ? (
+              {copiedQuoteNumber === (quote.quoteNumber || '-') ? (
                 <Check className="w-3 h-3 text-green-500" />
               ) : (
                 <Copy className="w-3 h-3" />

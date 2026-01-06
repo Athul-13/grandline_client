@@ -8,8 +8,8 @@ import type { AdminReservationListItem } from '../../../types/reservations/admin
 interface AdminReservationsTableRowProps {
   reservation: AdminReservationListItem;
   searchQuery: string;
-  copiedReservationId: string | null;
-  onCopyReservationId: (reservationId: string, e: React.MouseEvent) => void;
+  copiedReservationNumber: string | null;
+  onCopyReservationNumber: (reservationNumber: string, e: React.MouseEvent) => void;
   isSelected: boolean;
   onSelectChange: (isSelected: boolean) => void;
   onRowClick: () => void;
@@ -22,8 +22,8 @@ interface AdminReservationsTableRowProps {
 export const AdminReservationsTableRow: React.FC<AdminReservationsTableRowProps> = ({
   reservation,
   searchQuery,
-  copiedReservationId,
-  onCopyReservationId,
+  copiedReservationNumber,
+  onCopyReservationNumber,
   isSelected,
   onSelectChange,
   onRowClick,
@@ -53,14 +53,14 @@ export const AdminReservationsTableRow: React.FC<AdminReservationsTableRowProps>
         />
       </td>
 
-      {/* Reservation ID */}
-      <td className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group min-w-0 overflow-hidden">
+      {/* Reservation Number */}
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] font-mono flex-[0_0_12%] relative group min-w-0 overflow-hidden">
         <div className="flex items-center">
-          <span>{highlightSearchTerm(reservation.reservationId.slice(0, 8) + '...', searchQuery)}</span>
+          <span>{highlightSearchTerm(reservation.reservationNumber || '-', searchQuery)}</span>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onCopyReservationId(reservation.reservationId, e);
+              onCopyReservationNumber(reservation.reservationNumber || '-', e);
             }}
             className={cn(
               'opacity-0 group-hover:opacity-100 transition-opacity',
@@ -68,9 +68,9 @@ export const AdminReservationsTableRow: React.FC<AdminReservationsTableRowProps>
               'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
               'flex-shrink-0'
             )}
-            title="Copy reservation ID"
+            title="Copy reservation Number"
           >
-            {copiedReservationId === reservation.reservationId ? (
+            {copiedReservationNumber === (reservation.reservationNumber || '-') ? (
               <Check className="w-3.5 h-3.5 text-green-500" />
             ) : (
               <Copy className="w-3.5 h-3.5" />

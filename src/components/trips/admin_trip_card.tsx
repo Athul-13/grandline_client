@@ -74,7 +74,7 @@ export const AdminTripCard: React.FC<AdminTripCardProps> = ({ trip, searchQuery 
           </span>
         </div>
         <p className="text-xs text-[var(--color-text-secondary)] font-mono">
-          {highlightSearchTerm(trip.reservationId, searchQuery)}
+          {highlightSearchTerm(trip.reservationNumber || '-', searchQuery)}
         </p>
       </div>
 

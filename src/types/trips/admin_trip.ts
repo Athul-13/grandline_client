@@ -14,6 +14,7 @@ export type TripState = 'UPCOMING' | 'CURRENT' | 'PAST';
  */
 export interface AdminTripListItem {
   reservationId: string;
+  reservationNumber: string;
   tripName?: string;
   userName: string;
   driverName?: string;
