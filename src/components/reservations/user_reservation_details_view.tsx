@@ -14,6 +14,11 @@ import { DriverTrackingInfoBox } from './details/driver_tracking_info_box';
 import { UserChatView } from '../chat/user/user_chat_view';
 import { UserReservationChatView } from '../chat/user/user_reservation_chat_view';
 import { useChatForQuote } from '../../hooks/chat/use_chat_for_quote';
+import { CancelReservationRequestModal } from './user/cancel_reservation_request_modal';
+import { useCreateTicket } from '../../hooks/support/use_create_ticket';
+import { LinkedEntityType, ActorType, TicketPriority } from '../../types/support/ticket';
+import toast from 'react-hot-toast';
+import { sanitizeErrorMessage } from '../../utils/error_sanitizer';
 import type { ReservationResponse } from '../../types/reservations/reservation';
 import type { QuoteResponse, QuoteStatusType } from '../../types/quotes/quote';
 
@@ -32,16 +37,18 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
   onBack,
 }) => {
   const [chatMode, setChatMode] = useState<'none' | 'admin' | 'driver'>('none');
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const { vehicles, isLoading: isLoadingVehicles } = useReservationVehicles(
     reservationDetails.selectedVehicles
   );
   const { amenities, isLoading: isLoadingAmenities } = useReservationAmenities(
     reservationDetails.selectedAmenities
   );
+  const { createTicket, isLoading: isCreatingTicket } = useCreateTicket();
 
   // Get chat for quote (for admin chat) - we need quoteId from reservation
   // Note: This assumes reservation has quoteId, which it should based on the type
-  const { chat: quoteChat } = useChatForQuote({
+  useChatForQuote({
     quoteId: reservationDetails.quoteId,
     userId: reservationDetails.userId,
     autoJoin: false,
@@ -64,6 +71,28 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
       setChatMode('none');
     } else {
       onBack();
+    }
+  };
+
+  const handleCancelRequest = () => {
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancellation = async () => {
+    try {
+      await createTicket({
+        actorType: ActorType.USER,
+        actorId: reservationDetails.userId,
+        subject: `Cancellation Request for Reservation: ${reservationDetails.reservationNumber || reservationDetails.reservationId}`,
+        content: 'User has requested cancellation for this reservation.',
+        linkedEntityType: LinkedEntityType.RESERVATION,
+        linkedEntityId: reservationDetails.reservationId,
+        priority: TicketPriority.HIGH,
+      });
+      toast.success('Cancellation request submitted successfully. Our team will review it shortly.');
+      setShowCancelModal(false);
+    } catch (error) {
+      toast.error(sanitizeErrorMessage(error));
     }
   };
 
@@ -102,14 +131,16 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
-      {/* Header with Trip Name, Back Button, and Chat Buttons */}
-      <UserReservationDetailsHeader
-        reservationDetails={reservationDetails}
-        onBack={handleBackToReservations}
-        onChatWithAdmin={handleChatWithAdmin}
-        onChatWithDriver={handleChatWithDriver}
-      />
+    <>
+      <div className="flex flex-col h-full min-h-0 bg-[var(--color-bg-card)] rounded-lg shadow-sm border border-[var(--color-border)]">
+        {/* Header with Trip Name, Back Button, and Chat Buttons */}
+        <UserReservationDetailsHeader
+          reservationDetails={reservationDetails}
+          onBack={handleBackToReservations}
+          onChatWithAdmin={handleChatWithAdmin}
+          onChatWithDriver={handleChatWithDriver}
+          onCancelRequest={handleCancelRequest}
+        />
 
       {/* Content Area with Two Column Layout */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-6">
@@ -184,7 +215,16 @@ export const UserReservationDetailsView: React.FC<UserReservationDetailsViewProp
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Cancel Reservation Request Modal */}
+      <CancelReservationRequestModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleConfirmCancellation}
+        isLoading={isCreatingTicket}
+      />
+    </>
   );
 };
 

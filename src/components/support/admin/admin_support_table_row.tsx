@@ -52,8 +52,8 @@ export const AdminSupportTableRow: React.FC<AdminSupportTableRowProps> = ({
           {highlightSearchTerm(ticket.ticketId.slice(0, 8) + '...', searchQuery)}
         </span>
       </td>
-      <td className="px-4 py-3 flex-[0_0_20%] flex items-center text-sm text-[var(--color-text-primary)]">
-        <span className="truncate" title={ticket.subject}>
+      <td className="px-4 py-3 flex-[0_0_20%] flex items-center text-sm text-[var(--color-text-primary)] min-w-0">
+        <span className="truncate w-full" title={ticket.subject}>
           {highlightSearchTerm(ticket.subject, searchQuery)}
         </span>
       </td>

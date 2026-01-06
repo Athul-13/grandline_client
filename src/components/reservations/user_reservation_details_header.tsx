@@ -1,13 +1,15 @@
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, X } from 'lucide-react';
 import { ReservationStatusBadge } from './reservation_status_badge';
 import { Button } from '../common/ui/button';
 import type { ReservationResponse } from '../../types/reservations/reservation';
+import { canUserCancelReservation } from '../../utils/reservation_utils';
 
 interface UserReservationDetailsHeaderProps {
   reservationDetails: ReservationResponse;
   onBack: () => void;
   onChatWithAdmin: () => void;
   onChatWithDriver: () => void;
+  onCancelRequest?: () => void;
 }
 
 /**
@@ -19,8 +21,10 @@ export const UserReservationDetailsHeader: React.FC<UserReservationDetailsHeader
   onBack,
   onChatWithAdmin,
   onChatWithDriver,
+  onCancelRequest,
 }) => {
   const chatEnabled = reservationDetails.chatEnabled ?? false;
+  const canCancel = canUserCancelReservation(reservationDetails);
 
   return (
     <div className="flex-shrink-0 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
@@ -40,6 +44,19 @@ export const UserReservationDetailsHeader: React.FC<UserReservationDetailsHeader
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Cancel Button - Only if conditions are met */}
+          {canCancel && onCancelRequest && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancelRequest}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </Button>
+          )}
+
           {/* Chat with Admin Button - Always visible */}
           <Button
             variant="outline"
