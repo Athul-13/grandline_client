@@ -10,9 +10,8 @@ import { useAllVehicleTypes } from '../../../hooks/fleet/use_all_vehicle_types';
 import { useAllAmenities } from '../../../hooks/fleet/use_all_amenities';
 import { useVehicleImageUpload } from '../../../hooks/fleet/use_vehicle_image_upload';
 import { useUnsavedChanges } from '../../../hooks/use_unsaved_changes';
-import { vehicleService } from '../../../services/api/vehicle_service';
 import { VehicleStatus } from '../../../types/fleet/vehicle';
-import type { Vehicle } from '../../../types/fleet/vehicle';
+import type { Vehicle, CreateVehicleRequest, UpdateVehicleRequest } from '../../../types/fleet/vehicle';
 import { vehicleFormSchema, type VehicleFormData } from '../../../types/fleet/vehicle_form';
 import { formatPlateNumber, cleanPlateNumber } from '../../../utils/plate_number_formatter';
 import { fleetQueryKeys } from '../../../utils/fleet_query_keys';
@@ -306,44 +305,67 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     }
 
     const allImageUrls = [...existingImages, ...getSuccessfullyUploadedUrls()];
-    const requestData: any = {
-      vehicleTypeId: data.vehicleTypeId.trim(),
-      capacity: Number(data.capacity),
-      baseFare: Number(data.baseFare),
-      maintenance: Number(data.maintenance),
-      plateNumber: cleanPlateNumber(data.plateNumber),
-      vehicleModel: data.vehicleModel.trim(),
-      year: Number(data.year),
-      fuelConsumption: Number(data.fuelConsumption),
-      imageUrls: allImageUrls,
-      status: data.status,
-      amenityIds: data.amenityIds || [],
-    };
+    
+    if (mode === 'add') {
+      const requestData: CreateVehicleRequest = {
+        vehicleTypeId: data.vehicleTypeId.trim(),
+        capacity: Number(data.capacity),
+        baseFare: Number(data.baseFare),
+        maintenance: Number(data.maintenance),
+        plateNumber: cleanPlateNumber(data.plateNumber),
+        vehicleModel: data.vehicleModel.trim(),
+        year: Number(data.year),
+        fuelConsumption: Number(data.fuelConsumption),
+        imageUrls: allImageUrls,
+        status: data.status,
+        amenityIds: data.amenityIds || [],
+      };
 
-    // Include removed images for backend to handle deletion
-    if (mode === 'edit' && removedImages.length > 0) {
-      requestData.removedImageUrls = removedImages;
-    }
-
-    try {
-      if (mode === 'add') {
+      try {
         await createVehicle.mutateAsync(requestData);
         toast.success('Vehicle created successfully');
-      } else {
+        if (onSuccess) {
+          onSuccess();
+        }
+        onClose();
+      } catch (error) {
+        const errorMessage = sanitizeErrorMessage(error);
+        toast.error(errorMessage);
+      }
+    } else {
+      const requestData: UpdateVehicleRequest & { removedImageUrls?: string[] } = {
+        vehicleTypeId: data.vehicleTypeId.trim(),
+        capacity: Number(data.capacity),
+        baseFare: Number(data.baseFare),
+        maintenance: Number(data.maintenance),
+        plateNumber: cleanPlateNumber(data.plateNumber),
+        vehicleModel: data.vehicleModel.trim(),
+        year: Number(data.year),
+        fuelConsumption: Number(data.fuelConsumption),
+        imageUrls: allImageUrls,
+        status: data.status,
+        amenityIds: data.amenityIds || [],
+      };
+
+      // Include removed images for backend to handle deletion
+      if (removedImages.length > 0) {
+        requestData.removedImageUrls = removedImages;
+      }
+
+      try {
         await updateVehicle.mutateAsync({
           id: vehicle!.vehicleId,
           data: requestData,
         });
         toast.success('Vehicle updated successfully');
+        if (onSuccess) {
+          onSuccess();
+        }
+        onClose();
+      } catch (error) {
+        const errorMessage = sanitizeErrorMessage(error);
+        toast.error(errorMessage);
       }
-
-      if (onSuccess) {
-        onSuccess();
-      }
-      onClose();
-    } catch (error) {
-      const errorMessage = sanitizeErrorMessage(error);
-      toast.error(errorMessage);
     }
   };
 
