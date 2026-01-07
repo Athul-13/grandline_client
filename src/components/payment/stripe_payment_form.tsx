@@ -46,7 +46,7 @@ const PaymentForm: React.FC<{
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}${ROUTES.quotes}?quoteId=${quoteId}&payment=success`,
+          return_url: `${window.location.origin}${ROUTES.reservations}`,
         },
         redirect: 'if_required',
       });

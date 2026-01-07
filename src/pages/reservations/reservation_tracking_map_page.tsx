@@ -9,6 +9,7 @@ import { useReservationDetails } from '../../hooks/reservations/use_reservation_
 import { UserDriverTrackingMap } from '../../components/maps/user_driver_tracking_map';
 import { ReservationDetailsSkeleton } from '../../components/common/ui/loaders';
 import { Button } from '../../components/common/ui/button';
+import { ROUTES } from '../../constants/routes';
 
 /**
  * Reservation Tracking Map Page Component
@@ -25,9 +26,9 @@ export const ReservationTrackingMapPage: React.FC = () => {
 
   const handleBack = () => {
     if (reservationId) {
-      navigate(`/reservations/${reservationId}`);
+      navigate(`${ROUTES.reservations}?reservationId=${reservationId}`);
     } else {
-      navigate('/reservations');
+      navigate(ROUTES.reservations);
     }
   };
 

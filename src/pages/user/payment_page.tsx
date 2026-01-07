@@ -121,7 +121,7 @@ export const PaymentPage: React.FC = () => {
     : null;
 
   const handlePaymentSuccess = () => {
-    navigate(`${ROUTES.quotes}?quoteId=${quoteId}&payment=success`);
+    navigate(ROUTES.reservations);
   };
 
   const handlePaymentError = (error: string) => {
