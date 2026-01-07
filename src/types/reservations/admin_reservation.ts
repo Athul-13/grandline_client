@@ -82,6 +82,10 @@ export interface AdminReservationDetailsResponse extends ReservationResponse {
   charges?: ReservationChargeResponse[];
   totalCharges?: number;
   unpaidCharges?: number;
+  driverReport?: {
+    content: string;
+    submittedAt: Date | string;
+  };
 }
 
 /**

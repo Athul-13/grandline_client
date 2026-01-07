@@ -8,6 +8,7 @@ import { ItinerarySection } from './details/itinerary_section';
 import { VehiclesSection } from './details/vehicles_section';
 import { AmenitiesSection } from './details/amenities_section';
 import { DriverSection } from './details/driver_section';
+import { DriverReportSection } from './details/driver_report_section';
 import { PaymentSection } from './details/payment_section';
 import { ChargesSection } from './details/charges_section';
 import { ModificationsSection } from './details/modifications_section';
@@ -62,6 +63,7 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
     payment: false,
     modifications: false,
     charges: false,
+    driverReport: false,
   });
 
   // Modal states
@@ -299,6 +301,12 @@ export const AdminReservationDetailsView: React.FC<AdminReservationDetailsViewPr
           reservationDetails={reservationDetails}
           isExpanded={expandedSections.modifications}
           onToggle={() => toggleSection('modifications')}
+        />
+
+        <DriverReportSection
+          reservationDetails={reservationDetails}
+          isExpanded={expandedSections.driverReport}
+          onToggle={() => toggleSection('driverReport')}
         />
       </div>
       </div>
