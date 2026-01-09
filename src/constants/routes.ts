@@ -6,6 +6,10 @@
 export const ROUTES = {
   // Public routes
   home: '/',
+  fleet: '/fleet',
+  contact: '/contact',
+  about: '/about',
+  services: '/services',
   login: '/login',
   register: '/register',
   verifyOtp: '/verify-otp',

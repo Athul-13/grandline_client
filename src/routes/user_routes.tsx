@@ -20,6 +20,10 @@ import { NotificationsPage } from '../pages/user/profile/notifications_page';
 import { AccountSettingsPage } from '../pages/user/profile/account_settings_page';
 import { SupportTicketsPage } from '../pages/user/support/support_tickets_page';
 import { SupportTicketDetailPage } from '../pages/user/support/support_ticket_detail_page';
+import { FleetPage } from '../pages/common/fleet_page';
+import { ContactPage } from '../pages/common/contact_page';
+import { AboutPage } from '../pages/common/about_page';
+import { ServicesPage } from '../pages/common/services_page';
 
 /**
  * User Routes Component
@@ -41,6 +45,38 @@ export const UserRoutes: React.FC = () => {
         element={
           <PublicRoute>
             <HomePage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="fleet"
+        element={
+          <PublicRoute>
+            <FleetPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="contact"
+        element={
+          <PublicRoute>
+            <ContactPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="about"
+        element={
+          <PublicRoute>
+            <AboutPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="services"
+        element={
+          <PublicRoute>
+            <ServicesPage />
           </PublicRoute>
         }
       />

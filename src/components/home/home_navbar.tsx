@@ -30,13 +30,13 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({ logo = logoImg }) => {
 
   const navLinks = {
     left: [
-      { label: t('nav.home'), href: '#', key: 'home' },
-      { label: t('nav.fleet'), href: '#', key: 'fleet' },
-      { label: t('nav.contact'), href: '#', key: 'contact' },
+      { label: t('nav.home'), href: '/', key: 'home' },
+      { label: t('nav.fleet'), href: '/fleet', key: 'fleet' },
+      { label: t('nav.contact'), href: '/contact', key: 'contact' },
     ],
     right: [
-      { label: t('nav.about'), href: '#', key: 'about' },
-      { label: t('nav.services'), href: '#', key: 'services' },
+      { label: t('nav.about'), href: '/about', key: 'about' },
+      { label: t('nav.services'), href: '/services', key: 'services' },
     ],
   };
 
@@ -64,13 +64,13 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({ logo = logoImg }) => {
           {/* Left section: Nav Links positioned to end (close to center) - Desktop only */}
           <div className="hidden md:flex items-center justify-end gap-4 flex-1 pr-14">
           {navLinks.left.map((link) => (
-            <a
+            <Link
               key={link.key}
-              href={link.href}
+              to={link.href}
               className="hover:text-(--color-primary) transition-colors text-(--color-text-primary) font-medium"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -82,13 +82,13 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({ logo = logoImg }) => {
         {/* Right section: Nav Links + Login - Desktop only */}
         <div className="hidden md:flex items-center gap-4 flex-1 justify-start pl-14">
           {navLinks.right.map((link) => (
-            <a
+            <Link
               key={link.key}
-              href={link.href}
+              to={link.href}
               className="hover:text-(--color-primary) transition-colors text-(--color-text-primary) font-medium"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           
           {/* Login Button */}
@@ -177,24 +177,24 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({ logo = logoImg }) => {
           {/* Navigation Links */}
           <nav className="flex flex-col gap-4 mb-8">
             {navLinks.left.map((link) => (
-              <a
+              <Link
                 key={link.key}
-                href={link.href}
+                to={link.href}
                 onClick={closeDrawer}
                 className="text-lg font-medium text-(--color-text-primary) hover:text-(--color-primary) transition-colors py-2"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             {navLinks.right.map((link) => (
-              <a
+              <Link
                 key={link.key}
-                href={link.href}
+                to={link.href}
                 onClick={closeDrawer}
                 className="text-lg font-medium text-(--color-text-primary) hover:text-(--color-primary) transition-colors py-2"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
