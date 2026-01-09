@@ -10,8 +10,8 @@ import { useQuoteUnreadCount } from '../../hooks/chat/use_quote_unread_count';
 interface AdminQuotesTableRowProps {
   quote: AdminQuoteListItem;
   searchQuery: string;
-  copiedQuoteId: string | null;
-  onCopyQuoteId: (quoteId: string, e: React.MouseEvent) => void;
+  copiedQuoteNumber: string | null;
+  onCopyQuoteNumber: (quoteNumber: string, e: React.MouseEvent) => void;
   isSelected: boolean;
   onSelectChange: (isSelected: boolean) => void;
   onRowClick: () => void;
@@ -24,8 +24,8 @@ interface AdminQuotesTableRowProps {
 export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
   quote,
   searchQuery,
-  copiedQuoteId,
-  onCopyQuoteId,
+  copiedQuoteNumber,
+  onCopyQuoteNumber,
   isSelected,
   onSelectChange,
   onRowClick,
@@ -132,21 +132,21 @@ export const AdminQuotesTableRow: React.FC<AdminQuotesTableRowProps> = ({
           />
         </td>
         <td 
-          className="px-4 py-3 text-sm text-[var(--color-text-primary)] font-mono flex-[0_0_12%] relative group min-w-0 overflow-hidden"
+          className="px-4 py-3 text-sm text-[var(--color-text-secondary)] font-mono flex-[0_0_12%] relative group min-w-0 overflow-hidden"
         >
           <div className="flex items-center">
-            <span>{highlightSearchTerm(quote.quoteId.slice(0, 8) + '...', searchQuery)}</span>
+            <span>{highlightSearchTerm(quote.quoteNumber || '-', searchQuery)}</span>
             <button
-              onClick={(e) => onCopyQuoteId(quote.quoteId, e)}
+              onClick={(e) => onCopyQuoteNumber(quote.quoteNumber || '-', e)}
               className={cn(
                 'opacity-0 group-hover:opacity-100 transition-opacity',
                 'p-1 rounded hover:bg-[var(--color-bg-secondary)]',
                 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
                 'flex-shrink-0'
               )}
-              title="Copy quote ID"
+              title="Copy quote Number"
             >
-              {copiedQuoteId === quote.quoteId ? (
+              {copiedQuoteNumber === (quote.quoteNumber || '-') ? (
                 <Check className="w-3.5 h-3.5 text-green-500" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />

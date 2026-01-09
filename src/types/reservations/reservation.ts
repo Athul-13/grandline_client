@@ -74,6 +74,7 @@ export interface Reservation {
   userId: string;
   quoteId: string;
   paymentId: string;
+  reservationNumber?: string;
   tripType: TripTypeType;
   tripName: string;
   eventType: string;
@@ -107,6 +108,7 @@ export interface ReservationResponse {
   userId: string;
   quoteId: string;
   paymentId: string;
+  reservationNumber?: string;
   tripType: TripTypeType;
   tripName?: string;
   eventType?: string;
@@ -178,6 +180,7 @@ export interface ReservationResponse {
  */
 export interface ReservationListItem {
   reservationId: string;
+  reservationNumber?: string;
   tripName?: string;
   tripType: TripTypeType;
   status: ReservationStatusType;

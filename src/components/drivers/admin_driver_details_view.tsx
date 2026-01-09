@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import type { AdminDriverDetails } from '../../types/drivers/admin_driver';
+import type { AdminDriverDetails, AdminDriverDetailsResponse } from '../../types/drivers/admin_driver';
 import { AdminDriverDetailsHeader } from './admin_driver_details_header';
 import { DriverBasicInfoSection } from './details/driver_basic_info_section';
 import { DriverStatusSection } from './details/driver_status_section';
 import { DriverOnboardingSection } from './details/driver_onboarding_section';
+import { DriverStatsSection } from './details/driver_stats_section';
 import { AdminChatView } from '../chat/admin/admin_chat_view';
 import { useChatForDriver } from '../../hooks/chat/use_chat_for_driver';
 import { useUnreadCount } from '../../hooks/chat/use_unread_count';
 
 interface AdminDriverDetailsViewProps {
   driverDetails: AdminDriverDetails;
+  stats: AdminDriverDetailsResponse['stats'] | null;
   onStatusChange?: () => void; // Callback to refetch driver details after status change
   onUpdate?: () => void; // Callback to refetch driver details after update
   onBack: () => void; // Callback to go back to drivers list
@@ -21,6 +23,7 @@ interface AdminDriverDetailsViewProps {
  */
 export const AdminDriverDetailsView: React.FC<AdminDriverDetailsViewProps> = ({
   driverDetails,
+  stats,
   onStatusChange,
   onUpdate,
   onBack,
@@ -97,6 +100,12 @@ export const AdminDriverDetailsView: React.FC<AdminDriverDetailsViewProps> = ({
             <div>
               <DriverBasicInfoSection driverDetails={driverDetails} onUpdate={onUpdate} />
             </div>
+            {/* Stats Section */}
+            {stats && (
+              <div>
+                <DriverStatsSection stats={stats} />
+              </div>
+            )}
           </div>
 
           {/* Right Column: Status and Onboarding */}

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supportService } from '../../services/api/support_service';
-import type { CreateTicketRequest, CreateTicketResponse } from '../../types/support/ticket';
+import type { CreateTicketRequest } from '../../types/support/ticket';
 
 /**
  * Hook for creating a support ticket

@@ -113,7 +113,7 @@ export const vehicleFormSchema = z.object({
       return num >= 0;
     }, 'Fuel consumption must be a positive number'),
   status: z.enum([VehicleStatus.AVAILABLE, VehicleStatus.IN_SERVICE, VehicleStatus.MAINTENANCE, VehicleStatus.RETIRED], {
-    required_error: 'Status is required',
+    message: 'Status is required',
   }),
   amenityIds: z.array(z.string()).default([]),
   imageUrls: z.array(z.string()).min(1, 'At least one image is required'),

@@ -7,7 +7,7 @@ import { ConfirmationModal } from '../../common/modals/confirmation_modal';
 import { X } from 'lucide-react';
 import { useAmenityMutations } from '../../../hooks/fleet/use_amenity_mutations';
 import type { Amenity } from '../../../types/fleet/amenity';
-import { amenityFormSchema, type AmenityFormData } from '../../../types/fleet/amenity_form';
+import { amenityFormSchema, type AmenityFormInput, type AmenityFormData } from '../../../types/fleet/amenity_form';
 import toast from 'react-hot-toast';
 import { sanitizeErrorMessage } from '../../../utils/error_sanitizer';
 
@@ -36,7 +36,7 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
     formState: { errors },
     reset,
     watch,
-  } = useForm<AmenityFormData>({
+  } = useForm<AmenityFormInput, unknown, AmenityFormData>({
     resolver: zodResolver(amenityFormSchema),
     defaultValues: {
       name: '',
@@ -108,7 +108,7 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
 
   const onSubmit = async (data: AmenityFormData) => {
     const trimmedName = data.name.trim();
-    const priceValue = data.price === null || data.price === undefined || data.price === '' ? null : Number(data.price);
+    const priceValue = data.price ?? null;
 
     try {
       if (mode === 'add') {
@@ -160,7 +160,7 @@ export const AmenityFormModal: React.FC<AmenityFormModalProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit as (data: AmenityFormData) => Promise<void>)}>
             <div className="space-y-4 mb-6">
               <FormInput
                 label="Name"

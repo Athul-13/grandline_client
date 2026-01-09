@@ -81,7 +81,8 @@ export const CancelReservationModal: React.FC<CancelReservationModalProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={isLoading || !reason.trim()}
-            variant="danger"
+            variant="outline"
+            className="bg-red-500 text-white hover:bg-red-600"
           >
             {isLoading ? 'Cancelling...' : 'Cancel Reservation'}
           </Button>

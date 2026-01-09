@@ -19,6 +19,7 @@ export interface AdminUserInfo {
  * Admin reservation list item (extends ReservationListItem with user info)
  */
 export interface AdminReservationListItem extends ReservationListItem {
+  reservationNumber?: string;
   user: AdminUserInfo;
 }
 
@@ -81,6 +82,10 @@ export interface AdminReservationDetailsResponse extends ReservationResponse {
   charges?: ReservationChargeResponse[];
   totalCharges?: number;
   unpaidCharges?: number;
+  driverReport?: {
+    content: string;
+    submittedAt: Date | string;
+  };
 }
 
 /**

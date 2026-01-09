@@ -35,11 +35,11 @@ export const getSocketClient = (): Socket => {
     timeout: 20000,
   });
 
-  socketInstance.on('connect_error', (error) => {
+  socketInstance.on('connect_error', (error: Error) => {
     console.error('[SocketClient] Socket.io connection error:', error);
   });
 
-  socketInstance.on('reconnect_error', (error) => {
+  socketInstance.on('reconnect_error', (error: Error) => {
     console.error('[SocketClient] Socket.io reconnection error:', error);
   });
 

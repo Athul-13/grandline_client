@@ -1,12 +1,14 @@
 import { cn } from '../../../utils/cn';
 import { formatDate } from '../../../utils/quote_formatters';
 import { TicketStatusBadge } from '../../support/ticket_status_badge';
+import { highlightSearchTerm } from '../../../utils/highlight_search';
 import type { AdminTicketListItem } from '../../../types/support/ticket';
 import { ActorType } from '../../../types/support/ticket';
 
 interface AdminSupportTableRowProps {
   ticket: AdminTicketListItem;
   onRowClick: () => void;
+  searchQuery?: string;
 }
 
 /**
@@ -16,6 +18,7 @@ interface AdminSupportTableRowProps {
 export const AdminSupportTableRow: React.FC<AdminSupportTableRowProps> = ({
   ticket,
   onRowClick,
+  searchQuery = '',
 }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -46,12 +49,12 @@ export const AdminSupportTableRow: React.FC<AdminSupportTableRowProps> = ({
     >
       <td className="px-4 py-3 flex-[0_0_10%] flex items-center text-sm text-[var(--color-text-primary)]">
         <span className="font-mono text-xs truncate" title={ticket.ticketId}>
-          {ticket.ticketId.slice(0, 8)}...
+          {highlightSearchTerm(ticket.ticketId.slice(0, 8) + '...', searchQuery)}
         </span>
       </td>
-      <td className="px-4 py-3 flex-[0_0_20%] flex items-center text-sm text-[var(--color-text-primary)]">
-        <span className="truncate" title={ticket.subject}>
-          {ticket.subject}
+      <td className="px-4 py-3 flex-[0_0_20%] flex items-center text-sm text-[var(--color-text-primary)] min-w-0">
+        <span className="truncate w-full" title={ticket.subject}>
+          {highlightSearchTerm(ticket.subject, searchQuery)}
         </span>
       </td>
       <td className="px-4 py-3 flex-[0_0_10%] flex items-center text-sm">
@@ -66,7 +69,7 @@ export const AdminSupportTableRow: React.FC<AdminSupportTableRowProps> = ({
       </td>
       <td className="px-4 py-3 flex-[0_0_15%] flex items-center text-sm text-[var(--color-text-primary)]">
         <span className="truncate" title={ticket.actorName}>
-          {ticket.actorName}
+          {highlightSearchTerm(ticket.actorName, searchQuery)}
         </span>
       </td>
       <td className="px-4 py-3 flex-[0_0_10%] flex items-center text-sm">

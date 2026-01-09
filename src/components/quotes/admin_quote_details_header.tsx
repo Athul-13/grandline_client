@@ -65,7 +65,7 @@ export const AdminQuoteDetailsHeader: React.FC<AdminQuoteDetailsHeaderProps> = (
           <div>
             <p className="text-sm font-semibold text-[var(--color-text-primary)]">Quote Details</p>
             <p className="text-xs text-[var(--color-text-secondary)] font-mono">
-              {quoteDetails.quoteId}
+              {quoteDetails.quoteNumber || '-'}
             </p>
           </div>
         </div>

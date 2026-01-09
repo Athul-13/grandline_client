@@ -47,6 +47,9 @@ export const QuotesTableRow: React.FC<QuotesTableRowProps> = ({
           className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
         />
       </td>
+      <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+        {quote.quoteNumber || '-'}
+      </td>
       <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
         {quote.tripName}
       </td>

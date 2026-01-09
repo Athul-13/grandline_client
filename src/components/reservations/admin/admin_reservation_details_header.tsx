@@ -90,7 +90,7 @@ export const AdminReservationDetailsHeader: React.FC<AdminReservationDetailsHead
           <div>
             <p className="text-sm font-semibold text-[var(--color-text-primary)]">Reservation Details</p>
             <p className="text-xs text-[var(--color-text-secondary)] font-mono">
-              {reservationDetails.reservationId}
+              {reservationDetails.reservationNumber || '-'}
             </p>
           </div>
         </div>

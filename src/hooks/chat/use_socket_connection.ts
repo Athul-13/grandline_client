@@ -43,7 +43,7 @@ export const useSocketConnection = (): UseSocketConnectionReturn => {
       setIsConnecting(false);
     });
 
-    socketInstance.on('connect_error', (err) => {
+    socketInstance.on('connect_error', (err: Error) => {
       setIsConnecting(false);
       setError(err.message || 'Connection error');
     });

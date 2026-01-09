@@ -84,7 +84,7 @@ export interface CreateVehicleRequest {
   fuelConsumption: number;
   imageUrls: string[];
   status: VehicleStatusType | string;
-  amenities?: string[]; // Array of amenity IDs
+  amenityIds?: string[]; // Array of amenity IDs
 }
 
 /**
@@ -111,7 +111,7 @@ export interface UpdateVehicleRequest {
   fuelConsumption?: number;
   imageUrls?: string[];
   status?: VehicleStatusType | string;
-  amenities?: string[]; // Array of amenity IDs
+  amenityIds?: string[]; // Array of amenity IDs
 }
 
 /**

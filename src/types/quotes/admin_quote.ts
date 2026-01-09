@@ -12,6 +12,7 @@ import type { ItineraryStopDto } from './itinerary';
  */
 export interface AdminQuoteListItem {
   quoteId: string;
+  quoteNumber?: string;
   tripName: string;
   tripType: TripTypeType;
   status: QuoteStatusType;
@@ -56,6 +57,7 @@ export interface AdminQuoteDetailsResponse {
   success: boolean;
   quoteId: string;
   userId: string;
+  quoteNumber?: string;
   tripType: TripTypeType;
   tripName: string;
   eventType: string;
@@ -133,6 +135,7 @@ export interface UpdateQuoteStatusResponse {
   success: boolean;
   quoteId: string;
   userId: string;
+  quoteNumber?: string;
   tripType: TripTypeType;
   tripName: string;
   status: QuoteStatusType;

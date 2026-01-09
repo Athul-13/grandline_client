@@ -5,9 +5,7 @@ import type {
   CreateTicketResponse,
   GetTicketsByActorResponse,
   GetTicketByIdResponse,
-  AddMessageRequest,
   AddMessageResponse,
-  GetMessagesByTicketRequest,
   GetMessagesByTicketResponse,
   ActorTypeType,
   AdminTicketsListResponse,
@@ -98,6 +96,7 @@ export const supportService = {
     status?: string;
     actorType?: string;
     assignedAdminId?: string;
+    search?: string;
     sortBy?: 'lastMessageAt' | 'createdAt';
     sortOrder?: 'asc' | 'desc';
   }): Promise<AdminTicketsListResponse> => {

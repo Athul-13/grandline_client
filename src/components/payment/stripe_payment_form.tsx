@@ -26,7 +26,7 @@ const PaymentForm: React.FC<{
   totalPrice: number;
   onSuccess: () => void;
   onError: (error: string) => void;
-}> = ({ quoteId, totalPrice, onSuccess, onError: _onError }) => {
+}> = ({ totalPrice, onSuccess, onError: _onError }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,7 +46,7 @@ const PaymentForm: React.FC<{
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}${ROUTES.quotes}?quoteId=${quoteId}&payment=success`,
+          return_url: `${window.location.origin}${ROUTES.reservations}`,
         },
         redirect: 'if_required',
       });

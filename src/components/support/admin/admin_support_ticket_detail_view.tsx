@@ -160,9 +160,9 @@ export const AdminSupportTicketDetailView: React.FC<AdminSupportTicketDetailView
             <span className="text-xs text-[var(--color-text-secondary)] flex-shrink-0">
               • {ticketDetails.actorType === ActorType.USER ? 'User' : 'Driver'}
             </span>
-            {ticketDetails.linkedEntityType && ticketDetails.linkedEntityId && (
+            {ticketDetails.linkedEntityNumber && (
               <span className="text-xs text-[var(--color-text-secondary)] flex-shrink-0">
-                • {ticketDetails.linkedEntityType}
+                • {ticketDetails.linkedEntityNumber}
               </span>
             )}
           </div>

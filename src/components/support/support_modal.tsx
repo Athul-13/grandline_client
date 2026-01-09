@@ -180,6 +180,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
         <div className="flex items-center gap-2">
           <span className="truncate">{quote.tripName}</span>
           <StatusBadge status={quote.status} />
+          <span className="text-[var(--color-text-secondary)]">- {quote.quoteNumber}</span>
         </div>
       );
     } else if (category === LinkedEntityType.RESERVATION) {
@@ -189,6 +190,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
         <div className="flex items-center gap-2">
           <span className="truncate">{reservation.tripName}</span>
           <ReservationStatusBadge status={reservation.status} />
+          <span className="text-[var(--color-text-secondary)]">- {reservation.reservationNumber}</span>
         </div>
       );
     }
@@ -276,7 +278,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
                                       : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
                                   )}
                                 >
-                                  {quote.tripName} <StatusBadge status={quote.status} />
+                                  {quote.tripName} <StatusBadge status={quote.status} /> - {quote.quoteNumber}
                                 </button>
                               ))
                             )
@@ -300,7 +302,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
                                        : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
                                    )}
                                 >
-                                  {reservation.tripName} <ReservationStatusBadge status={reservation.status} />
+                                  {reservation.tripName} <ReservationStatusBadge status={reservation.status} /> - {reservation.reservationNumber}
                                 </button>
                               ))
                             )

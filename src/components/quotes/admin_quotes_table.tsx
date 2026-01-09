@@ -43,7 +43,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   quoteId,
 }) => {
   const { searchQuery } = useSearchContext();
-  const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
+  const [copiedQuoteNumber, setCopiedQuoteNumber] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // Refs for syncing horizontal scroll
@@ -168,15 +168,15 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
   };
 
   // Copy quote ID to clipboard
-  const handleCopyQuoteId = async (quoteIdToCopy: string, e: React.MouseEvent) => {
+  const handleCopyQuoteNumber = async (quoteNumberToCopy: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(quoteIdToCopy);
-      setCopiedQuoteId(quoteIdToCopy);
-      toast.success('Quote ID copied to clipboard');
-      setTimeout(() => setCopiedQuoteId(null), 2000);
+      await navigator.clipboard.writeText(quoteNumberToCopy);
+      setCopiedQuoteNumber(quoteNumberToCopy);
+      toast.success('Quote Number copied to clipboard');
+      setTimeout(() => setCopiedQuoteNumber(null), 2000);
     } catch {
-      toast.error('Failed to copy quote ID');
+      toast.error('Failed to copy quote Number');
     }
   };
 
@@ -321,7 +321,7 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
                         />
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-[0_0_12%] whitespace-nowrap flex items-center">
-                        Quote ID
+                        Quote NO.
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-1 whitespace-nowrap flex items-center">
                         Trip Name
@@ -360,8 +360,8 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
                     key={quote.quoteId}
                     quote={quote}
                     searchQuery={searchQuery}
-                    copiedQuoteId={copiedQuoteId}
-                    onCopyQuoteId={handleCopyQuoteId}
+                    copiedQuoteNumber={copiedQuoteNumber}
+                    onCopyQuoteNumber={handleCopyQuoteNumber}
                     isSelected={selectedQuoteIds.has(quote.quoteId)}
                     onSelectChange={(isSelected) => handleSelectQuote(quote.quoteId, isSelected)}
                     onRowClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}
@@ -402,8 +402,8 @@ export const AdminQuotesTable: React.FC<AdminQuotesTableProps> = ({
               key={quote.quoteId}
               quote={quote}
               searchQuery={searchQuery}
-              copiedQuoteId={copiedQuoteId}
-              onCopyQuoteId={handleCopyQuoteId}
+              copiedQuoteNumber={copiedQuoteNumber}
+              onCopyQuoteNumber={handleCopyQuoteNumber}
               isSelected={selectedQuoteIds.has(quote.quoteId)}
               onSelectChange={(isSelected) => handleSelectQuote(quote.quoteId, isSelected)}
               onCardClick={() => navigate(ROUTES.admin.quoteDetails(quote.quoteId))}

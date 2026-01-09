@@ -41,6 +41,7 @@ export type TripTypeType = typeof TripType[keyof typeof TripType];
 export interface Quote {
   quoteId: string;
   userId: string;
+  quoteNumber?: string;
   tripType: TripTypeType;
   tripName: string;
   eventType: string;
@@ -166,6 +167,7 @@ export interface UpdateQuoteDraftRequest {
 export interface QuoteResponse {
   quoteId: string;
   userId: string;
+  quoteNumber?: string;
   tripType: TripTypeType;
   tripName: string;
   eventType: string;
@@ -194,6 +196,7 @@ export interface QuoteResponse {
  */
 export interface QuoteListItem {
   quoteId: string;
+  quoteNumber?: string;
   tripName: string;
   tripType: TripTypeType;
   status: QuoteStatusType;

@@ -77,6 +77,7 @@ export const AdminSupportConcernsPage: React.FC = () => {
     limit: itemsPerPage,
     status: selectedStatuses.length > 0 ? selectedStatuses[0] : undefined,
     actorType: selectedActorTypes.length > 0 ? (selectedActorTypes[0] as ActorTypeType) : undefined,
+    search: searchQuery || undefined,
     sortBy,
     sortOrder,
   });
@@ -437,6 +438,7 @@ export const AdminSupportConcernsPage: React.FC = () => {
               isLoading={isLoading}
               onPageChange={handlePageChange}
               ticketId={ticketId}
+              searchQuery={searchQuery}
             />
           </div>
         </div>

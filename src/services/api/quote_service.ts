@@ -26,6 +26,45 @@ import type { GetRecommendationsRequest, GetRecommendationsResponse } from '../.
 import type { CalculatePricingResponse } from '../../types/quotes/pricing';
 
 /**
+ * Get all quotes - Function overloads for type safety
+ * When forDropdown is true, returns simplified array format
+ * Otherwise, returns full QuoteListResponse with pagination
+ */
+async function getQuotes(params: { forDropdown: true }): Promise<Array<{ quoteId: string; tripName: string; status: string }>>;
+async function getQuotes(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  forDropdown?: false;
+}): Promise<QuoteListResponse>;
+async function getQuotes(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  forDropdown?: boolean;
+}): Promise<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>> {
+  const queryParams = new URLSearchParams();
+  
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, String(value));
+      }
+    });
+  }
+  
+  const queryString = queryParams.toString();
+  const url = queryString ? `${API_ENDPOINTS.quotes.list}?${queryString}` : API_ENDPOINTS.quotes.list;
+  
+  const response = await grandlineAxiosClient.get<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>>(url);
+  return response.data;
+}
+
+/**
  * Quote Service
  * Handles quote-related API calls
  */
@@ -33,31 +72,14 @@ export const quoteService = {
   /**
    * Get all quotes (with optional pagination and filters)
    * GET /api/v1/quotes?page=1&limit=20&status=draft,submitted&sortBy=createdAt&sortOrder=desc
+   * 
+   * @overload
+   * When forDropdown is true, returns simplified array format
+   * 
+   * @overload
+   * When forDropdown is false or undefined, returns QuoteListResponse with pagination
    */
-  getQuotes: async (params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    forDropdown?: boolean;
-  }): Promise<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>> => {
-    const queryParams = new URLSearchParams();
-    
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          queryParams.append(key, String(value));
-        }
-      });
-    }
-    
-    const queryString = queryParams.toString();
-    const url = queryString ? `${API_ENDPOINTS.quotes.list}?${queryString}` : API_ENDPOINTS.quotes.list;
-    
-    const response = await grandlineAxiosClient.get<QuoteListResponse | Array<{ quoteId: string; tripName: string; status: string }>>(url);
-    return response.data;
-  },
+  getQuotes,
 
   /**
    * Get quote by ID

@@ -334,7 +334,7 @@ export const AdminQuotesPage: React.FC = () => {
           </div>
 
           {/* Pagination - Disabled when viewing details */}
-          {!quoteId && pagination && pagination.totalPages > 1 && (
+          {!quoteId && pagination && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
               <Pagination
                 currentPage={pagination.page}

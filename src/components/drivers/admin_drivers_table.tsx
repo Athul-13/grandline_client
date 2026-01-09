@@ -124,7 +124,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
   const allSelected = drivers.length > 0 && drivers.every((d) => selectedDriverIds.has(d.driverId));
 
   // Driver details state
-  const { driverDetails, isLoading: isLoadingDetails, error: detailsError, refetch: refetchDriverDetails } = useAdminDriverDetails(driverId || '');
+  const { driverDetails, stats, isLoading: isLoadingDetails, error: detailsError, refetch: refetchDriverDetails } = useAdminDriverDetails(driverId || '');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [showBulkStatusModal, setShowBulkStatusModal] = useState(false);
@@ -441,6 +441,7 @@ export const AdminDriversTable: React.FC<AdminDriversTableProps> = ({
         <div className="flex-1 min-h-0">
           <AdminDriverDetailsView
             driverDetails={driverDetails}
+            stats={stats}
             onStatusChange={refetchDriverDetails}
             onUpdate={refetchDriverDetails}
             onBack={handleBack}

@@ -117,6 +117,12 @@ export interface AdminDriverDetailsResponse {
     createdAt: Date | string;
     updatedAt: Date | string;
   };
+  stats: {
+    totalRides: number;
+    earnings: number;
+    rating: number;
+    lastPaymentDate?: Date | string;
+  };
 }
 
 /**

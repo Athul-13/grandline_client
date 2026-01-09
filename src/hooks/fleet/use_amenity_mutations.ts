@@ -61,7 +61,7 @@ export const useAmenityMutations = () => {
 
       return { previousQueries, previousAllQueries };
     },
-    onError: (error, newAmenity, context) => {
+    onError: (error, _newAmenity, context) => {
       // Rollback on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((entry) => {
@@ -159,7 +159,7 @@ export const useAmenityMutations = () => {
 
       return { previousQueries, previousAllQueries };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       // Rollback on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((entry) => {
@@ -258,7 +258,7 @@ export const useAmenityMutations = () => {
 
       return { previousQueries, previousAllQueries };
     },
-    onError: (error, id, context) => {
+    onError: (error, _id, context) => {
       // Rollback on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((entry) => {

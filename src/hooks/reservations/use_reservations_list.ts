@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { reservationService } from '../../services/api/reservation_service';
-import type { ReservationListItem, ReservationListResponse, PaginationMeta } from '../../types/reservations/reservation';
+import type { ReservationListItem, PaginationMeta } from '../../types/reservations/reservation';
 
 interface UseReservationsListParams {
   page?: number;
@@ -29,7 +29,8 @@ export const useReservationsList = (params?: UseReservationsListParams): UseRese
     setError(null);
     
     try {
-      const response: ReservationListResponse = await reservationService.getReservations({
+      // TypeScript infers ReservationListResponse from function overload (forDropdown is not set)
+      const response = await reservationService.getReservations({
         page: params?.page || 1,
         limit: params?.limit || 15,
       });

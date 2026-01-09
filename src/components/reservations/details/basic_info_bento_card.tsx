@@ -19,9 +19,9 @@ export const BasicInfoBentoCard: React.FC<BasicInfoBentoCardProps> = ({ reservat
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
-          <span className="font-medium text-[var(--color-text-secondary)]">Reservation ID:</span>
+          <span className="font-medium text-[var(--color-text-secondary)]">Reservation Number:</span>
           <span className="ml-2 text-[var(--color-text-primary)] font-mono text-xs">
-            {reservationDetails.reservationId}
+            {reservationDetails.reservationNumber || '-'}
           </span>
         </div>
         <div>
