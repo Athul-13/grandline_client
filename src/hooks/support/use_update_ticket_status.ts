@@ -7,7 +7,7 @@ export const useUpdateTicketStatus = () => {
 
   return useMutation<GetTicketByIdResponse, Error, { ticketId: string; request: UpdateTicketStatusRequest }>({
     mutationFn: ({ ticketId, request }) => supportService.updateTicketStatus(ticketId, request),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate tickets list
       queryClient.invalidateQueries({ queryKey: ['admin', 'support', 'tickets'] });
       // Invalidate specific ticket

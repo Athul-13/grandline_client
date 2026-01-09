@@ -26,7 +26,7 @@ const PaymentForm: React.FC<{
   totalPrice: number;
   onSuccess: () => void;
   onError: (error: string) => void;
-}> = ({ quoteId, totalPrice, onSuccess, onError: _onError }) => {
+}> = ({ totalPrice, onSuccess, onError: _onError }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);

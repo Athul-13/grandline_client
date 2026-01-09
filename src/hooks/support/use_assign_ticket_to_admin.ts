@@ -7,7 +7,7 @@ export const useAssignTicketToAdmin = () => {
 
   return useMutation<GetTicketByIdResponse, Error, { ticketId: string; request: AssignTicketToAdminRequest }>({
     mutationFn: ({ ticketId, request }) => supportService.assignTicketToAdmin(ticketId, request),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate tickets list
       queryClient.invalidateQueries({ queryKey: ['admin', 'support', 'tickets'] });
       // Invalidate specific ticket

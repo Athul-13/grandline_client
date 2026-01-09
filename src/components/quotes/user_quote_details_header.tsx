@@ -35,14 +35,12 @@ export const UserQuoteDetailsHeader: React.FC<UserQuoteDetailsHeaderProps> = ({
     quoteDetails.status === QuoteStatus.QUOTED ||
     quoteDetails.status === QuoteStatus.NEGOTIATING ||
     quoteDetails.status === QuoteStatus.ACCEPTED ||
-    quoteDetails.status === QuoteStatus.PAID) &&
-    quoteDetails.status !== QuoteStatus.EXPIRED;
+    quoteDetails.status === QuoteStatus.PAID);
 
   // Payment button is available for QUOTED status quotes (not EXPIRED)
   const isPaymentAvailable = 
     quoteDetails.status === QuoteStatus.QUOTED && 
-    quoteDetails.quotedAt &&
-    quoteDetails.status !== QuoteStatus.EXPIRED;
+    quoteDetails.quotedAt;
   
   // Check if payment window has expired
   const isPaymentWindowExpired = (): boolean => {

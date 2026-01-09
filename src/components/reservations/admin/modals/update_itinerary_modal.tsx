@@ -246,7 +246,7 @@ export const UpdateItineraryModal: React.FC<UpdateItineraryModalProps> = ({
                         label="Departure Time (Optional)"
                         type="datetime-local"
                         value={stop.departureTime || ''}
-                        onChange={(e) => handleStopChange(index, 'departureTime', e.target.value || undefined)}
+                        onChange={(e) => handleStopChange(index, 'departureTime', e.target.value ?? '')}
                       />
                       <div>
                         <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1">
@@ -279,7 +279,7 @@ export const UpdateItineraryModal: React.FC<UpdateItineraryModalProps> = ({
                           type="number"
                           min="0"
                           value={stop.stayingDuration || ''}
-                          onChange={(e) => handleStopChange(index, 'stayingDuration', parseInt(e.target.value) || undefined)}
+                          onChange={(e) => handleStopChange(index, 'stayingDuration', parseInt(e.target.value ?? '0'))}
                         />
                       )}
                     </div>

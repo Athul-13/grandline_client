@@ -50,7 +50,7 @@ export const useVehicleMutations = () => {
 
       return { previousQueries };
     },
-    onError: (error, newVehicle, context) => {
+    onError: (error, _newVehicle, context) => {
       // Rollback on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((entry) => {
@@ -124,7 +124,7 @@ export const useVehicleMutations = () => {
 
       return { previousQueries };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       // Rollback on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((entry) => {

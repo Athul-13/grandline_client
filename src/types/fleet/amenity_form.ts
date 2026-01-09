@@ -31,5 +31,8 @@ export const amenityFormSchema = z.object({
     }),
 });
 
-export type AmenityFormData = z.infer<typeof amenityFormSchema>;
+// Input type: what the form provides (before transform)
+export type AmenityFormInput = z.input<typeof amenityFormSchema>;
+// Output type: what the schema produces (after transform)
+export type AmenityFormData = z.output<typeof amenityFormSchema>;
 

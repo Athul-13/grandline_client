@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { quoteService } from '../../services/api/quote_service';
-import type { QuoteListItem, QuoteListResponse, PaginationMeta } from '../../types/quotes/quote';
+import type { QuoteListItem, PaginationMeta } from '../../types/quotes/quote';
 
 interface UseQuotesListParams {
   page?: number;
@@ -30,7 +30,8 @@ export const useQuotesList = (params?: UseQuotesListParams): UseQuotesListReturn
     setError(null);
     
     try {
-      const response: QuoteListResponse = await quoteService.getQuotes({
+      // TypeScript infers QuoteListResponse from function overload (forDropdown is not set)
+      const response = await quoteService.getQuotes({
         page: params?.page || 1,
         limit: params?.limit || 15,
         status: params?.status,

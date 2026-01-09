@@ -129,14 +129,14 @@ export const useQuoteBuilder = () => {
             
             // Check required times
             const pickup = loadedItinerary.outbound.find((stop) => stop.stopType === StopType.PICKUP);
-            const hasPickupTime = pickup && pickup.departureTime && pickup.departureTime !== '';
+            const hasPickupTime = !!(pickup && pickup.departureTime && pickup.departureTime !== '');
             const intermediateStops = loadedItinerary.outbound.filter((stop) => stop.stopType === StopType.STOP);
             const hasAllIntermediateTimes = intermediateStops.every(
               (stop) => stop.departureTime && stop.departureTime !== ''
             );
-            const hasRequiredTimes = hasPickupTime && hasAllIntermediateTimes;
+            const hasRequiredTimes = !!(hasPickupTime && hasAllIntermediateTimes);
             
-            const isValid = hasPickup && hasDropoff && hasValidLocations && hasRequiredTimes;
+            const isValid = !!(hasPickup && hasDropoff && hasValidLocations && hasRequiredTimes);
             setValidation((prev) => ({
               ...prev,
               step2: isValid,
@@ -144,12 +144,12 @@ export const useQuoteBuilder = () => {
           }
 
           // Step 3: Valid if tripName, eventType, and passengers exist
-          const tripNameValid = draft.tripName && draft.tripName.trim().length >= 3;
+          const tripNameValid = !!(draft.tripName && draft.tripName.trim().length >= 3);
           const eventTypeValid = !!draft.eventType && (draft.eventType !== 'other' || (draft.customEventType && draft.customEventType.trim().length > 0));
           const passengersValid = loadedPassengers.length > 0;
           setValidation((prev) => ({
             ...prev,
-            step3: tripNameValid && eventTypeValid && passengersValid,
+            step3: !!(tripNameValid && eventTypeValid && passengersValid),
           }));
         }
       } catch (err) {

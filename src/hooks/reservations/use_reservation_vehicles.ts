@@ -34,9 +34,9 @@ export const useReservationVehicles = (
               const vehicle = await vehicleService.getVehicleById(vehicleId);
               return {
                 vehicleId: vehicle.vehicleId,
-                name: vehicle.name,
+                name: vehicle.vehicleModel + ' ' + vehicle.year,
                 capacity: vehicle.capacity,
-                imageUrl: vehicle.images?.[0]?.url,
+                imageUrl: vehicle.imageUrls?.[0],
               };
             } catch (error) {
               console.error(`Failed to fetch vehicle ${vehicleId}:`, error);

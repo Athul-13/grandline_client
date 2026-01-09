@@ -538,12 +538,16 @@ export const UserDriverTrackingMap: React.FC<UserDriverTrackingMapProps> = ({
         initialZoom={15}
         onMapReady={(map) => {
           mapRef.current = map;
-          currentZoomRef.current = map.getZoom();
+          if (map) {
+            currentZoomRef.current = map.getZoom();
+          }
 
           // Listen for user interactions
-          map.on('dragstart', handleMapInteraction);
-          map.on('zoomstart', handleMapInteraction);
-          map.on('pitchstart', handleMapInteraction);
+          if (map) {
+            map.on('dragstart', handleMapInteraction);
+            map.on('zoomstart', handleMapInteraction);
+            map.on('pitchstart', handleMapInteraction);
+          }
         }}
       />
     </div>
