@@ -170,6 +170,32 @@ html {
   }
 }
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 10s linear infinite;
+}
+
+@keyframes marquee-seamless {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-seamless {
+  animation: marquee-seamless 20s linear infinite;
+}
+
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
@@ -191,7 +217,9 @@ html {
   .animate-fade-in,
   .animate-slide-in-right,
   .animate-slide-in-top,
-  .animate-slide-in-bottom {
+  .animate-slide-in-bottom,
+  .animate-marquee,
+  .animate-marquee-seamless {
     animation: none;
   }
 }

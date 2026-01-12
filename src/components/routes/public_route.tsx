@@ -3,6 +3,7 @@ import { useAppSelector } from '../../store/hooks';
 import { ROUTES } from '../../constants/routes';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
+import { AnnouncementBanner } from '../common/announcement_banner';
 
 interface PublicRouteProps {
   children: React.ReactElement;
@@ -42,6 +43,11 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     return <Navigate to={ROUTES.dashboard} replace />;
   }
 
-  return children;
+  return (
+    <>
+      <AnnouncementBanner />
+      {children}
+    </>
+  );
 };
 
